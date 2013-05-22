@@ -242,6 +242,12 @@ public class ArrayGetSet {
 		ArrayAccess arrayAccess = new ArrayAccess();
 		arrayAccess.setArrayID(new IDUse(node.getRHS().getVarName()));
 		arrayAccess.setIndicesList(Expressions.getArgs(node.getRHS(), target));
+		
+		/*
+		 * code for rigorous indexing
+		 */
+		
+		
 
 		RegionBuilder region = new RegionBuilder();
 		region.setArrayID(arrayAccess.getArrayID());
@@ -252,6 +258,8 @@ public class ArrayGetSet {
 			/*
 			 * Below is a very ugly hack to incorporate x:y type colon
 			 * expressions in array access. TODO : Fix it
+			 * 
+			 * Also add special case for the type A(:) . It returns a col vector.
 			 */
 			if (target.symbolMap.containsKey(((IDUse) i).getID())
 					&& !Helper.isScalar(target.symbolMap.get(

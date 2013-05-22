@@ -5,28 +5,31 @@ function [x] = drv_nb1d(scale)
 %%
 
 seed = 1;
-%t1 = clock;
+t1 = clock;
 
 n = round(scale^.4*30); %floor(28*rand);
 dT = (.5)*0.0833;
 T = (.5)*32.4362*sqrt(scale);
 
-Rx = rand(n, 1,.1)*1000.23;
-Ry = rand(n, 1,.4)*1000.23;
-Rz = rand(n, 1,.9)*1000.23;
+Rx = rand(n, 1)*1000.23;
+Ry = rand(n, 1)*1000.23;
+Rz = rand(n, 1)*1000.23;
 
-m = rand(n, 1,-.4)*345;
+m = rand(n, 1)*345;
 
 [Fx, Fy, Fz, Vx, Vy, Vz] = nbody1d(n, Rx, Ry, Rz, m, dT, T);
 
-%t2 = clock;
+
+t2 = clock;
 
 % Compute the running time in seconds
-%time = (t2-t1)*[0 0 86400 3600 60 1]';
+time = (t2-t1)*[0 0 86400 3600 60 1]';
 
 % Store the benchmark output
 output = {mean(Fx(:)) mean(Fy(:)) mean(Fz(:)) mean(Vx(:)) mean(Vy(:)) mean(Vz(:))};
 
+%disp (output);
+disp (time);
 % No validation performed
 %valid = 'N/A';
 x=1;

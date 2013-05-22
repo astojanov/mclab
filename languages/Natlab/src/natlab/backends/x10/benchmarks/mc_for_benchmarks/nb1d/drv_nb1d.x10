@@ -1,5 +1,122 @@
 class testclass{
-	static def nbody1d (n: Double, Rx: Array[Double], Ry: Array[Double], Rz: Array[Double], m: Array[Double], dT: Double, T: Double)
+	static def drv_nb1d (scale: Double)
+	    {
+//%
+//%  Driver for the N-body problem coded using 1d arrays for the
+//%  displacement vectors.
+//%
+var seed: Double = 1;
+//%t1 = clock;
+var mc_t22: Double = .4;
+var mc_t1: Double = mpower(scale, mc_t22);
+var mc_t23: Double = 30;
+var mc_t0: Double = mtimes(mc_t1, mc_t23);
+var n: Double = round(mc_t0);
+//%floor(28*rand);
+var mc_t24: Double = .5;
+var mc_t25: Double = 0.0833;
+var dT: Double = mtimes(mc_t24, mc_t25);
+var mc_t26: Double = .5;
+var mc_t27: Double = 32.4362;
+var mc_t2: Double = mtimes(mc_t26, mc_t27);
+var mc_t3: Double = sqrt(scale);
+var T: Double = mtimes(mc_t2, mc_t3);
+var mc_t28: Double = 1;
+var mc_t29: Double = .1;
+val mc_t4: Array[Double] = new Array[Double](rand(n, mc_t28, mc_t29));
+var mc_t30: Double = 1000.23;
+val Rx: Array[Double] = new Array[Double](mtimes(mc_t4, mc_t30));
+var mc_t31: Double = 1;
+var mc_t32: Double = .4;
+val mc_t5: Array[Double] = new Array[Double](rand(n, mc_t31, mc_t32));
+var mc_t33: Double = 1000.23;
+val Ry: Array[Double] = new Array[Double](mtimes(mc_t5, mc_t33));
+var mc_t34: Double = 1;
+var mc_t35: Double = .9;
+val mc_t6: Array[Double] = new Array[Double](rand(n, mc_t34, mc_t35));
+var mc_t36: Double = 1000.23;
+val Rz: Array[Double] = new Array[Double](mtimes(mc_t6, mc_t36));
+var mc_t8: Double = n;
+var mc_t37: Double = .4;
+var mc_t9: Double = uminus(mc_t37);
+var mc_t38: Double = 1;
+val mc_t7: Array[Double] = new Array[Double](rand(mc_t8, mc_t38, mc_t9));
+var mc_t39: Double = 345;
+val m: Array[Double] = new Array[Double](mtimes(mc_t7, mc_t39));
+var Fx: Array[Double];
+var Fy: Array[Double];
+var Fz: Array[Double];
+var Vx: Array[Double];
+var Vy: Array[Double];
+var Vz: Array[Double];
+var _Fx_Fy_Fz_Vx_Vy_Vz: Array[Any];
+_Fx_Fy_Fz_Vx_Vy_Vz = nbody1d(n, Rx, Ry, Rz, m, dT, T) ;
+Fx = _Fx_Fy_Fz_Vx_Vy_Vz(0 as Int)as Array[Double] ;
+Fy = _Fx_Fy_Fz_Vx_Vy_Vz(1 as Int)as Array[Double] ;
+Fz = _Fx_Fy_Fz_Vx_Vy_Vz(2 as Int)as Array[Double] ;
+Vx = _Fx_Fy_Fz_Vx_Vy_Vz(3 as Int)as Array[Double] ;
+Vy = _Fx_Fy_Fz_Vx_Vy_Vz(4 as Int)as Array[Double] ;
+Vz = _Fx_Fy_Fz_Vx_Vy_Vz(5 as Int)as Array[Double] ;
+//%t2 = clock;
+//% Compute the running time in seconds
+//%time = (t2-t1)*[0 0 86400 3600 60 1]';
+//% Store the benchmark output
+var mc_t21: Array[Double];
+val mix10_pt_Fx: Point;
+	    mix10_pt_Fx = Point.make(0);
+val mix10_ptOff_Fx: Array[Double];
+	    mix10_ptOff_Fx = Fx;
+mc_t21 = new Array[Double](((Fx.region.min(0))..(Fx.region.max(0))), (p:Point(1))=>mix10_ptOff_Fx(p.operator-(mix10_pt_Fx)));
+ ;
+var mc_t10: Double = mean(mc_t21);
+var mc_t20: Array[Double];
+val mix10_pt_Fy: Point;
+	    mix10_pt_Fy = Point.make(0);
+val mix10_ptOff_Fy: Array[Double];
+	    mix10_ptOff_Fy = Fy;
+mc_t20 = new Array[Double](((Fy.region.min(0))..(Fy.region.max(0))), (p:Point(1))=>mix10_ptOff_Fy(p.operator-(mix10_pt_Fy)));
+ ;
+var mc_t11: Double = mean(mc_t20);
+var mc_t19: Array[Double];
+val mix10_pt_Fz: Point;
+	    mix10_pt_Fz = Point.make(0);
+val mix10_ptOff_Fz: Array[Double];
+	    mix10_ptOff_Fz = Fz;
+mc_t19 = new Array[Double](((Fz.region.min(0))..(Fz.region.max(0))), (p:Point(1))=>mix10_ptOff_Fz(p.operator-(mix10_pt_Fz)));
+ ;
+var mc_t12: Double = mean(mc_t19);
+var mc_t18: Array[Double];
+val mix10_pt_Vx: Point;
+	    mix10_pt_Vx = Point.make(0);
+val mix10_ptOff_Vx: Array[Double];
+	    mix10_ptOff_Vx = Vx;
+mc_t18 = new Array[Double](((Vx.region.min(0))..(Vx.region.max(0))), (p:Point(1))=>mix10_ptOff_Vx(p.operator-(mix10_pt_Vx)));
+ ;
+var mc_t13: Double = mean(mc_t18);
+var mc_t17: Array[Double];
+val mix10_pt_Vy: Point;
+	    mix10_pt_Vy = Point.make(0);
+val mix10_ptOff_Vy: Array[Double];
+	    mix10_ptOff_Vy = Vy;
+mc_t17 = new Array[Double](((Vy.region.min(0))..(Vy.region.max(0))), (p:Point(1))=>mix10_ptOff_Vy(p.operator-(mix10_pt_Vy)));
+ ;
+var mc_t14: Double = mean(mc_t17);
+var mc_t16: Array[Double];
+val mix10_pt_Vz: Point;
+	    mix10_pt_Vz = Point.make(0);
+val mix10_ptOff_Vz: Array[Double];
+	    mix10_ptOff_Vz = Vz;
+mc_t16 = new Array[Double](((Vz.region.min(0))..(Vz.region.max(0))), (p:Point(1))=>mix10_ptOff_Vz(p.operator-(mix10_pt_Vz)));
+ ;
+var mc_t15: Double = mean(mc_t16);
+val output: Array[Any] = [mc_t10 as Any ,mc_t11 as Any ,mc_t12 as Any ,mc_t13 as Any ,mc_t14 as Any ,mc_t15 as Any];
+//% No validation performed
+//%valid = 'N/A';
+var x: Double = 1;
+	    return x;
+}
+
+}	static def nbody1d (n: Double, Rx: Array[Double], Ry: Array[Double], Rz: Array[Double], m: Array[Double], dT: Double, T: Double)
 	    {
 //%-----------------------------------------------------------------------
 //%
@@ -75,25 +192,25 @@ var t: Double;
 var mc_t84: Double;
 var mc_t44: Array[Double];
 var mc_t45: Double;
-var drx: Double;
+var drx: Array[Double];
 var mc_t46: Array[Double];
 var mc_t47: Double;
-var dry: Double;
+var dry: Array[Double];
 var mc_t48: Array[Double];
 var mc_t49: Double;
-var drz: Double;
-var mc_t52: Double;
-var mc_t53: Double;
-var mc_t50: Double;
-var mc_t51: Double;
-var r: Double;
+var drz: Array[Double];
+var mc_t52: Array[Double];
+var mc_t53: Array[Double];
+var mc_t50: Array[Double];
+var mc_t51: Array[Double];
+var r: Array[Double];
 var mc_t82: Double;
 var mc_t54: Array[Double];
 var mc_t55: Double;
 var M: Array[Double];
 var mc_t83: Double;
 var mc_t56: Double;
-var mc_t57: Double;
+var mc_t57: Array[Double];
 var f: Double;
 var frx: Double;
 var fry: Double;
@@ -209,123 +326,6 @@ mc_t75 = mtimes(Vz, dT) ;
 Rz = Mix10.plus(mc_t74, mc_t75) ;
 }
 	    return [Fx as Any,Fy as Any,Fz as Any,Vx as Any,Vy as Any,Vz as Any];
-}
-
-}	static def drv_nb1d (scale: Double)
-	    {
-//%
-//%  Driver for the N-body problem coded using 1d arrays for the
-//%  displacement vectors.
-//%
-var seed: Double = 1;
-//%t1 = clock;
-var mc_t22: Double = .4;
-var mc_t1: Double = mpower(scale, mc_t22);
-var mc_t23: Double = 30;
-var mc_t0: Double = mtimes(mc_t1, mc_t23);
-var n: Double = round(mc_t0);
-//%floor(28*rand);
-var mc_t24: Double = .5;
-var mc_t25: Double = 0.0833;
-var dT: Double = mtimes(mc_t24, mc_t25);
-var mc_t26: Double = .5;
-var mc_t27: Double = 32.4362;
-var mc_t2: Double = mtimes(mc_t26, mc_t27);
-var mc_t3: Double = sqrt(scale);
-var T: Double = mtimes(mc_t2, mc_t3);
-var mc_t28: Double = 1;
-var mc_t29: Double = .1;
-val mc_t4: Array[Double] = new Array[Double](rand(n, mc_t28, mc_t29));
-var mc_t30: Double = 1000.23;
-val Rx: Array[Double] = new Array[Double](mtimes(mc_t4, mc_t30));
-var mc_t31: Double = 1;
-var mc_t32: Double = .4;
-val mc_t5: Array[Double] = new Array[Double](rand(n, mc_t31, mc_t32));
-var mc_t33: Double = 1000.23;
-val Ry: Array[Double] = new Array[Double](mtimes(mc_t5, mc_t33));
-var mc_t34: Double = 1;
-var mc_t35: Double = .9;
-val mc_t6: Array[Double] = new Array[Double](rand(n, mc_t34, mc_t35));
-var mc_t36: Double = 1000.23;
-val Rz: Array[Double] = new Array[Double](mtimes(mc_t6, mc_t36));
-var mc_t8: Double = n;
-var mc_t37: Double = .4;
-var mc_t9: Double = uminus(mc_t37);
-var mc_t38: Double = 1;
-val mc_t7: Array[Double] = new Array[Double](rand(mc_t8, mc_t38, mc_t9));
-var mc_t39: Double = 345;
-val m: Array[Double] = new Array[Double](mtimes(mc_t7, mc_t39));
-var Fx: Array[Double];
-var Fy: Array[Double];
-var Fz: Array[Double];
-var Vx: Array[Double];
-var Vy: Array[Double];
-var Vz: Array[Double];
-var _Fx_Fy_Fz_Vx_Vy_Vz: Array[Any];
-_Fx_Fy_Fz_Vx_Vy_Vz = nbody1d(n, Rx, Ry, Rz, m, dT, T) ;
-Fx = _Fx_Fy_Fz_Vx_Vy_Vz(0 as Int)as Array[Double] ;
-Fy = _Fx_Fy_Fz_Vx_Vy_Vz(1 as Int)as Array[Double] ;
-Fz = _Fx_Fy_Fz_Vx_Vy_Vz(2 as Int)as Array[Double] ;
-Vx = _Fx_Fy_Fz_Vx_Vy_Vz(3 as Int)as Array[Double] ;
-Vy = _Fx_Fy_Fz_Vx_Vy_Vz(4 as Int)as Array[Double] ;
-Vz = _Fx_Fy_Fz_Vx_Vy_Vz(5 as Int)as Array[Double] ;
-//%t2 = clock;
-//% Compute the running time in seconds
-//%time = (t2-t1)*[0 0 86400 3600 60 1]';
-//% Store the benchmark output
-var mc_t21: Array[Double];
-val mix10_pt_Fx: Point;
-	    mix10_pt_Fx = Point.make(0);
-val mix10_ptOff_Fx: Array[Double];
-	    mix10_ptOff_Fx = Fx;
-mc_t21 = new Array[Double](((Fx.region.min(0))..(Fx.region.max(0))), (p:Point(1))=>mix10_ptOff_Fx(p.operator-(mix10_pt_Fx)));
- ;
-var mc_t10: Double = mean(mc_t21);
-var mc_t20: Array[Double];
-val mix10_pt_Fy: Point;
-	    mix10_pt_Fy = Point.make(0);
-val mix10_ptOff_Fy: Array[Double];
-	    mix10_ptOff_Fy = Fy;
-mc_t20 = new Array[Double](((Fy.region.min(0))..(Fy.region.max(0))), (p:Point(1))=>mix10_ptOff_Fy(p.operator-(mix10_pt_Fy)));
- ;
-var mc_t11: Double = mean(mc_t20);
-var mc_t19: Array[Double];
-val mix10_pt_Fz: Point;
-	    mix10_pt_Fz = Point.make(0);
-val mix10_ptOff_Fz: Array[Double];
-	    mix10_ptOff_Fz = Fz;
-mc_t19 = new Array[Double](((Fz.region.min(0))..(Fz.region.max(0))), (p:Point(1))=>mix10_ptOff_Fz(p.operator-(mix10_pt_Fz)));
- ;
-var mc_t12: Double = mean(mc_t19);
-var mc_t18: Array[Double];
-val mix10_pt_Vx: Point;
-	    mix10_pt_Vx = Point.make(0);
-val mix10_ptOff_Vx: Array[Double];
-	    mix10_ptOff_Vx = Vx;
-mc_t18 = new Array[Double](((Vx.region.min(0))..(Vx.region.max(0))), (p:Point(1))=>mix10_ptOff_Vx(p.operator-(mix10_pt_Vx)));
- ;
-var mc_t13: Double = mean(mc_t18);
-var mc_t17: Array[Double];
-val mix10_pt_Vy: Point;
-	    mix10_pt_Vy = Point.make(0);
-val mix10_ptOff_Vy: Array[Double];
-	    mix10_ptOff_Vy = Vy;
-mc_t17 = new Array[Double](((Vy.region.min(0))..(Vy.region.max(0))), (p:Point(1))=>mix10_ptOff_Vy(p.operator-(mix10_pt_Vy)));
- ;
-var mc_t14: Double = mean(mc_t17);
-var mc_t16: Array[Double];
-val mix10_pt_Vz: Point;
-	    mix10_pt_Vz = Point.make(0);
-val mix10_ptOff_Vz: Array[Double];
-	    mix10_ptOff_Vz = Vz;
-mc_t16 = new Array[Double](((Vz.region.min(0))..(Vz.region.max(0))), (p:Point(1))=>mix10_ptOff_Vz(p.operator-(mix10_pt_Vz)));
- ;
-var mc_t15: Double = mean(mc_t16);
-val output: Array[Any] = [mc_t10 as Any ,mc_t11 as Any ,mc_t12 as Any ,mc_t13 as Any ,mc_t14 as Any ,mc_t15 as Any];
-//% No validation performed
-//%valid = 'N/A';
-var x: Double = 1;
-	    return x;
 }
 
 }
