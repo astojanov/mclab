@@ -1,4 +1,4 @@
-function [time, output, valid] = drv_capr(scale)
+function [cap] = drv_capr(scale)
 %%
 %% Driver to compute the capacitance of a transmission line using
 %% finite difference and Gauss-Seidel iteration.
@@ -19,17 +19,17 @@ for time = 1:scale*10
   cap = capacitor(a, b, c, d, n, tol, rel);
 end
 
-t2 = clock;
+%t2 = clock;
 
 % Compute the running time in seconds
-time = (t2-t1)*[0 0 86400 3600 60 1]';
+%time = (t2-t1)*[0 0 86400 3600 60 1]';
 
 disp(cap);
 disp(time);
 
 % Store the benchmark output
-output = {mean(cap(:))};
+%output = {mean(cap(:))};
 
 % No validation performed
-valid = 'N/A';
+%valid = 'N/A';
 
