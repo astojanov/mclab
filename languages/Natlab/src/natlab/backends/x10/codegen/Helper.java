@@ -123,7 +123,6 @@ public class Helper {
 //			if (null != ((AdvancedMatrixValue) temp).getisComplexInfo()){
 //				id_info.setisComplex(((AdvancedMatrixValue) temp).getisComplexInfo().toString());
 //			}
-//			
 			if (temp instanceof CellValue){
 				
 				
