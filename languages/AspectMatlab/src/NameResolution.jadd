@@ -15,7 +15,7 @@ Copyright 2011 of Jesse Doherty, Soroush Radpour and McGill University.
 
 */
 import natlab.LocalFunctionLookupInterface;
-import natlab.toolkits.filehandling.genericFile.*;
+import natlab.toolkits.filehandling.*;
 
 aspect NameResolutionAdditions
 {

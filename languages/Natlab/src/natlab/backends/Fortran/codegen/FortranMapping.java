@@ -3,45 +3,52 @@ package natlab.backends.Fortran.codegen;
 import java.util.*;
 
 public class FortranMapping {
-	private static HashMap<String, String> FortranTypeMap = new HashMap<String, String>();
-	private static HashMap<String, String> FortranBinOperatorMap = new HashMap<String, String>();
-	private static HashMap<String, String> FortranUnOperatorMap = new HashMap<String, String>();
-	private static HashMap<String, String> FortranDirectBuiltinMap = new HashMap<String, String>();
-	private static Set<String> FortranNoDirectBuiltinSet = new HashSet<String>();
-	private static HashMap<String, String> FortranBuiltinConstMap = new HashMap<String, String>();
-	private static HashMap<String, String> FortranIOOperationMap = new HashMap<String, String>();
 	
-	public FortranMapping(){
+	private static HashMap<String, String> FortranTypeMap = 
+			new HashMap<String, String>();
+	private static HashMap<String, String> FortranBinOperatorMap = 
+			new HashMap<String, String>();
+	private static HashMap<String, String> FortranUnOperatorMap = 
+			new HashMap<String, String>();
+	private static HashMap<String, String> FortranDirectBuiltinMap = 
+			new HashMap<String, String>();
+	private static Set<String> FortranNoDirectBuiltinSet = 
+			new HashSet<String>();
+	private static HashMap<String, String> FortranBuiltinConstMap = 
+			new HashMap<String, String>();
+	private static HashMap<String, String> FortranIOOperationMap = 
+			new HashMap<String, String>();
+	
+	public FortranMapping() {
 		makeFortranTypeMap();
-		makeFortranBinOperatorMap();
-		makeFortranUnOperatorMap();
+		makeFortranBinaryOperatorMap();
+		makeFortranUnaryOperatorMap();
 		makeFortranDirectBuiltinMap();
 		makeFortranNoDirectBuiltinSet();
 		makeFortranBuiltinConstMap();
 		makeFortranIOOperationMap();
 	}
 	
-	private void makeFortranTypeMap()
-	{
+	private void makeFortranTypeMap() {
+		/*
+		 * TODO Fortran has kind keyword.
+		 */
 		FortranTypeMap.put("char", "char");
-		FortranTypeMap.put("double", "real");
-		FortranTypeMap.put("int8", "Integer");
 		FortranTypeMap.put("logical", "logical");
-		FortranTypeMap.put("COMPLEX", "complex");
-		/*FortranTypeMap.put("single", "Float");
-		FortranTypeMap.put("int8", "Byte");
-		FortranTypeMap.put("int16", "Short");
-		FortranTypeMap.put("int32", "Int");
-		FortranTypeMap.put("int64", "Long");
-		FortranTypeMap.put("uint8", "UByte");
-		FortranTypeMap.put("uint16", "UShort");
-		FortranTypeMap.put("uint32", "UInt");
-		FortranTypeMap.put("uint64", "ULong");*/
-		
-
+		FortranTypeMap.put("complex", "complex");
+		FortranTypeMap.put("single", "real");
+		FortranTypeMap.put("double", "real");
+		FortranTypeMap.put("int8", "integer");
+		FortranTypeMap.put("int16", "integer");
+		FortranTypeMap.put("int32", "integer");
+		FortranTypeMap.put("int64", "integer");
+		FortranTypeMap.put("uint8", "integer");
+		FortranTypeMap.put("uint16", "integer");
+		FortranTypeMap.put("uint32", "integer");
+		FortranTypeMap.put("uint64", "integer");
 	}
 	
-	private void makeFortranBinOperatorMap(){
+	private void makeFortranBinaryOperatorMap() {
 		FortranBinOperatorMap.put("plus", "+");
 		FortranBinOperatorMap.put("minus", "-");
 		FortranBinOperatorMap.put("mtimes", "*");
@@ -61,16 +68,17 @@ public class FortranMapping {
 		FortranBinOperatorMap.put("eq", ".eq.");
 		FortranBinOperatorMap.put("ne", ".ne.");
 		FortranBinOperatorMap.put("not", "~");
-		
 	}
 	
-	private void makeFortranUnOperatorMap(){
+	private void makeFortranUnaryOperatorMap() {
 		FortranUnOperatorMap.put("uminus", "-");
 		FortranUnOperatorMap.put("uplus", "+");
 	}
 	
-	private void makeFortranDirectBuiltinMap(){
-		//TODO create a categorical map here 
+	private void makeFortranDirectBuiltinMap() {
+		/* 
+		 * TODO create a categorical map here 
+		 */
 		FortranDirectBuiltinMap.put("sqrt", "sqrt");	
 		FortranDirectBuiltinMap.put("sin", "sin");	
 		FortranDirectBuiltinMap.put("cos", "cos");
@@ -81,92 +89,79 @@ public class FortranMapping {
 		FortranDirectBuiltinMap.put("ceil", "ceiling");
 	}
 	
-	private void makeFortranNoDirectBuiltinSet(){
+	private void makeFortranNoDirectBuiltinSet() {
 		FortranNoDirectBuiltinSet.add("horzcat");
 		FortranNoDirectBuiltinSet.add("vertcat");
 		FortranNoDirectBuiltinSet.add("ones");
 		FortranNoDirectBuiltinSet.add("zeros");
 		FortranNoDirectBuiltinSet.add("colon");
 		FortranNoDirectBuiltinSet.add("randperm");
+		FortranNoDirectBuiltinSet.add("rand");
 	}
 	
-	private void makeFortranBuiltinConstMap(){
-		//TODO create a categorical map here 
+	private void makeFortranBuiltinConstMap() {
+		/* 
+		 * TODO create a categorical map here 
+		 */
 		FortranBuiltinConstMap.put("pi", "Math.PI");
 		FortranBuiltinConstMap.put("true", ".true.");
 		FortranBuiltinConstMap.put("false", ".false.");
 	}
 	
-	private void makeFortranIOOperationMap(){
+	private void makeFortranIOOperationMap() {
 		FortranIOOperationMap.put("disp", "print *, ");	
 	}
 	
-	public String getFortranTypeMapping(String mclassasKey){
+	public String getFortranTypeMapping(String mclassasKey) {
 		return FortranTypeMap.get(mclassasKey);
 	}
 	
-	public Boolean isFortranBinOperator(String expType){
-		if (true == FortranBinOperatorMap.containsKey(expType))
-			return true;
-		else
-			return false;
+	public Boolean isFortranBinOperator(String expType) {
+		if (FortranBinOperatorMap.containsKey(expType)) return true;
+		else return false;
 	}
 	
-	public String getFortranBinOpMapping(String Operator){
+	public String getFortranBinOpMapping(String Operator) {
 		return FortranBinOperatorMap.get(Operator);
+	}	
+	
+	public Boolean isFortranUnOperator(String expType) {
+		if (FortranUnOperatorMap.containsKey(expType)) return true;
+		else return false;
 	}
 	
-	
-	
-	public Boolean isFortranUnOperator(String expType){
-		if (true == FortranUnOperatorMap.containsKey(expType))
-			return true;
-		else
-			return false;
-	}
-	
-	public String getFortranUnOpMapping(String Operator){
+	public String getFortranUnOpMapping(String Operator) {
 		return FortranUnOperatorMap.get(Operator);
 	}
 	
-	public Boolean isFortranDirectBuiltin(String expType){
-		if (true == FortranDirectBuiltinMap.containsKey(expType))
-			return true;
-		else
-			return false;
+	public Boolean isFortranDirectBuiltin(String expType) {
+		if (FortranDirectBuiltinMap.containsKey(expType)) return true;
+		else return false;
 	}
 	
-	public String getFortranDirectBuiltinMapping (String BuiltinName){
-		
-		 return FortranDirectBuiltinMap.get(BuiltinName);
-		
+	public String getFortranDirectBuiltinMapping (String BuiltinName) {
+		 return FortranDirectBuiltinMap.get(BuiltinName);		
 	}
 	
-	public Boolean isFortranNoDirectBuiltin(String BuiltinName){
+	public Boolean isFortranNoDirectBuiltin(String BuiltinName) {
 		return FortranNoDirectBuiltinSet.contains(BuiltinName);
 	}
 	
-	public Boolean isBuiltinConst(String expType){
-		if (true == FortranBuiltinConstMap.containsKey(expType))
-			return true;
-		else
-			return false;
+	public Boolean isBuiltinConst(String expType) {
+		if (FortranBuiltinConstMap.containsKey(expType)) return true;
+		else return false;
 	}
 	
-	public String getFortranBuiltinConstMapping (String BuiltinName){
-		
-		 return FortranBuiltinConstMap.get(BuiltinName);
-		
+	public String getFortranBuiltinConstMapping (String BuiltinName) {
+		 return FortranBuiltinConstMap.get(BuiltinName);		
 	}
 	
-	public Boolean isFortranIOOperation(String expType){
-		if (true == FortranIOOperationMap.containsKey(expType))
-			return true;
-		else
-			return false;
+	public Boolean isFortranIOOperation(String expType) {
+		if (FortranIOOperationMap.containsKey(expType))	return true;
+		else return false;
 	}
 	
-	public String getFortranIOOperationMapping(String Operator){
+	public String getFortranIOOperationMapping(String Operator) {
 		return FortranIOOperationMap.get(Operator);
 	}
 }

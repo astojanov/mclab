@@ -96,6 +96,7 @@ public class AspectsEngine {
 	static final public String AM_CF_SCRIPT = "AM_CF_Script_";
 	static final public String AM_CF_VAR = "AM_CVar_";
 	static final public String AM_BE_VAR = "AM_tmpBE_";
+	static final public boolean DEBUG = true;
 
 	////////////////////////////////////////////////////////////////////////
 
@@ -145,25 +146,13 @@ public class AspectsEngine {
 	}
 
 	/*
-	/*
-	 * For every stmt node, check if var is function or variable
-	 
-	public static VFDatum checkVarOrFunNew(Stmt node, String target){
-		/*
-		java.util.List<ValueDatumPair<String, VFDatum>> fset = sfaMap.get(node).toList();
-
-		for(ValueDatumPair<String, VFDatum> vdp : fset){
-			if(vdp.getValue().compareTo(target) == 0)
-				return vdp.getDatum();
-		}
-
-		return vfa.getResult(node.getName());
-		//new ScriptVFDatum();
-	}
+	* Checks whether the Name corresponds to a variable or function using
+	* results of the flow analysis. Returns the result of the analysis
+	* for the given Name.
 	*/
-		public static VFDatum checkVarOrFun(Name n){
-			return vfa.getResult(n);
-		}
+	public static VFDatum checkVarOrFun(Name n){
+		return vfa.getResult(n);
+	}
 
 	///////////////////////////////////////////////////////////////////////
 
@@ -171,26 +160,35 @@ public class AspectsEngine {
 	 * Fetch aspect info from an aspect file
 	 * and populate different structures
 	 */
-	//TODO
 	public static void fetchAspectInfo(Program prog)
 	{ 	
 		Aspect aspect = (Aspect) prog;
 		aspectList.add(aspect.getName());
-
+		
+		//Add patterns from aspect files into a list of patterns
 		for(Patterns patterns : aspect.getPatterns())
 			for(Pattern pattern : patterns.getPatterns())
 			{
+				if(DEBUG){
+					System.out.println("Pattern found " + pattern.getName());
+				}
 				patternsListNew.put(pattern.getName(), pattern.getPD());
 			}
-
+		//Add actions from aspect files into a list of patterns
 		for(Actions lst : aspect.getActions())
 			for(AspectAction action : lst.getAspectActions())
 			{
+				
+				if(DEBUG){
+					System.out.println("Action found " + action.getName());
+				}
+				
 				String name = action.getName();
 				String type = action.getType();
 				String pattern = action.getPattern();
 				String modifiedName = generateActionName(aspect.getName(), name);
-
+				
+				//Create function for corresponding actions
 				Function fun = new Function();
 				if(type.compareTo(AROUND) != 0)
 					fun = new Function(new ast.List<Name>(), modifiedName, action.getSelectors(), new ast.List<HelpComment>(), action.getStmts(), action.getNestedFunctions());
@@ -361,6 +359,7 @@ public class AspectsEngine {
 
 	/*
 	 * Generate a function corresponding to an around action
+	 * Boolean isConvertProceed to indicate if a proceed must be converted
 	 */
 	private static Function createAroundFunction(String modifiedName, AspectAction action, boolean isConvertProceed){
 		ast.List<Name> output = new ast.List<Name>();
@@ -413,7 +412,9 @@ public class AspectsEngine {
 		ast.List<Name> input = new ast.List<Name>();
 		input.add(CF_INPUT_CASE);
 		if(isScript)
+		{
 			input.add(CF_INPUT_OBJ);
+		}
 		input.add(CF_INPUT_AGRS);
 
 		SwitchStmt ss = new SwitchStmt(new NameExpr(CF_INPUT_CASE), new ast.List<SwitchCaseBlock>(), new Opt<DefaultCaseBlock>());
@@ -579,13 +580,11 @@ public class AspectsEngine {
 					as_out.setLineNum(fs.getLineNum());
 
 					AssignStmt as_for = new AssignStmt();
-					//as_for.setRHS(new RangeExpr(new IntLiteralExpr(new DecIntNumericLiteralValue("1")), new Opt<Expr>(), new ParameterizedExpr(new NameExpr(new Name("numel")), new ast.List<Expr>().add(as_out.getLHS()))));
 					as_for.setRHS(new RangeExpr(new IntLiteralExpr(new DecIntNumericLiteralValue("1")), new Opt<Expr>(), new ParameterizedExpr(new NameExpr(new Name("length")), new ast.List<Expr>().add(new ParameterizedExpr(as_out.getLHS(), new ast.List<Expr>().add(new ColonExpr()).add(new ColonExpr()))))));
 					as_for.setLHS(new NameExpr(new Name(tmpFS)));
 					as_for.setWeavability(false, true);
 
 					AssignStmt as_in = new AssignStmt();
-					//as_in.setRHS(new ParameterizedExpr(new NameExpr(new Name(tmpAS)), new ast.List<Expr>().add(new NameExpr(new Name(tmpFS)))));
 					as_in.setRHS(new ParameterizedExpr(new NameExpr(new Name(tmpAS)), new ast.List<Expr>().add(new ColonExpr()).add(new NameExpr(new Name(tmpFS)))));
 					as_in.setLHS(as_old.getLHS());
 					as_in.setOutputSuppressed(true);
@@ -913,6 +912,7 @@ public class AspectsEngine {
 	 */ 
 	public static void weaveStmts(ast.List<Stmt> stmts)
 	{
+		
 		ASTNode node = stmts;
 		while(node != null && !(node instanceof Script))
 			node = node.getParent();
@@ -930,13 +930,15 @@ public class AspectsEngine {
 
 				if(rhs.getWeavability()) {
 					varName = rhs.FetchTargetExpr();
-					if(varName.compareTo("") != 0)  {
-						StringTokenizer st = new StringTokenizer(varName, ",");
-						while (st.hasMoreTokens()) {
-							String target = st.nextToken();
-							
-							count += exprMatchAndWeave(stmts, stmts.getIndexOfChild(stmt), target, es, VFDatum.BOT /*checkVarOrFun(es, target)*/, node != null ? true:false);
-						}
+					Iterator<NameExpr> nameExpressions = rhs.getNameExpressions().iterator();
+
+					while(nameExpressions.hasNext()){
+						NameExpr targetExpr = nameExpressions.next();
+						//System.out.println(targetExpr.getVarName() + ", " + checkVarOrFun(targetExpr.getName()) + " Is name node.");
+						String target = targetExpr.getVarName();
+						System.out.println(checkVarOrFun(targetExpr.getName()));
+						count += exprMatchAndWeave(stmts, stmts.getIndexOfChild(stmt), target, es, checkVarOrFun(targetExpr.getName()), node != null ? true:false);
+				
 					}
 				}
 
@@ -955,10 +957,6 @@ public class AspectsEngine {
 					if(lhs.getWeavability()) {
 						varName = lhs.FetchTargetExpr();
 						if(varName.compareTo("") != 0) {
-							//StringTokenizer st = new StringTokenizer(varName, ",");
-							//while (st.hasMoreTokens()) {
-							//	count += setMatchAndWeave(stmts, stmts.getIndexOfChild(as), st.nextToken(), as);
-							//}
 							count += setMatchAndWeave(stmts, stmts.getIndexOfChild(as), varName, as);
 						}
 					}
@@ -969,15 +967,18 @@ public class AspectsEngine {
 
 					if(rhs.getWeavability()) {
 						varName = rhs.FetchTargetExpr();
-						if(varName.compareTo("") != 0)  {
-							StringTokenizer st = new StringTokenizer(varName, ",");
-							while (st.hasMoreTokens()) {
-								
-								String target = st.nextToken();
-								
-								count += getOrCallMatchAndWeave(stmts, stmts.getIndexOfChild(as), target, as, VFDatum.BOT /*checkVarOrFunNew(as, target)*/, node != null ? true:false);
-							}
+						System.out.println(rhs.FetchTargetExpr() + " is target expr");
+						Iterator<NameExpr> nameExpressions = rhs.getNameExpressions().iterator();
+
+						while(nameExpressions.hasNext()){
+							NameExpr targetExpr = nameExpressions.next();
+							System.out.println(targetExpr.getVarName() + " Is value of name node.");
+							String target = targetExpr.getVarName();
+							System.out.println(checkVarOrFun(targetExpr.getName()));
+							count += getOrCallMatchAndWeave(stmts, stmts.getIndexOfChild(as), target, as, checkVarOrFun(targetExpr.getName()), node != null ? true:false);
+				
 						}
+					
 					}
 
 					s += count;
@@ -1000,7 +1001,9 @@ public class AspectsEngine {
 	/*
 	 * Matching & Weaving
 	 * SET: lhs of assignment statement
-	 * 
+	 * varName: name of variable to be woven on
+	 * context: location of the set
+	 * s: index of assignment statment (child) in statement list
 	 */
 	private static int setMatchAndWeave(ast.List<Stmt> stmts, int s, String varName, AssignStmt context) {
 		Expr rhs = context.getRHS();
@@ -1012,9 +1015,8 @@ public class AspectsEngine {
 
 		StringTokenizer st = new StringTokenizer(varName, ",");
 		int tokens = st.countTokens();
-		
 		if(rhs instanceof BinaryExpr){
-			bExprMatchAndWeave(stmts, s , varName,(BinaryExpr) rhs, VFDatum.BOT /*checkVarOrFunNew(context,"target")*/ , false);
+			bExprMatchAndWeave(stmts, s , varName,(BinaryExpr) rhs, VFDatum.BOT , false);
 			
 		}
 		while (st.hasMoreTokens()) {
@@ -1376,7 +1378,7 @@ public class AspectsEngine {
 	/*
 	 * Matching & Weaving
 	 * OP: binaryExpr 
-	 * 
+	 * To be deleted
 	 */
 	private static int bExprMatchAndWeave(ast.List<Stmt> stmts, int s, String target, BinaryExpr context, VFDatum varOrFun, boolean isScript){
 		return 0;
@@ -1388,6 +1390,8 @@ public class AspectsEngine {
 	
 	
 	private static int exprMatchAndWeave(ast.List<Stmt> stmts, int s, String target, ExprStmt context, VFDatum varOrFun, boolean isScript) {
+		
+		
 		Expr rhs = context.getExpr();
 		int acount = 0, bcount = 0, tcount = 0;
 		int args = rhs.FetchArgsCount();
@@ -1404,6 +1408,7 @@ public class AspectsEngine {
 
 			if(patternsListNew.containsKey(act.getPattern())) {
 				Expr pat = patternsListNew.get(act.getPattern());
+				
 
 				if(varOrFun.isVariable()) { //only match if target is variable
 					

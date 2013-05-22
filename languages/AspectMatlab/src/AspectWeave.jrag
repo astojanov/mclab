@@ -16,6 +16,7 @@ aspect AspectWeave {
 	eq FunctionList.aspectsWeave() {
 		for(Function func : getFunctions()) {
 			func.aspectsWeave();
+			System.out.println("Weaving function: " + func.getName());
 		}
 
 		return true;
@@ -24,7 +25,7 @@ aspect AspectWeave {
     eq Script.aspectsWeave() {
     	AspectsEngine.weaveStmts(getStmts());
 		AspectsEngine.weaveScript(this);
-		
+		System.out.println("Weaving script");
 		return true;
     } 
     
@@ -44,7 +45,8 @@ aspect AspectWeave {
     
     public void Function.aspectsWeave() {
     	if(!getName().startsWith("AM_Handle_")) {
-	    	AspectsEngine.weaveStmts(getStmts());
+	    	System.out.println("Weaving function: " + this.getName());
+			AspectsEngine.weaveStmts(getStmts());
 			AspectsEngine.weaveFunction(this);
 			
 	        for(Function fun : getNestedFunctions()) {

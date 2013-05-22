@@ -39,6 +39,7 @@ aspect AspectsCorrespondingFunctions {
        
     public void Function.aspectsCorrespondingFunctions() {       
     	//if(!getName().startsWith("AM_CF_")) {
+		System.out.println("Corresponding Function function: " + getName());
 	    	for(Stmt stmt : getStmts()) {
 	    		stmt.aspectsCorrespondingFunctions();
 	        }
@@ -269,13 +270,16 @@ aspect AspectsCorrespondingFunctions {
 	   if(parentStmt instanceof AssignStmt){
        		parentaStmt = (AssignStmt)parentStmt;
             stmtList = (ast.List) parentaStmt.getParent();
-       }else{
+       }else if(parentStmt instanceof ExprStmt){
        		parenteStmt = (ExprStmt)parentStmt;
             stmtList = (ast.List) parenteStmt.getParent();
+		}else{
+		return true;
       }
        
        if(getParent() instanceof AssignStmt){
-       		if(!("AM_tempBE".regionMatches(0,((NameExpr)((AssignStmt)getParent()).getLHS()).getName().getVarName(),0,3))){
+       		
+			if(((((AssignStmt)getParent()).getLHS()) instanceof NameExpr)&&!("AM_tempBE".regionMatches(0,((NameExpr)((AssignStmt)getParent()).getLHS()).getName().getVarName(),0,3))){
        		 	//Simplifying the highest level (AssignStmt lhs this)
       			 AspectsEngine.transformBinaryExpr(this,stmtList,stmtList.getIndexOfChild(parentaStmt));
        		}else{

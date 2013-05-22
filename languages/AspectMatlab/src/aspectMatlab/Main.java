@@ -47,7 +47,7 @@ public class Main
 
 			//Flags
 			if(file.compareTo("-version") == 0){ //version
-				System.out.println("Version 1.0");
+				System.out.println("Version 1.0.1");
 				continue;
 			} else if(file.compareTo("-h") == 0 || file.compareTo("-help") == 0){ //usage
 				displayUsage();
@@ -173,7 +173,7 @@ public class Main
 				//Clear rewrite analysis to protect aspect structures
 				for(int j = 0;j<p.getNumChild();j++){
 					//System.err.println();
-					//System.err.println("Program"+i+"node"+j);
+					//System.out.println("Program"+i+"node"+j);
 					ASTNode oldNode = p.getChild(j);
 					
 						//System.err.println(oldNode.toString());
@@ -241,7 +241,7 @@ public class Main
 					writer.close();
 				}catch(IOException e){
 					System.err.println("File "+p.getFileName()+" can not be opened!\nAborting");
-					System.exit(1);
+					
 				}
 			}
 
@@ -249,7 +249,7 @@ public class Main
 			System.err.println("--------------------------");
 		}
 		
-		System.exit(0);
+		
 	}
 
 	//Parse a given aspect file and return a Program ast node
@@ -298,50 +298,6 @@ public class Main
 			}
 		}
 	}
-/*	private static Program parseFile(String fName, Reader file, StringBuffer errBuf )
-	{
-		AspectsParser parser = new AspectsParser();
-		AspectsScanner scanner = null;
-		CommentBuffer cb = new CommentBuffer();
-
-		parser.setCommentBuffer(cb);
-
-		try{
-			scanner = new AspectsScanner( file );
-			scanner.setCommentBuffer( cb );
-			try{
-
-				Program prog = (Program)parser.parse(scanner);
-				if( parser.hasError() ){
-					for( String error : parser.getErrors())
-						errBuf.append(error + "\n");
-					prog = null;
-				}
-				return prog;
-
-			}catch(Parser.Exception e){
-				errBuf.append(e.getMessage());
-				for(String error : parser.getErrors()) {
-					errBuf.append(error + "\n");
-				}
-				return null;
-			} 
-		}catch(FileNotFoundException e){
-			errBuf.append( "File "+fName+" not found!\n" );
-			return null;
-		}
-		catch(IOException e){
-			errBuf.append( "Problem parsing "+fName + "\n");
-			if( e.getMessage() != null )
-				errBuf.append( e.getMessage() + "\n");
-			return null;
-		}
-		finally{
-			if(scanner != null) {
-				//scanner.stop();
-			}
-		}
-	}*/
 
 	//Prints out the usage
 	private static void displayUsage()
