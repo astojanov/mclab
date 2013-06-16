@@ -1,16 +1,9 @@
-package natlab.backends.Fortran.codegen.ASTcaseHandler;
-
-import java.util.List;
-import java.util.ArrayList;
+package natlab.backends.Fortran.codegen_simplified.astCaseHandler;
 
 import natlab.tame.tir.*;
-import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
-import natlab.tame.valueanalysis.aggrvalue.*;
 import natlab.tame.valueanalysis.components.constant.Constant;
-import natlab.tame.valueanalysis.components.shape.*;
-import natlab.tame.classes.reference.*;
-import natlab.backends.Fortran.codegen.*;
-import natlab.backends.Fortran.codegen.FortranAST.*;
+import natlab.backends.Fortran.codegen_simplified.*;
+import natlab.backends.Fortran.codegen_simplified.FortranAST_simplified.*;
 
 public class HandleCaseTIRAbstractAssignToVarStmt {
 	static boolean Debug = false;
@@ -47,7 +40,8 @@ public class HandleCaseTIRAbstractAssignToVarStmt {
 		 * for rhs, insert constant folding check.
 		 */
 		String rhsNodeString = node.getRHS().getNodeString();
-		if (fcg.getMatrixValue(rhsNodeString).hasConstant() 
+		if (!fcg.isCell(targetName) && fcg.hasSingleton(targetName) 
+				&& fcg.getMatrixValue(rhsNodeString).hasConstant() 
 				&& (!fcg.inArgs.contains(rhsNodeString)) 
 				&& fcg.tamerTmpVar.contains(rhsNodeString)) {
 			if (Debug) System.out.println(targetName+" is a constant");
@@ -58,6 +52,9 @@ public class HandleCaseTIRAbstractAssignToVarStmt {
 			if (fcg.inputHasChanged.contains(rhsNodeString)) 
 				stmt.setSourceVariable(rhsNodeString+"_copy");
 			else stmt.setSourceVariable(rhsNodeString);
+		}
+		if (fcg.isCell(rhsNodeString) || !fcg.hasSingleton(rhsNodeString)) {
+			fcg.forCellArr.put(targetName, fcg.forCellArr.get(rhsNodeString));
 		}
 		/*
 		 * TODO for lhs, insert runtime shape allocate check?

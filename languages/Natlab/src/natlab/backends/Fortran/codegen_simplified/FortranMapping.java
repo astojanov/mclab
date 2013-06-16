@@ -1,4 +1,4 @@
-package natlab.backends.Fortran.codegen;
+package natlab.backends.Fortran.codegen_simplified;
 
 import java.util.*;
 
@@ -33,7 +33,7 @@ public class FortranMapping {
 		/*
 		 * TODO Fortran has kind keyword.
 		 */
-		FortranTypeMap.put("char", "CHAR");
+		FortranTypeMap.put("char", "CHARACTER");
 		FortranTypeMap.put("logical", "LOGICAL");
 		FortranTypeMap.put("complex", "COMPLEX");
 		FortranTypeMap.put("single", "REAL");
@@ -99,6 +99,7 @@ public class FortranMapping {
 		FortranNoDirectBuiltinSet.add("zeros");
 		FortranNoDirectBuiltinSet.add("colon");
 		FortranNoDirectBuiltinSet.add("randperm");
+		FortranNoDirectBuiltinSet.add("cellhorzcat");
 		// FortranNoDirectBuiltinSet.add("rand");
 	}
 	
