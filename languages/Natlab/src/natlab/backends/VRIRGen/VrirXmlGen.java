@@ -2,6 +2,8 @@ package natlab.backends.VRIRGen;
 
 import java.util.Set;
 
+import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
+
 import ast.ASTNode;
 import ast.AndExpr;
 import ast.ArrayTransposeExpr;
@@ -95,23 +97,85 @@ import ast.UMinusExpr;
 import ast.UPlusExpr;
 import ast.UnaryExpr;
 import ast.WhileStmt;
+import natlab.tame.valueanalysis.ValueAnalysis;
+import natlab.tame.valueanalysis.ValueFlowMap;
+import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
+import natlab.tame.valueanalysis.aggrvalue.AggrValue;
 import nodecases.natlab.NatlabAbstractNodeCaseHandler;
 
 public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 
 	private StringBuffer prettyPrintedCode = null;
 	private Set<String> remainingVars;
+	private ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis;
+	private ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet;
+	private int size;
+	private int index;
 
-	VrirXmlGen(Function functionNode, Set<String> remainVars) {
+	VrirXmlGen(Function functionNode, Set<String> remainVars,
+			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
+			ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet,
+			int size, int index) {
 		prettyPrintedCode = new StringBuffer();
-		functionNode.analyze(this);
 		remainingVars = remainVars;
+		this.analysis = analysis;
+		this.currentOutSet = currentOutSet;
+		this.size = size;
+		this.index = index;
+
+		functionNode.analyze(this);
+
+	}
+
+	public Set<String> getRemainingVars() {
+		return remainingVars;
+	}
+
+	public void setRemainingVars(Set<String> remainingVars) {
+		this.remainingVars = remainingVars;
+	}
+
+	public ValueAnalysis<AggrValue<AdvancedMatrixValue>> getAnalysis() {
+		return analysis;
+	}
+
+	public void setAnalysis(
+			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis) {
+		this.analysis = analysis;
+	}
+
+	public ValueFlowMap<AggrValue<AdvancedMatrixValue>> getCurrentOutSet() {
+		return currentOutSet;
+	}
+
+	public void setCurrentOutSet(
+			ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet) {
+		this.currentOutSet = currentOutSet;
+	}
+
+	public int getSize() {
+		return size;
+	}
+
+	public void setSize(int size) {
+		this.size = size;
+	}
+
+	public int getIndex() {
+		return index;
+	}
+
+	public void setIndex(int index) {
+		this.index = index;
+	}
+
+	public void setPrettyPrintedCode(StringBuffer prettyPrintedCode) {
+		this.prettyPrintedCode = prettyPrintedCode;
 	}
 
 	@Override
 	@SuppressWarnings("rawtypes")
 	public void caseASTNode(ASTNode node) {
-		System.out.println("xml gen is called");
 
 	}
 
@@ -172,6 +236,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseSwitchCaseBlock(SwitchCaseBlock node) {
+
 		caseASTNode(node);
 	}
 
@@ -252,7 +317,12 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseFunction(Function node) {
-		caseFunctionOrSignatureOrPropertyAccessOrStmt(node);
+		// caseFunctionOrSignatureOrPropertyAccessOrStmt(node);
+		for (Name sym : node.getInputParams()) {
+			FunctionCaseHandler.handleArgs(node, this);
+
+		}
+
 	}
 
 	public void caseOneLineHelpComment(OneLineHelpComment node) {
@@ -491,8 +561,16 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 		caseStmt(node);
 	}
 
-	public static StringBuffer generateVrir(Function functionNode,Set<String> remainingVars) {
-		return (new VrirXmlGen(functionNode,remainingVars)).getPrettyPrintedCode();
+	public static StringBuffer generateVrir(Function functionNode,
+			Set<String> remainingVars,
+			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
+			ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet,
+			int index, int size) {
+		if (analysis == null) {
+			System.out.println("problem in generatevrir");
+		}
+		return (new VrirXmlGen(functionNode, remainingVars, analysis,
+				currentOutSet, size, index)).getPrettyPrintedCode();
 	}
 
 	public StringBuffer getPrettyPrintedCode() {

@@ -3,12 +3,14 @@ package natlab.backends.VRIRGen;
 import java.util.Set;
 
 import natlab.backends.Fortran.codegen_readable.FortranCodeASTGenerator;
+import natlab.tame.AdvancedTamerTool;
 import natlab.tame.BasicTamerTool;
 import natlab.tame.callgraph.StaticFunction;
 import natlab.tame.tamerplus.analysis.AnalysisEngine;
 import natlab.tame.tamerplus.transformation.TransformationEngine;
 import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.ValueFlowMap;
+import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
 import natlab.tame.valueanalysis.aggrvalue.AggrValue;
 import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
 import natlab.toolkits.filehandling.GenericFile;
@@ -32,16 +34,20 @@ public class Main {
 		GenericFile gFile = GenericFile.create(fileIn);
 		FileEnvironment env = new FileEnvironment(gFile); // get path
 															// environment obj
-		BasicTamerTool tool = new BasicTamerTool();
-		ValueAnalysis<AggrValue<BasicMatrixValue>> analysis = tool.analyze(
+		AdvancedTamerTool tool = new AdvancedTamerTool();
+		ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis = tool.analyze(
 				args, env);
+		if (analysis == null) {
+			System.out.println("problem from the start");
+
+		}
 		int size = analysis.getNodeList().size();
 
 		for (int i = 0; i < size; i++) {
 			/*
 			 * type inference.
 			 */
-			ValueFlowMap<AggrValue<BasicMatrixValue>> currentOutSet = analysis
+			ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet = analysis
 					.getNodeList().get(i).getAnalysis().getCurrentOutSet();
 			// System.err.println(currentOutSet);
 			/*
@@ -70,10 +76,9 @@ public class Main {
 			System.err
 					.println("pretty print the generated VRIR in XML format  .\n");
 			StringBuffer sb = new StringBuffer();
-			// FortranCodeASTGenerator.FortranProgramGen(
-			// (Function)fTree, currentOutSet, remainingVars)
-			// .pp(sb);
-			VrirXmlGen.generateVrir((Function) fTree,remainingVars);
+
+			VrirXmlGen.generateVrir((Function) fTree, remainingVars, analysis,
+					currentOutSet, i, size);
 
 			System.err.println(sb);
 		}
