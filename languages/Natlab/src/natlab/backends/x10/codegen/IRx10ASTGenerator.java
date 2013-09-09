@@ -145,6 +145,9 @@ public class IRx10ASTGenerator extends TIRAbstractNodeCaseHandler {
 			subAST = new IRx10ASTGenerator(analysis2, graphSize, i, listOfUsedBuiltins.get(i), fileDir,
 					classname);
 			methodList.add(subAST.method);
+			for (IDInfo value : subAST.symbolMap.values()){
+				
+			}
 			
 			for (IDInfo value : subAST.symbolMap.values()){
 				if (null != value.getdidShapeChange() && true == value.getdidShapeChange()){
