@@ -106,6 +106,8 @@ import nodecases.natlab.NatlabAbstractNodeCaseHandler;
 public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 
 	private StringBuffer prettyPrintedCode = null;
+	private StringBuffer bodyCode;
+
 	private Set<String> remainingVars;
 	private ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis;
 	private ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet;
@@ -125,6 +127,14 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 
 		functionNode.analyze(this);
 
+	}
+
+	public void appendToPrettyCode(StringBuffer buff) {
+		prettyPrintedCode.append(buff);
+	}
+
+	public void appendToPrettyCode(String buff) {
+		prettyPrintedCode.append(buff);
 	}
 
 	public Set<String> getRemainingVars() {
@@ -301,7 +311,6 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseMethods(Methods node) {
-		caseClassBody(node);
 	}
 
 	public void caseSignature(Signature node) {
@@ -318,10 +327,8 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 
 	public void caseFunction(Function node) {
 		// caseFunctionOrSignatureOrPropertyAccessOrStmt(node);
-		for (Name sym : node.getInputParams()) {
-			FunctionCaseHandler.handleArgs(node, this);
-
-		}
+		FunctionCaseHandler.handleHeader(node, this);
+		FunctionCaseHandler.handleTail(node, this);
 
 	}
 

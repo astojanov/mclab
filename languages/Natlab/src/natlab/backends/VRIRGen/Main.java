@@ -75,10 +75,10 @@ public class Main {
 			 */
 			System.err
 					.println("pretty print the generated VRIR in XML format  .\n");
-			StringBuffer sb = new StringBuffer();
+			StringBuffer sb;
 
-			VrirXmlGen.generateVrir((Function) fTree, remainingVars, analysis,
-					currentOutSet, i, size);
+			sb = VrirXmlGen.generateVrir((Function) fTree, remainingVars,
+					analysis, currentOutSet, i, size);
 
 			System.err.println(sb);
 		}
