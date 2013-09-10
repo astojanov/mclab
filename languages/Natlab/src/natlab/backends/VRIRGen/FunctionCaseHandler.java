@@ -17,7 +17,7 @@ public class FunctionCaseHandler {
 
 			VType vtype = HelperClass.generateVType(analysis, gen.getIndex(),
 					node, param, i);
-			System.out.println(vtype.toXML());
+			
 		}
 
 	}
