@@ -348,9 +348,9 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseAssignStmt(AssignStmt node) {
-	
+		StmtCaseHandler.handleAssgnStmt(node, this);
 		caseStmt(node);
-		
+
 	}
 
 	public void caseGlobalStmt(GlobalStmt node) {
