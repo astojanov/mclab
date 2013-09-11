@@ -4,10 +4,29 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SymbolTable {
+
 	private Map<String, Symbol> symbolMap;
+	private int currentId;
+
+	public int getCurrentId() {
+		return currentId;
+	}
+
+	public void setCurrentId(int id) {
+		this.currentId = id;
+	}
+
+	public int getId(String name) {
+		return symbolMap.get(name).getId();
+	}
+
+	public void incId() {
+		currentId++;
+	}
 
 	public SymbolTable() {
 		symbolMap = new HashMap<String, Symbol>();
+		currentId = 0;
 	}
 
 	public Symbol getSymbol(String name) {
@@ -16,6 +35,12 @@ public class SymbolTable {
 
 	public void putSymbol(VType vtype, String name, int id) {
 		symbolMap.put(name, new Symbol(vtype, name, id));
+		this.currentId = id;
+	}
+
+	public void putSymbol(VType vtype, String name) {
+		symbolMap.put(name, new Symbol(vtype, name, getCurrentId()));
+		incId();
 	}
 
 	public void putSymbol(String name, Symbol sym) {
@@ -30,4 +55,13 @@ public class SymbolTable {
 		this.symbolMap = symbolMap;
 	}
 
+	public StringBuffer toXML() {
+		StringBuffer xmlBuff = new StringBuffer();
+		xmlBuff.append("<symtable>\n");
+		for (Symbol sym : symbolMap.values()) {
+			sym.toXML();
+		}
+		return xmlBuff.append("</symtable>\n");
+
+	}
 }

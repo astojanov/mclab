@@ -328,6 +328,9 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	public void caseFunction(Function node) {
 		// caseFunctionOrSignatureOrPropertyAccessOrStmt(node);
 		FunctionCaseHandler.handleHeader(node, this);
+		for (int i = 0; i < node.getNumChild(); i++) {
+			node.analyze(this);
+		}
 		FunctionCaseHandler.handleTail(node, this);
 
 	}
@@ -345,7 +348,9 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseAssignStmt(AssignStmt node) {
+	
 		caseStmt(node);
+		
 	}
 
 	public void caseGlobalStmt(GlobalStmt node) {
