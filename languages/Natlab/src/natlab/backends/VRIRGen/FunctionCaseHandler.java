@@ -25,6 +25,7 @@ public class FunctionCaseHandler {
 
 			VType vtype = HelperClass.generateVType(analysis, gen.getIndex(),
 					node, param, i);
+			gen.addToSymTab(vtype, param.getID());
 			gen.appendToPrettyCode(vtype.toXML());
 		}
 		gen.appendToPrettyCode("</intypes>\n");
@@ -33,6 +34,7 @@ public class FunctionCaseHandler {
 			Name param = node.getOutputParam(i);
 			VType vtype = HelperClass.generateVType(analysis, gen.getIndex(),
 					node, param, i);
+			gen.addToSymTab(vtype, param.getID());
 			gen.appendToPrettyCode(vtype.toXML());
 		}
 		gen.appendToPrettyCode("</outtypes>\n");

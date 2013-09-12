@@ -5,7 +5,7 @@ import ast.EmptyStmt;
 import ast.List;
 
 public class StmtCaseHandler {
-	public static void handleAssgnStmt(AssignStmt node, VrirXmlGen gen) {
+	public static void handleAssignStmt(AssignStmt node, VrirXmlGen gen) {
 		toXMLHead("assgnstmt", gen);
 		node.getLHS().analyze(gen);
 		node.getRHS().analyze(gen);
