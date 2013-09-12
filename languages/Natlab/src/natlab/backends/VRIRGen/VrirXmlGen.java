@@ -192,6 +192,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	@Override
 	@SuppressWarnings("rawtypes")
 	public void caseList(List node) {
+		StmtCaseHandler.handleList(node, this);
 		caseASTNode(node);
 	}
 
@@ -328,8 +329,10 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	public void caseFunction(Function node) {
 		// caseFunctionOrSignatureOrPropertyAccessOrStmt(node);
 		FunctionCaseHandler.handleHeader(node, this);
+		System.out.println("number of children" + node.getNumChild());
 		for (int i = 0; i < node.getNumChild(); i++) {
-			node.analyze(this);
+
+			node.getChild(i).analyze(this);
 		}
 		FunctionCaseHandler.handleTail(node, this);
 
@@ -349,7 +352,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 
 	public void caseAssignStmt(AssignStmt node) {
 		StmtCaseHandler.handleAssgnStmt(node, this);
-		caseStmt(node);
+		// caseStmt(node);
 
 	}
 
