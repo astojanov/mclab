@@ -67,6 +67,7 @@ public class Main {
 			Set<String> remainingVars = analysisEngine
 					.getTemporaryVariablesRemovalAnalysis()
 					.getRemainingVariablesNames();
+			
 			System.out.println("\ntamer plus analysis result: \n"
 					+ fTree.getPrettyPrinted() + "\n");
 			// System.err.println("remaining variables: \n"+remainingVars);

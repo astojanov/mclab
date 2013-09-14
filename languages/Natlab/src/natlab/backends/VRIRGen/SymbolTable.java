@@ -55,11 +55,16 @@ public class SymbolTable {
 		this.symbolMap = symbolMap;
 	}
 
+	public boolean contains(String name) {
+		return symbolMap.containsKey(name);
+	}
+
 	public StringBuffer toXML() {
 		StringBuffer xmlBuff = new StringBuffer();
 		xmlBuff.append("<symtable>\n");
 		for (Symbol sym : symbolMap.values()) {
-			sym.toXML();
+
+			xmlBuff.append(sym.toXML());
 		}
 		return xmlBuff.append("</symtable>\n");
 

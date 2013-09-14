@@ -99,14 +99,16 @@ import ast.UnaryExpr;
 import ast.WhileStmt;
 import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.ValueFlowMap;
+import natlab.tame.valueanalysis.ValueSet;
 import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
 import natlab.tame.valueanalysis.aggrvalue.AggrValue;
+import natlab.tame.valueanalysis.components.shape.Shape;
 import nodecases.natlab.NatlabAbstractNodeCaseHandler;
 
 public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 
 	private StringBuffer prettyPrintedCode = null;
-	private StringBuffer bodyCode;
+	// private StringBuffer bodyCode;
 	private SymbolTable symTab;
 	private Set<String> remainingVars;
 	private ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis;
@@ -343,6 +345,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 
 			stmt.analyze(this);
 		}
+		this.appendToPrettyCode(symTab.toXML());
 
 		FunctionCaseHandler.handleTail(node, this);
 
@@ -361,8 +364,9 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseAssignStmt(AssignStmt node) {
+
 		StmtCaseHandler.handleAssignStmt(node, this);
-		node.getLHS().analyze(this);
+
 		// caseStmt(node);
 
 	}
@@ -428,8 +432,13 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseNameExpr(NameExpr node) {
-		// caseLValueExpr(node);
-
+		VType vtype = HelperClass.generateVType(analysis, getIndex(),
+				node.getName());
+		if (!symTab.contains(node.getName().getID())) {
+			symTab.putSymbol(vtype, node.getName().getID());
+		}
+		int id = symTab.getId(node.getName().getID());
+		ExprCaseHandler.handleNameExpr(node, this);
 	}
 
 	public void caseParameterizedExpr(ParameterizedExpr node) {

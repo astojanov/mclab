@@ -6,9 +6,13 @@ import ast.List;
 
 public class StmtCaseHandler {
 	public static void handleAssignStmt(AssignStmt node, VrirXmlGen gen) {
-		toXMLHead("assgnstmt", gen);
+		toXMLHead("assignstmt", gen);
+		gen.appendToPrettyCode("<lhs>\n");
 		node.getLHS().analyze(gen);
+		gen.appendToPrettyCode("</lhs>\n");
+		gen.appendToPrettyCode("<rhs>\n");
 		node.getRHS().analyze(gen);
+		gen.appendToPrettyCode("</rhs>\n");
 		toXMLTail(gen);
 	}
 
