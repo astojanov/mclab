@@ -442,6 +442,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseParameterizedExpr(ParameterizedExpr node) {
+		System.out.println("var name  " + node.getVarName());
 		caseLValueExpr(node);
 	}
 
@@ -498,6 +499,8 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void casePlusExpr(PlusExpr node) {
+		System.out.println("plus expression");
+		ExprCaseHandler.handlePlusExpr(node, this);
 		caseBinaryExpr(node);
 	}
 
