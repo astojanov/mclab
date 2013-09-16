@@ -442,7 +442,13 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseParameterizedExpr(ParameterizedExpr node) {
-		System.out.println("var name  " + node.getVarName());
+		System.out.println("name " + node.getVarName());
+		if (remainingVars.contains(node.getVarName())) {
+
+			System.out.println("variable");
+		} else {
+
+		}
 		caseLValueExpr(node);
 	}
 

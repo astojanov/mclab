@@ -2,6 +2,7 @@ package natlab.backends.VRIRGen;
 
 import ast.Function;
 import ast.Name;
+import ast.ParameterizedExpr;
 import natlab.tame.classes.reference.PrimitiveClassReference;
 import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
@@ -65,5 +66,28 @@ public class HelperClass {
 		}
 
 		return null;
+	}
+
+	public static boolean isOperator(ParameterizedExpr node) {
+		if (node.getVarName().trim().equalsIgnoreCase("plus")) {
+			return true;
+		}
+		if (node.getVarName().trim().equalsIgnoreCase("minus")) {
+			return true;
+		}
+		if (node.getVarName().trim().equalsIgnoreCase("mtimes")) {
+			return true;
+		}
+		if (node.getVarName().trim().equalsIgnoreCase("times")) {
+			return true;
+		}
+		if (node.getVarName().trim().equalsIgnoreCase("mrdiv")) {
+			return true;
+		}
+		if (node.getVarName().trim().equalsIgnoreCase("rdiv")) {
+			return true;
+		}
+		
+		return false;
 	}
 }
