@@ -8,11 +8,11 @@ public class StmtCaseHandler {
 	public static void handleAssignStmt(AssignStmt node, VrirXmlGen gen) {
 		toXMLHead("assignstmt", gen);
 		gen.appendToPrettyCode("<lhs>\n");
-		System.out.println("LHS" + node.getLHS().getClass().toString());
+
 		node.getLHS().analyze(gen);
 		gen.appendToPrettyCode("</lhs>\n");
 		gen.appendToPrettyCode("<rhs>\n");
-		System.out.println("RHS" + node.getRHS().getClass().toString());
+
 		node.getRHS().analyze(gen);
 		gen.appendToPrettyCode("</rhs>\n");
 		toXMLTail(gen);

@@ -15,6 +15,8 @@ public class OperatorMapper {
 		// TODO: need to check all divisions and then add them
 		// TODO: check equivalents for Unary operators
 		opMap.put("uplus", "");
+		opMap.put("uminus", "negate");
+		opMap.put("not", "not");
 	}
 
 	public static boolean isOperator(String name) {
@@ -32,4 +34,5 @@ public class OperatorMapper {
 	public static String get(String key) {
 		return opMap.get(key);
 	}
+
 }

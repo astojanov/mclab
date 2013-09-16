@@ -437,17 +437,21 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 		if (!symTab.contains(node.getName().getID())) {
 			symTab.putSymbol(vtype, node.getName().getID());
 		}
-		int id = symTab.getId(node.getName().getID());
 		ExprCaseHandler.handleNameExpr(node, this);
 	}
 
 	public void caseParameterizedExpr(ParameterizedExpr node) {
-		System.out.println("name " + node.getVarName());
+		System.out.println(node.getVarName());
 		if (remainingVars.contains(node.getVarName())) {
 
-			System.out.println("variable");
 		} else {
+			// Function call
 
+			if (OperatorMapper.isOperator(node.getVarName())) {
+				// Binary operator
+				ExprCaseHandler.handleOpExpr(node, this, node.getVarName());
+				// ExprCaseHandler.handlePlusExpr(node, this);
+			}
 		}
 		caseLValueExpr(node);
 	}
@@ -505,9 +509,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void casePlusExpr(PlusExpr node) {
-		System.out.println("plus expression");
-		ExprCaseHandler.handlePlusExpr(node, this);
-		caseBinaryExpr(node);
+
 	}
 
 	public void caseMinusExpr(MinusExpr node) {
