@@ -404,6 +404,8 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseWhileStmt(WhileStmt node) {
+
+		StmtCaseHandler.handleWhileStmt(node, this);
 		caseStmt(node);
 	}
 
@@ -416,6 +418,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseIfStmt(IfStmt node) {
+		
 		caseStmt(node);
 	}
 
@@ -441,7 +444,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseParameterizedExpr(ParameterizedExpr node) {
-		System.out.println(node.getVarName());
+
 		if (remainingVars.contains(node.getVarName())) {
 
 		} else {
@@ -477,7 +480,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseIntLiteralExpr(IntLiteralExpr node) {
-		System.out.println("literal   " + node.getValue().getValue());
+
 		ExprCaseHandler.handleIntLiteralExpr(node, this);
 		caseLiteralExpr(node);
 	}
