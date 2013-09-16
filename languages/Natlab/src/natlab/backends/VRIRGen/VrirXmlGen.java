@@ -99,10 +99,10 @@ import ast.UnaryExpr;
 import ast.WhileStmt;
 import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.ValueFlowMap;
-import natlab.tame.valueanalysis.ValueSet;
+
 import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
 import natlab.tame.valueanalysis.aggrvalue.AggrValue;
-import natlab.tame.valueanalysis.components.shape.Shape;
+
 import nodecases.natlab.NatlabAbstractNodeCaseHandler;
 
 public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
@@ -115,6 +115,23 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	private ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet;
 	private int size;
 	private int index;
+	private int indent = 1;
+
+	public int getIndent() {
+		return indent;
+	}
+
+	public void setIndent(int indent) {
+		this.indent = indent;
+	}
+
+	public void incIndent() {
+		indent++;
+	}
+
+	public void decIndent() {
+		indent--;
+	}
 
 	VrirXmlGen(Function functionNode, Set<String> remainVars,
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
@@ -127,6 +144,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 		this.size = size;
 		this.index = index;
 		symTab = new SymbolTable();
+		indent = 0;
 		functionNode.analyze(this);
 
 	}
@@ -388,12 +406,12 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseContinueStmt(ContinueStmt node) {
-		
+
 		caseStmt(node);
 	}
 
 	public void caseReturnStmt(ReturnStmt node) {
-		
+
 		caseStmt(node);
 	}
 
@@ -422,7 +440,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 
 	public void caseIfStmt(IfStmt node) {
 		StmtCaseHandler.handleIfStmt(node, this);
-		
+
 		caseStmt(node);
 	}
 
