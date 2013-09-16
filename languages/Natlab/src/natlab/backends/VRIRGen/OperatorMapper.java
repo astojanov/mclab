@@ -13,6 +13,14 @@ public class OperatorMapper {
 		opMap.put("mtimes", "mmult");
 		opMap.put("times", "mult");
 		opMap.put("mrdivide", "div");
+		opMap.put("and", "and");
+		opMap.put("or", "or");
+		// TODO : to be entered
+		opMap.put("eq", "");
+		opMap.put("leq", "leq");
+		opMap.put("geq", "geq");
+		opMap.put("lt", "lt");
+		opMap.put("gt", "gt");
 		// TODO: need to check all divisions and then add them
 		// TODO: check equivalents for Unary operators
 		opMap.put("uplus", "");
