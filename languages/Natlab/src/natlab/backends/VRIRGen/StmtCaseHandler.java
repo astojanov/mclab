@@ -2,13 +2,16 @@ package natlab.backends.VRIRGen;
 
 import ast.AssignStmt;
 import ast.EmptyStmt;
+import ast.IfBlock;
 import ast.IfStmt;
 import ast.List;
+import ast.Stmt;
+import ast.SwitchStmt;
 import ast.WhileStmt;
 
 public class StmtCaseHandler {
 	public static void handleAssignStmt(AssignStmt node, VrirXmlGen gen) {
-		toXMLHead("assignstmt");
+		gen.appendToPrettyCode(toXMLHead("assignstmt"));
 		gen.appendToPrettyCode("<lhs>\n");
 
 		node.getLHS().analyze(gen);
@@ -35,9 +38,28 @@ public class StmtCaseHandler {
 	}
 
 	public static void handleIfStmt(IfStmt node, VrirXmlGen gen) {
-		System.out.println("if block"
-				+ node.getIfBlock(0).getClass().toString());
-		
+		for (IfBlock ifblock : node.getIfBlockList()) {
+
+			gen.appendToPrettyCode(toXMLHead("ifstmt"));
+			ifblock.getCondition().analyze(gen);
+			gen.appendToPrettyCode("<if>\n");
+			gen.appendToPrettyCode(toXMLHead("stmtlist"));
+			for (Stmt stmt : ifblock.getStmtList()) {
+				System.out.println("statement " + stmt.getClass().toString());
+				stmt.analyze(gen);
+			}
+			gen.appendToPrettyCode(toXMLTail());
+			gen.appendToPrettyCode("</if>\n");
+
+		}
+		if (node.hasElseBlock()) {
+			gen.appendToPrettyCode("<else>\n");
+			for (Stmt stmt : node.getElseBlock().getStmtList()) {
+				stmt.analyze(gen);
+			}
+			gen.appendToPrettyCode("</else>\n");
+		}
+		gen.appendToPrettyCode(toXMLTail());
 	}
 
 	public static void handleList(List node, VrirXmlGen gen) {

@@ -388,10 +388,12 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseContinueStmt(ContinueStmt node) {
+		
 		caseStmt(node);
 	}
 
 	public void caseReturnStmt(ReturnStmt node) {
+		
 		caseStmt(node);
 	}
 
@@ -414,10 +416,12 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseSwitchStmt(SwitchStmt node) {
+
 		caseStmt(node);
 	}
 
 	public void caseIfStmt(IfStmt node) {
+		StmtCaseHandler.handleIfStmt(node, this);
 		
 		caseStmt(node);
 	}
