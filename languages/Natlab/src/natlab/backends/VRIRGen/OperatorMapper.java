@@ -10,7 +10,8 @@ public class OperatorMapper {
 		opMap = new HashMap<String, String>();
 		opMap.put("plus", "plus");
 		opMap.put("minus", "minus");
-		opMap.put("mtimes", "mult");
+		opMap.put("mtimes", "mmult");
+		opMap.put("times", "mult");
 		opMap.put("mrdivide", "div");
 		// TODO: need to check all divisions and then add them
 		// TODO: check equivalents for Unary operators

@@ -453,7 +453,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 				// ExprCaseHandler.handlePlusExpr(node, this);
 			}
 		}
-		caseLValueExpr(node);
+		// caseLValueExpr(node);
 	}
 
 	public void caseCellIndexExpr(CellIndexExpr node) {
@@ -477,14 +477,18 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseIntLiteralExpr(IntLiteralExpr node) {
+		System.out.println("literal   " + node.getValue().getValue());
+		ExprCaseHandler.handleIntLiteralExpr(node, this);
 		caseLiteralExpr(node);
 	}
 
 	public void caseFPLiteralExpr(FPLiteralExpr node) {
+		ExprCaseHandler.handleFpLiteralExpr(node, this);
 		caseLiteralExpr(node);
 	}
 
 	public void caseStringLiteralExpr(StringLiteralExpr node) {
+		ExprCaseHandler.handleStringLiteralExpr(node, this);
 		caseLiteralExpr(node);
 	}
 
