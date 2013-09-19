@@ -2,8 +2,6 @@ package natlab.backends.VRIRGen;
 
 import java.util.Set;
 
-import com.sun.org.apache.xalan.internal.xsltc.compiler.sym;
-
 import ast.ASTNode;
 import ast.AndExpr;
 import ast.ArrayTransposeExpr;
@@ -136,7 +134,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	VrirXmlGen(Function functionNode, Set<String> remainVars,
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
 			ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet,
-			int size, int index) {
+			int size, int index, String moduleName) {
 		prettyPrintedCode = new StringBuffer();
 		remainingVars = remainVars;
 		this.analysis = analysis;
@@ -145,8 +143,17 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 		this.index = index;
 		symTab = new SymbolTable();
 		indent = 0;
+		genModuleXMLHead(moduleName);
 		functionNode.analyze(this);
+		genModuleXMLTail();
+	}
 
+	public void genModuleXMLHead(String moduleName) {
+		this.appendToPrettyCode("<module name=\"" + moduleName + "\">\n");
+	}
+
+	public void genModuleXMLTail() {
+		this.appendToPrettyCode("</module>\n");
 	}
 
 	public void addToSymTab(VType vtype, String name) {
@@ -476,6 +483,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 				// Binary operator
 				ExprCaseHandler.handleOpExpr(node, this, node.getVarName());
 				// ExprCaseHandler.handlePlusExpr(node, this);
+
 			}
 		}
 		// caseLValueExpr(node);
@@ -641,12 +649,9 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 			Set<String> remainingVars,
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
 			ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet,
-			int index, int size) {
-		if (analysis == null) {
-			System.out.println("problem in generatevrir");
-		}
+			int index, int size, String moduleName) {
 		return (new VrirXmlGen(functionNode, remainingVars, analysis,
-				currentOutSet, size, index)).getPrettyPrintedCode();
+				currentOutSet, size, index, moduleName)).getPrettyPrintedCode();
 	}
 
 	public StringBuffer getPrettyPrintedCode() {

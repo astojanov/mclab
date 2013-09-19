@@ -52,43 +52,8 @@ public class VType {
 		if (complexity.equalsIgnoreCase("COMPLEX")) {
 			return "complex";
 		}
-		if (type.getName().trim().equalsIgnoreCase("double")) {
-			return "float64";
-		}
-		if (type.getName().trim().equalsIgnoreCase("char")) {
-			return "char";
-		}
-		if (type.getName().trim().equalsIgnoreCase("single")) {
-			return "float32";
-		}
-		if (type.getName().trim().equalsIgnoreCase("int8")) {
-			return "int8";
-		}
-		if (type.getName().trim().equalsIgnoreCase("int16")) {
-			return "int16";
-		}
-		if (type.getName().trim().equalsIgnoreCase("int32")) {
-			return "int32";
-		}
-		if (type.getName().trim().equalsIgnoreCase("int64")) {
-			return "int64";
-		}
-		if (type.getName().trim().equalsIgnoreCase("uint8")) {
-			return "uint8";
-		}
-		if (type.getName().trim().equalsIgnoreCase("uint16")) {
-			return "uint16";
-		}
-		if (type.getName().trim().equalsIgnoreCase("uint32")) {
-			return "uint32";
-		}
-		if (type.getName().trim().equalsIgnoreCase("uint64")) {
-			return "uint64";
-		}
-		if (type.getName().trim().equalsIgnoreCase("logical")) {
-			return "Boolean";
-		}
-		return null;
+		return VrirTypeMapper.getType(type.getName());
+
 	}
 
 	private String getLayoutString() {

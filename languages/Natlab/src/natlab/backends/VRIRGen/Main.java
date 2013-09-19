@@ -30,7 +30,8 @@ public class Main {
 		 * the type info is composed like double&3*3&REAL.
 		 */
 		String fileDir = "/home/sameer/mclab/";
-		String fileIn = fileDir + "simple.m";
+		String fileName = "simple.m";
+		String fileIn = fileDir + fileName;
 		GenericFile gFile = GenericFile.create(fileIn);
 		FileEnvironment env = new FileEnvironment(gFile); // get path
 															// environment obj
@@ -78,8 +79,9 @@ public class Main {
 					.println("pretty print the generated VRIR in XML format  .\n");
 			StringBuffer sb;
 			OperatorMapper.initMap();
+			VrirTypeMapper.initTypeMap();
 			sb = VrirXmlGen.generateVrir((Function) fTree, remainingVars,
-					analysis, currentOutSet, i, size);
+					analysis, currentOutSet, i, size, fileName.split("\\.")[0]);
 
 			System.err.println(sb);
 		}
