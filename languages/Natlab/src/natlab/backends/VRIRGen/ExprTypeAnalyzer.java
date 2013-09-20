@@ -2,6 +2,7 @@ package natlab.backends.VRIRGen;
 
 import java.util.HashMap;
 
+import natlab.tame.classes.reference.PrimitiveClassReference;
 import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.ValueFlowMap;
 import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
@@ -71,7 +72,7 @@ public class ExprTypeAnalyzer extends
 			node.getArg(1).analyze(this);
 		}
 		VType rhsType = exprType.get(node.getArg(1));
-		VType outputType = getOutputType(lhsType, rhsType);
+		VType outputType = getOutputVType(lhsType, rhsType);
 		exprType.put(node, outputType);
 	}
 
@@ -82,7 +83,7 @@ public class ExprTypeAnalyzer extends
 		exprType.put(node, exprType.get(node.getArg(0)));
 	}
 
-	public VType getOutputType(VType lhs, VType rhs) {
+	public VType getOutputVType(VType lhs, VType rhs) {
 		
 		return null;
 	}
