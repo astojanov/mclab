@@ -427,6 +427,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseForStmt(ForStmt node) {
+		StmtCaseHandler.handleForStmt(node, this);
 		caseStmt(node);
 	}
 
@@ -452,6 +453,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseRangeExpr(RangeExpr node) {
+
 		caseExpr(node);
 	}
 

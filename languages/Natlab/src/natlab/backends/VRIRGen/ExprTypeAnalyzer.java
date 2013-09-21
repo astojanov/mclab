@@ -1,12 +1,16 @@
 package natlab.backends.VRIRGen;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import natlab.tame.classes.reference.PrimitiveClassReference;
 import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.ValueFlowMap;
 import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
 import natlab.tame.valueanalysis.aggrvalue.AggrValue;
+import natlab.tame.valueanalysis.components.shape.DimValue;
+import natlab.tame.valueanalysis.components.shape.Shape;
 import analysis.AbstractDepthFirstAnalysis;
 import ast.ASTNode;
 import ast.Expr;
@@ -84,7 +88,25 @@ public class ExprTypeAnalyzer extends
 	}
 
 	public VType getOutputVType(VType lhs, VType rhs) {
-		
+		List<DimValue> outList = new ArrayList<DimValue>();
+		int minDim = Math.min(lhs.getShape().getDimensions().size(), rhs
+				.getShape().getDimensions().size());
+		int i = 0;
+		for (i = 0; i < minDim; i++) {
+
+			outList.add(lhs.getShape().getDimensions().get(i).getIntValue() > rhs
+					.getShape().getDimensions().get(i).getIntValue() ? lhs
+					.getShape().getDimensions().get(i) : rhs.getShape()
+					.getDimensions().get(i));
+		}
+		for (int j = i; j < lhs.getShape().getDimensions().size(); j++) {
+			outList.add(lhs.getShape().getDimensions().get(j));
+		}
+		for (int j = i; j < rhs.getShape().getDimensions().size(); j++) {
+			outList.add(rhs.getShape().getDimensions().get(j));
+		}
+		// Shape<AggrValue<AdvancedMatrixValue>> outShape=new
+		// Shape<AggrValue<AdvancedMatrixValue>>();
 		return null;
 	}
 

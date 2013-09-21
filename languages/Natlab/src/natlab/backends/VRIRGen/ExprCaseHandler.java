@@ -6,6 +6,7 @@ import ast.IntLiteralExpr;
 import ast.LiteralExpr;
 import ast.NameExpr;
 import ast.ParameterizedExpr;
+import ast.RangeExpr;
 import ast.StringLiteralExpr;
 
 public class ExprCaseHandler {
@@ -43,12 +44,24 @@ public class ExprCaseHandler {
 		gen.appendToPrettyCode("<vtype name=float64>\n</vtype>\n");
 		gen.appendToPrettyCode("<rhs>\n");
 		node.getArg(1).analyze(gen);
-		System.out.println("class : " + node.getArg(1).getClass().toString());
+
 		gen.appendToPrettyCode("</rhs>\n");
 		gen.appendToPrettyCode("<lhs>\n");
 		node.getArg(0).analyze(gen);
 		gen.appendToPrettyCode("</lhs>\n");
 		gen.appendToPrettyCode(toXMLTail());
+	}
+
+	public static void handleRangeExpr(RangeExpr node, VrirXmlGen gen) {
+		gen.appendToPrettyCode("<start>");
+		node.getLower().analyze(gen);
+		gen.appendToPrettyCode("</start>");
+		gen.appendToPrettyCode("<step>");
+		node.getIncr().analyze(gen);
+		gen.appendToPrettyCode("</step>");
+		gen.appendToPrettyCode("<stop>");
+		node.getUpper().analyze(gen);
+		gen.appendToPrettyCode("</stop>");
 	}
 
 	public static void handleIntLiteralExpr(IntLiteralExpr expr, VrirXmlGen gen) {
