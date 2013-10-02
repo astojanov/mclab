@@ -13,12 +13,15 @@ public class VType {
 	Shape<AggrValue<AdvancedMatrixValue>> shape;
 	PrimitiveClassReference type;
 	Layout layout;
+	String complexity;
 
 	VType(Shape<AggrValue<AdvancedMatrixValue>> shape,
-			PrimitiveClassReference type, Layout layout) {
+			PrimitiveClassReference type, Layout layout, String complexity) {
 		this.shape = shape;
 		this.type = type;
 		this.layout = layout;
+		this.complexity = complexity;
+
 	}
 
 	public Shape<AggrValue<AdvancedMatrixValue>> getShape() {
@@ -46,9 +49,44 @@ public class VType {
 	}
 
 	private String getVarType() {
-
+		if (complexity.equalsIgnoreCase("COMPLEX")) {
+			return "complex";
+		}
 		if (type.getName().trim().equalsIgnoreCase("double")) {
-			return "\"float64\"";
+			return "float64";
+		}
+		if (type.getName().trim().equalsIgnoreCase("char")) {
+			return "char";
+		}
+		if (type.getName().trim().equalsIgnoreCase("single")) {
+			return "float32";
+		}
+		if (type.getName().trim().equalsIgnoreCase("int8")) {
+			return "int8";
+		}
+		if (type.getName().trim().equalsIgnoreCase("int16")) {
+			return "int16";
+		}
+		if (type.getName().trim().equalsIgnoreCase("int32")) {
+			return "int32";
+		}
+		if (type.getName().trim().equalsIgnoreCase("int64")) {
+			return "int64";
+		}
+		if (type.getName().trim().equalsIgnoreCase("uint8")) {
+			return "uint8";
+		}
+		if (type.getName().trim().equalsIgnoreCase("uint16")) {
+			return "uint16";
+		}
+		if (type.getName().trim().equalsIgnoreCase("uint32")) {
+			return "uint32";
+		}
+		if (type.getName().trim().equalsIgnoreCase("uint64")) {
+			return "uint64";
+		}
+		if (type.getName().trim().equalsIgnoreCase("logical")) {
+			return "Boolean";
 		}
 		return null;
 	}
@@ -67,7 +105,7 @@ public class VType {
 	}
 
 	private void genScalarXML(StringBuffer vTypeXML) {
-		vTypeXML.append("<vtype name= " + getVarType());
+		vTypeXML.append("<vtype name= \"" + getVarType() + "\"");
 		vTypeXML.append(">\n");
 		vTypeXML.append("</vtype>\n");
 	}

@@ -99,18 +99,39 @@ import ast.UnaryExpr;
 import ast.WhileStmt;
 import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.ValueFlowMap;
+
 import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
 import natlab.tame.valueanalysis.aggrvalue.AggrValue;
+
 import nodecases.natlab.NatlabAbstractNodeCaseHandler;
 
 public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 
 	private StringBuffer prettyPrintedCode = null;
+	// private StringBuffer bodyCode;
+	private SymbolTable symTab;
 	private Set<String> remainingVars;
 	private ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis;
 	private ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet;
 	private int size;
 	private int index;
+	private int indent = 1;
+
+	public int getIndent() {
+		return indent;
+	}
+
+	public void setIndent(int indent) {
+		this.indent = indent;
+	}
+
+	public void incIndent() {
+		indent++;
+	}
+
+	public void decIndent() {
+		indent--;
+	}
 
 	VrirXmlGen(Function functionNode, Set<String> remainVars,
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
@@ -122,9 +143,26 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 		this.currentOutSet = currentOutSet;
 		this.size = size;
 		this.index = index;
-
+		symTab = new SymbolTable();
+		indent = 0;
 		functionNode.analyze(this);
 
+	}
+
+	public void addToSymTab(VType vtype, String name) {
+		symTab.putSymbol(vtype, name);
+	}
+
+	public Symbol getSymbol(String name) {
+		return symTab.getSymbol(name);
+	}
+
+	public void appendToPrettyCode(StringBuffer buff) {
+		prettyPrintedCode.append(buff);
+	}
+
+	public void appendToPrettyCode(String buff) {
+		prettyPrintedCode.append(buff);
 	}
 
 	public Set<String> getRemainingVars() {
@@ -182,6 +220,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	@Override
 	@SuppressWarnings("rawtypes")
 	public void caseList(List node) {
+
 		caseASTNode(node);
 	}
 
@@ -265,6 +304,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseLValueExpr(LValueExpr node) {
+
 		caseExpr(node);
 	}
 
@@ -301,7 +341,6 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseMethods(Methods node) {
-		caseClassBody(node);
 	}
 
 	public void caseSignature(Signature node) {
@@ -318,10 +357,15 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 
 	public void caseFunction(Function node) {
 		// caseFunctionOrSignatureOrPropertyAccessOrStmt(node);
-		for (Name sym : node.getInputParams()) {
-			FunctionCaseHandler.handleArgs(node, this);
+		FunctionCaseHandler.handleHeader(node, this);
 
+		for (Stmt stmt : node.getStmts()) {
+
+			stmt.analyze(this);
 		}
+		this.appendToPrettyCode(symTab.toXML());
+
+		FunctionCaseHandler.handleTail(node, this);
 
 	}
 
@@ -338,7 +382,11 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseAssignStmt(AssignStmt node) {
-		caseStmt(node);
+
+		StmtCaseHandler.handleAssignStmt(node, this);
+
+		// caseStmt(node);
+
 	}
 
 	public void caseGlobalStmt(GlobalStmt node) {
@@ -358,10 +406,12 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseContinueStmt(ContinueStmt node) {
+
 		caseStmt(node);
 	}
 
 	public void caseReturnStmt(ReturnStmt node) {
+
 		caseStmt(node);
 	}
 
@@ -374,6 +424,8 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseWhileStmt(WhileStmt node) {
+
+		StmtCaseHandler.handleWhileStmt(node, this);
 		caseStmt(node);
 	}
 
@@ -382,10 +434,13 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseSwitchStmt(SwitchStmt node) {
+
 		caseStmt(node);
 	}
 
 	public void caseIfStmt(IfStmt node) {
+		StmtCaseHandler.handleIfStmt(node, this);
+
 		caseStmt(node);
 	}
 
@@ -402,11 +457,28 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseNameExpr(NameExpr node) {
-		caseLValueExpr(node);
+		VType vtype = HelperClass.generateVType(analysis, getIndex(),
+				node.getName());
+		if (!symTab.contains(node.getName().getID())) {
+			symTab.putSymbol(vtype, node.getName().getID());
+		}
+		ExprCaseHandler.handleNameExpr(node, this);
 	}
 
 	public void caseParameterizedExpr(ParameterizedExpr node) {
-		caseLValueExpr(node);
+
+		if (remainingVars.contains(node.getVarName())) {
+
+		} else {
+			// Function call
+
+			if (OperatorMapper.isOperator(node.getVarName())) {
+				// Binary operator
+				ExprCaseHandler.handleOpExpr(node, this, node.getVarName());
+				// ExprCaseHandler.handlePlusExpr(node, this);
+			}
+		}
+		// caseLValueExpr(node);
 	}
 
 	public void caseCellIndexExpr(CellIndexExpr node) {
@@ -430,14 +502,18 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseIntLiteralExpr(IntLiteralExpr node) {
+
+		ExprCaseHandler.handleIntLiteralExpr(node, this);
 		caseLiteralExpr(node);
 	}
 
 	public void caseFPLiteralExpr(FPLiteralExpr node) {
+		ExprCaseHandler.handleFpLiteralExpr(node, this);
 		caseLiteralExpr(node);
 	}
 
 	public void caseStringLiteralExpr(StringLiteralExpr node) {
+		ExprCaseHandler.handleStringLiteralExpr(node, this);
 		caseLiteralExpr(node);
 	}
 
@@ -462,7 +538,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void casePlusExpr(PlusExpr node) {
-		caseBinaryExpr(node);
+
 	}
 
 	public void caseMinusExpr(MinusExpr node) {

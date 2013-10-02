@@ -67,6 +67,7 @@ public class Main {
 			Set<String> remainingVars = analysisEngine
 					.getTemporaryVariablesRemovalAnalysis()
 					.getRemainingVariablesNames();
+
 			System.out.println("\ntamer plus analysis result: \n"
 					+ fTree.getPrettyPrinted() + "\n");
 			// System.err.println("remaining variables: \n"+remainingVars);
@@ -75,10 +76,10 @@ public class Main {
 			 */
 			System.err
 					.println("pretty print the generated VRIR in XML format  .\n");
-			StringBuffer sb = new StringBuffer();
-
-			VrirXmlGen.generateVrir((Function) fTree, remainingVars, analysis,
-					currentOutSet, i, size);
+			StringBuffer sb;
+			OperatorMapper.initMap();
+			sb = VrirXmlGen.generateVrir((Function) fTree, remainingVars,
+					analysis, currentOutSet, i, size);
 
 			System.err.println(sb);
 		}
