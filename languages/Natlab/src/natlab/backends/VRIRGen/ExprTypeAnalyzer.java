@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import natlab.tame.classes.reference.PrimitiveClassReference;
 import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.ValueFlowMap;
 import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
@@ -14,6 +13,7 @@ import natlab.tame.valueanalysis.components.shape.Shape;
 import analysis.AbstractDepthFirstAnalysis;
 import ast.ASTNode;
 import ast.Expr;
+import ast.IntLiteralExpr;
 import ast.NameExpr;
 import ast.ParameterizedExpr;
 
@@ -22,7 +22,6 @@ public class ExprTypeAnalyzer extends
 		AbstractDepthFirstAnalysis<HashMap<Expr, VType>> {
 	private HashMap<Expr, VType> exprType;
 	private ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis;
-	private ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet;
 	private int graphIndex;
 
 	public HashMap<Expr, VType> newInitialFlow() {
@@ -37,21 +36,26 @@ public class ExprTypeAnalyzer extends
 		this.exprType = exprType;
 	}
 
-	public ExprTypeAnalyzer(
+	public VType getVType(Expr node) {
+		return exprType.get(node);
+	}
+
+	public ExprTypeAnalyzer(ASTNode tree,
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
 			ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet,
 			int graphIndex) {
 		this.analysis = analysis;
-		this.currentOutSet = currentOutSet;
 		exprType = newInitialFlow();
 		this.graphIndex = graphIndex;
+		this.analyze(tree);
 	}
 
 	public void caseASTNode(ASTNode node) {
-		/*
-		 * for (int i = 0; i < node.getNumChild(); i++) {
-		 * node.getChild(i).analyze(this); }
-		 */
+
+		for (int i = 0; i < node.getNumChild(); i++) {
+			node.getChild(i).analyze(this);
+		}
+
 	}
 
 	public void caseParameterizedExpr(ParameterizedExpr node) {
@@ -65,6 +69,11 @@ public class ExprTypeAnalyzer extends
 				}
 			}
 		}
+	}
+
+	public void caseIntLiteralExpr(IntLiteralExpr node) {
+//		 Vtype vtype=new Vtype(null,
+//		 PrimitiveClassReference.INT32,VType.Layout.ROW_MAJOR,)
 	}
 
 	public void handleBinaryExpr(ParameterizedExpr node) {
@@ -105,9 +114,11 @@ public class ExprTypeAnalyzer extends
 		for (int j = i; j < rhs.getShape().getDimensions().size(); j++) {
 			outList.add(rhs.getShape().getDimensions().get(j));
 		}
-		// Shape<AggrValue<AdvancedMatrixValue>> outShape=new
-		// Shape<AggrValue<AdvancedMatrixValue>>();
-		return null;
+		Shape<AggrValue<AdvancedMatrixValue>> outShape = new Shape<AggrValue<AdvancedMatrixValue>>(
+				outList);
+
+		return new VType(outShape, lhs.getType(), lhs.getLayout(),
+				lhs.getComplexity());
 	}
 
 	public void caseNameExpr(NameExpr node) {

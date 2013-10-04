@@ -38,10 +38,7 @@ public class Main {
 		AdvancedTamerTool tool = new AdvancedTamerTool();
 		ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis = tool.analyze(
 				args, env);
-		if (analysis == null) {
-			System.out.println("problem from the start");
-
-		}
+		
 		int size = analysis.getNodeList().size();
 
 		for (int i = 0; i < size; i++) {
@@ -68,7 +65,7 @@ public class Main {
 			Set<String> remainingVars = analysisEngine
 					.getTemporaryVariablesRemovalAnalysis()
 					.getRemainingVariablesNames();
-
+			
 			System.out.println("\ntamer plus analysis result: \n"
 					+ fTree.getPrettyPrinted() + "\n");
 			// System.err.println("remaining variables: \n"+remainingVars);
@@ -80,8 +77,11 @@ public class Main {
 			StringBuffer sb;
 			OperatorMapper.initMap();
 			VrirTypeMapper.initTypeMap();
+			ExprTypeAnalyzer exprAnalysis = new ExprTypeAnalyzer(fTree,
+					analysis, currentOutSet, i);
 			sb = VrirXmlGen.generateVrir((Function) fTree, remainingVars,
-					analysis, currentOutSet, i, size, fileName.split("\\.")[0]);
+					analysis, currentOutSet, i, size, fileName.split("\\.")[0],
+					analysisEngine);
 
 			System.err.println(sb);
 		}

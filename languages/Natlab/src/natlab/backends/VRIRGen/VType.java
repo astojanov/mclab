@@ -24,6 +24,14 @@ public class VType {
 
 	}
 
+	public String getComplexity() {
+		return complexity;
+	}
+
+	public void setComplexity(String complexity) {
+		this.complexity = complexity;
+	}
+
 	public Shape<AggrValue<AdvancedMatrixValue>> getShape() {
 		return shape;
 	}

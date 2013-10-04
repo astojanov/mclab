@@ -17,6 +17,7 @@ public class VrirTypeMapper {
 	public static void initTypeMap() {
 		typeMap = new HashMap<String, String>();
 		typeMap.put("double", "float64");
+		typeMap.put("single", "float32");
 		typeMap.put("char", "char");
 		typeMap.put("int8", "int8");
 		typeMap.put("int16", "int16");
@@ -27,6 +28,7 @@ public class VrirTypeMapper {
 		typeMap.put("uint32", "uint32");
 		typeMap.put("uint64", "uint64");
 		typeMap.put("logical", "boolean");
+
 	}
 
 	public static String getType(String key) {
@@ -35,5 +37,9 @@ public class VrirTypeMapper {
 
 	public static void putType(String key, String value) {
 		typeMap.put(key, value);
+	}
+
+	public static boolean contains(String key) {
+		return typeMap.containsKey(key);
 	}
 }
