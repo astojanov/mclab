@@ -25,7 +25,10 @@ public class HandleCaseTIRAbstractAssignToListStmt {
 	 * 1. for rhs, constant folding check;
 	 * 2. for lhs, variable allocation check.
 	 */
-	public Statement getFortran(FortranCodeASTGenerator fcg, TIRAbstractAssignToListStmt node) {
+	public Statement getFortran(
+			FortranCodeASTGenerator fcg, 
+			TIRAbstractAssignToListStmt node) 
+	{
 		if (Debug) System.out.println("in an abstractAssignToList statement");
 		String indent = new String();
 		for (int i=0; i<fcg.indentNum; i++) {
@@ -63,7 +66,17 @@ public class HandleCaseTIRAbstractAssignToListStmt {
 					fcg.inputHasChanged.add(name.getID());
 					var.setName(name.getID()+"_copy");
 				}
-				else var.setName(name.getID());
+				/*
+				 * if the variable is the return variable, 
+				 * replaced by the function name.
+				 */
+				else if (!fcg.functionName.equals(fcg.entryPointFile) 
+						&& fcg.outRes.size() == 1 
+						&& fcg.outRes.contains(name.getID())) {
+					var.setName(fcg.functionName);
+				}
+				else 
+					var.setName(name.getID());
 				binExpr.addVariable(var);
 			}
 			/*
@@ -133,7 +146,17 @@ public class HandleCaseTIRAbstractAssignToListStmt {
 					fcg.inputHasChanged.add(name.getID());
 					var.setName(name.getID()+"_copy");
 				}
-				else var.setName(name.getID());
+				/*
+				 * if the variable is the return variable, 
+				 * replaced by the function name.
+				 */
+				else if (!fcg.functionName.equals(fcg.entryPointFile) 
+						&& fcg.outRes.size() == 1 
+						&& fcg.outRes.contains(name.getID())) {
+					var.setName(fcg.functionName);
+				}
+				else 
+					var.setName(name.getID());
 				unExpr.addVariable(var);
 			}
 			/*
@@ -194,7 +217,17 @@ public class HandleCaseTIRAbstractAssignToListStmt {
 					fcg.inputHasChanged.add(name.getID());
 					var.setName(name.getID()+"_copy");
 				}
-				else var.setName(name.getID());
+				/*
+				 * if the variable is the return variable, 
+				 * replaced by the function name.
+				 */
+				else if (!fcg.functionName.equals(fcg.entryPointFile) 
+						&& fcg.outRes.size() == 1 
+						&& fcg.outRes.contains(name.getID())) {
+					var.setName(fcg.functionName);
+				}
+				else 
+					var.setName(name.getID());
 				dirBuiltinExpr.addVariable(var);
 			}
 			/*
@@ -255,7 +288,6 @@ public class HandleCaseTIRAbstractAssignToListStmt {
 			 */
 			currentShape = getCurrentShape(fcg, node, node.getRHS().getVarName(), arguments);
 			noDirBuiltinExpr = FortranCodeASTInliner.inline(fcg, node, currentShape);
-			System.out.println(node.getTargetName().getID());
 			if (!fcg.isCell(node.getTargetName().getID()) 
 				&& fcg.hasSingleton(node.getTargetName().getID()) 
 				&& !fcg.getMatrixValue(node.getTargetName().getID()).getShape().isConstant() 
@@ -302,7 +334,17 @@ public class HandleCaseTIRAbstractAssignToListStmt {
 					fcg.inputHasChanged.add(name.getID());
 					var.setName(name.getID()+"_copy");
 				}
-				else var.setName(name.getID());
+				/*
+				 * if the variable is the return variable, 
+				 * replaced by the function name.
+				 */
+				else if (!fcg.functionName.equals(fcg.entryPointFile) 
+						&& fcg.outRes.size() == 1 
+						&& fcg.outRes.contains(name.getID())) {
+					var.setName(fcg.functionName);
+				}
+				else 
+					var.setName(name.getID());
 				builtinConst.addVariable(var);
 			}
 			builtinConst.setBuiltinFunc(RHSFortranOperator);
@@ -365,54 +407,120 @@ public class HandleCaseTIRAbstractAssignToListStmt {
 			/*
 			 * deal with user defined functions, apparently, there 
 			 * is no corresponding Fortran built-in function for this. 
-			 * mapping all the user defined functions to subroutines 
-			 * in Fortran. Subroutines in Fortran is more similar to 
-			 * functions in MATLAB than functions in Fortran.
+			 * map the matlab functions with exactly one return value 
+			 * to functions in fortran; map the matlab functions with 
+			 * 0 or more than 1 return values to subroutines in fortran.
 			 */
-			Subroutines subroutine = new Subroutines();
-			subroutine.setIndent(indent);
-			ArrayList<String> outputArgsList = new ArrayList<String>();
-			for (ast.Name name : node.getTargets().asNameList()) {
-
+			if (node.getTargets().asNameList().size() == 1) {
+				Functions function = new Functions();
+				function.setIndent(indent);
+				String targetVar = node.getTargets().asNameList().get(0).getID();
 				/*
-				 * if an input argument of the function is on the LHS of an assignment stmt, 
-				 * we assume that this input argument maybe modified.
+				 * when cannot find directly-mapping functions, there are two 
+				 * possibilities: it's a user-defined function; or it's a 
+				 * matlab built-in function which doesn't have a directly-
+				 * mapping in fortran.
 				 */
-				if (fcg.isInSubroutine && fcg.inArgs.contains(name.getID())) {
-					if (Debug) System.out.println("subroutine's input "+name.getID()
-							+" has been modified!");
-					fcg.inputHasChanged.add(name.getID());
-					outputArgsList.add(name.getID()+"_copy");
+				/*
+				 * if an input argument of the function is on the LHS of an assignment 
+				 * stmt, we assume that this input argument maybe modified.
+				 */
+				if (fcg.isInSubroutine && fcg.inArgs.contains(targetVar)) {
+					if (Debug) System.out.println("subroutine's input " + targetVar	+ " has been modified!");
+					fcg.inputHasChanged.add(targetVar);
+					targetVar = targetVar + "_copy";
 				}
-				else outputArgsList.add(name.getID());
-			}
-			/*
-			 * insert constant folding check.
-			 */
-			for (int i=0;i<arguments.size();i++) {
-				if (fcg.getMatrixValue(arguments.get(i)).hasConstant() 
-						&& !fcg.inArgs.contains(arguments.get(i)) 
-						&& fcg.tempVarsBeforeF.contains(arguments.get(i))) {
-					Constant c = fcg.getMatrixValue(arguments.get(i)).getConstant();
-					arguments.remove(i);
-					arguments.add(i, c.toString());
+				/*
+				 * if the variable is the return variable, 
+				 * replaced by the function name.
+				 */
+				else if (!fcg.functionName.equals(fcg.entryPointFile) 
+						&& fcg.outRes.size() == 1 
+						&& fcg.outRes.contains(targetVar)) {
+					targetVar = fcg.functionName;
 				}
-				else {
-					if (fcg.inputHasChanged.contains(arguments.get(i))) {
-						String ArgsNew = arguments.get(i)+"_copy";
+				function.setTargetVar(targetVar);
+				
+				/*
+				 * insert constant folding check.
+				 */
+				for (int i = 0; i < arguments.size(); i++) {
+					if (fcg.getMatrixValue(arguments.get(i)).hasConstant() 
+							&& !fcg.inArgs.contains(arguments.get(i)) 
+							&& fcg.tempVarsBeforeF.contains(arguments.get(i))) {
+						Constant c = fcg.getMatrixValue(arguments.get(i)).getConstant();
 						arguments.remove(i);
-						arguments.add(i, ArgsNew);
-					}			
+						arguments.add(i, c.toString()+"d+0");
+					}
+					else {
+						if (fcg.inputHasChanged.contains(arguments.get(i))) {
+							String ArgsNew = arguments.get(i)+"_copy";
+							arguments.remove(i);
+							arguments.add(i, ArgsNew);
+						}			
+					}
 				}
+				String funcName = node.getRHS().getVarName();
+				function.setFuncName(funcName);
+				fcg.allSubprograms.add(funcName);
+				function.setInputArgsList(getArgsListAsString(arguments));
+				return function;
 			}
-			ArgsListasString = getArgsListAsString(arguments);
-			String funcName;
-			funcName = node.getRHS().getVarName();
-			subroutine.setFuncName(funcName);
-			subroutine.setInputArgsList(ArgsListasString);
-			subroutine.setOutputArgsList(outputArgsList.toString().replace("[", "")
-					.replace("]", ""));
-			return subroutine;
+			else {
+				Subroutines subroutine = new Subroutines();
+				subroutine.setIndent(indent);
+				ArrayList<String> outputArgsList = new ArrayList<String>();
+				for (ast.Name name : node.getTargets().asNameList()) {
+					/*
+					 * if an input argument of the function is on the LHS of an assignment stmt, 
+					 * we assume that this input argument maybe modified.
+					 */
+					if (fcg.isInSubroutine && fcg.inArgs.contains(name.getID())) {
+						if (Debug) System.out.println("subroutine's input "+name.getID()
+								+" has been modified!");
+						fcg.inputHasChanged.add(name.getID());
+						outputArgsList.add(name.getID()+"_copy");
+					}
+					/*
+					 * if the variable is the return variable, 
+					 * replaced by the function name.
+					 */
+					else if (!fcg.functionName.equals(fcg.entryPointFile) 
+							&& fcg.outRes.size() == 1 
+							&& fcg.outRes.contains(name.getID())) {
+						outputArgsList.add(fcg.functionName);
+					}
+					else 
+						outputArgsList.add(name.getID());
+				}
+				/*
+				 * insert constant folding check.
+				 */
+				for (int i=0;i<arguments.size();i++) {
+					if (fcg.getMatrixValue(arguments.get(i)).hasConstant() 
+							&& !fcg.inArgs.contains(arguments.get(i)) 
+							&& fcg.tempVarsBeforeF.contains(arguments.get(i))) {
+						Constant c = fcg.getMatrixValue(arguments.get(i)).getConstant();
+						arguments.remove(i);
+						arguments.add(i, c.toString()+"d+0");
+					}
+					else {
+						if (fcg.inputHasChanged.contains(arguments.get(i))) {
+							String ArgsNew = arguments.get(i)+"_copy";
+							arguments.remove(i);
+							arguments.add(i, ArgsNew);
+						}			
+					}
+				}
+				ArgsListasString = getArgsListAsString(arguments);
+				String funcName = node.getRHS().getVarName();
+				subroutine.setFuncName(funcName);
+				fcg.allSubprograms.add(funcName);
+				subroutine.setInputArgsList(ArgsListasString);
+				subroutine.setOutputArgsList(outputArgsList.toString().replace("[", "")
+						.replace("]", ""));
+				return subroutine;				
+			}
 		}
 	}
 	/***************************************helper methods****************************************/
@@ -420,12 +528,12 @@ public class HandleCaseTIRAbstractAssignToListStmt {
 			TIRAbstractAssignToListStmt node) {
 		String RHSMatlabOperator;
 		RHSMatlabOperator = node.getRHS().getVarName();
-		if (fcg.FortranMapping.isFortranBinOperator(RHSMatlabOperator)) return 1;
-		else if (fcg.FortranMapping.isFortranUnOperator(RHSMatlabOperator)) return 2;
-		else if (fcg.FortranMapping.isFortranDirectBuiltin(RHSMatlabOperator)) return 3;
-		else if(fcg.FortranMapping.isFortranNoDirectBuiltin(RHSMatlabOperator))	return 4;
-		else if(fcg.FortranMapping.isBuiltinConst(RHSMatlabOperator)) return 5;
-		else if(fcg.FortranMapping.isFortranIOOperation(RHSMatlabOperator)) return 6;
+		if (fcg.fortranMapping.isFortranBinOperator(RHSMatlabOperator)) return 1;
+		else if (fcg.fortranMapping.isFortranUnOperator(RHSMatlabOperator)) return 2;
+		else if (fcg.fortranMapping.isFortranDirectBuiltin(RHSMatlabOperator)) return 3;
+		else if(fcg.fortranMapping.isFortranNoDirectBuiltin(RHSMatlabOperator))	return 4;
+		else if(fcg.fortranMapping.isBuiltinConst(RHSMatlabOperator)) return 5;
+		else if(fcg.fortranMapping.isFortranIOOperation(RHSMatlabOperator)) return 6;
 		else return 7; // "user defined function";
 	}
 	
@@ -446,23 +554,23 @@ public class HandleCaseTIRAbstractAssignToListStmt {
 		String RHSFortranOperator;
 		String RHSMatlabOperator;
 		RHSMatlabOperator = node.getRHS().getVarName();
-		if (fcg.FortranMapping.isFortranBinOperator(RHSMatlabOperator)) {
-			RHSFortranOperator = fcg.FortranMapping.getFortranBinOpMapping(RHSMatlabOperator);
+		if (fcg.fortranMapping.isFortranBinOperator(RHSMatlabOperator)) {
+			RHSFortranOperator = fcg.fortranMapping.getFortranBinOpMapping(RHSMatlabOperator);
 		}
-		else if (fcg.FortranMapping.isFortranUnOperator(RHSMatlabOperator)) {
-			RHSFortranOperator = fcg.FortranMapping.getFortranUnOpMapping(RHSMatlabOperator);
+		else if (fcg.fortranMapping.isFortranUnOperator(RHSMatlabOperator)) {
+			RHSFortranOperator = fcg.fortranMapping.getFortranUnOpMapping(RHSMatlabOperator);
 		}
-		else if (fcg.FortranMapping.isFortranDirectBuiltin(RHSMatlabOperator)) {
-			RHSFortranOperator = fcg.FortranMapping.getFortranDirectBuiltinMapping(RHSMatlabOperator);
+		else if (fcg.fortranMapping.isFortranDirectBuiltin(RHSMatlabOperator)) {
+			RHSFortranOperator = fcg.fortranMapping.getFortranDirectBuiltinMapping(RHSMatlabOperator);
 		}
-		else if (fcg.FortranMapping.isFortranNoDirectBuiltin(RHSMatlabOperator)) {
+		else if (fcg.fortranMapping.isFortranNoDirectBuiltin(RHSMatlabOperator)) {
 			RHSFortranOperator = RHSMatlabOperator;
 		}
-		else if (fcg.FortranMapping.isBuiltinConst(RHSMatlabOperator)) {
-			RHSFortranOperator = fcg.FortranMapping.getFortranBuiltinConstMapping(RHSMatlabOperator);
+		else if (fcg.fortranMapping.isBuiltinConst(RHSMatlabOperator)) {
+			RHSFortranOperator = fcg.fortranMapping.getFortranBuiltinConstMapping(RHSMatlabOperator);
 		}
-		else if (fcg.FortranMapping.isFortranIOOperation(RHSMatlabOperator)) {
-			RHSFortranOperator = fcg.FortranMapping.getFortranIOOperationMapping(RHSMatlabOperator);
+		else if (fcg.fortranMapping.isFortranIOOperation(RHSMatlabOperator)) {
+			RHSFortranOperator = fcg.fortranMapping.getFortranIOOperationMapping(RHSMatlabOperator);
 		}
 		else RHSFortranOperator = "user defined function, no mapping, sorry.";
 		return RHSFortranOperator;
