@@ -30,6 +30,9 @@ public class FunctionCaseHandler {
 		}
 		gen.appendToPrettyCode("</intypes>\n");
 		gen.appendToPrettyCode("<outtypes>\n");
+		if (node.getOutputParamList().getNumChild() == 0) {
+			gen.appendToPrettyCode("<vtype name=\"unit\">\n</vtype>\n");
+		}
 		for (int i = 0; i < node.getOutputParams().getNumChild(); i++) {
 			Name param = node.getOutputParam(i);
 			VType vtype = HelperClass.generateVType(analysis, gen.getIndex(),
