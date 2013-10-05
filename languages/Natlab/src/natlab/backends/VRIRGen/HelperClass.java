@@ -1,17 +1,17 @@
 package natlab.backends.VRIRGen;
 
-import java.util.ArrayList;
-
+import ast.AssignStmt;
+import ast.Expr;
 import ast.Function;
+import ast.MatrixExpr;
 import ast.Name;
 import ast.NameExpr;
 import ast.ParameterizedExpr;
+import ast.Row;
 import natlab.tame.classes.reference.PrimitiveClassReference;
 import natlab.tame.valueanalysis.ValueAnalysis;
-import natlab.tame.valueanalysis.ValueSet;
 import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
 import natlab.tame.valueanalysis.aggrvalue.AggrValue;
-import natlab.tame.valueanalysis.components.shape.DimValue;
 import natlab.tame.valueanalysis.components.shape.Shape;
 
 public class HelperClass {
@@ -188,6 +188,81 @@ public class HelperClass {
 		return null;
 	}
 
+	public static VType getBinExprType(ParameterizedExpr node, VrirXmlGen gen) {
+		if (node.getParent() instanceof AssignStmt) {
+			Expr lhsExpr = ((AssignStmt) node.getParent()).getLHS();
+			if (lhsExpr instanceof MatrixExpr) {
+				return getLhsType((MatrixExpr) lhsExpr, gen);
+			} else if (lhsExpr instanceof NameExpr) {
+				return getLhsType((NameExpr) lhsExpr, gen);
+			} else if (lhsExpr instanceof ParameterizedExpr) {
+				return getLhsType((ParameterizedExpr) lhsExpr, gen);
+			}
+
+		} else {
+			Name tempName = (Name) gen.getAnalysisEngine()
+					.getTemporaryVariablesRemovalAnalysis()
+					.getExprToTempVarTable().get(node);
+			PrimitiveClassReference type = HelperClass.getDataType(
+					tempName.getID(), gen);
+			Shape<AggrValue<AdvancedMatrixValue>> shape = HelperClass.getShape(
+					tempName.getID(), gen);
+			String complexity = HelperClass.generateComplexityInfo(
+					tempName.getID(), gen);
+			return new VType(shape, type, VType.Layout.COLUMN_MAJOR, complexity);
+
+		}
+
+		return null;
+	}
+
+	public static VType getLhsType(MatrixExpr lhsExpr, VrirXmlGen gen) {
+
+		if (((MatrixExpr) lhsExpr).getNumRow() > 1) {
+			return null;
+		}
+
+		for (Row row : ((MatrixExpr) lhsExpr).getRowList()) {
+			if (row.getNumElement() > 1) {
+				System.out.println("Multiple row case not handled");
+				return null;
+			} else {
+				Expr expr = row.getElement(0);
+				if (expr instanceof NameExpr) {
+					return getLhsType((NameExpr) expr, gen);
+
+				} else if (expr instanceof ParameterizedExpr) {
+					return getLhsType((ParameterizedExpr) expr, gen);
+				} else {
+					return null;
+				}
+
+			}
+		}
+
+		return null;
+	}
+
+	public static VType getLhsType(NameExpr lhsExpr, VrirXmlGen gen) {
+		PrimitiveClassReference type = HelperClass.getDataType(
+				(NameExpr) lhsExpr, gen);
+		Shape<AggrValue<AdvancedMatrixValue>> shape = HelperClass.getShape(
+				(NameExpr) lhsExpr, gen);
+		return new VType(shape, type, VType.Layout.COLUMN_MAJOR,
+				HelperClass.generateComplexityInfo((NameExpr) lhsExpr, gen));
+
+	}
+
+	public static VType getLhsType(ParameterizedExpr lhsExpr, VrirXmlGen gen) {
+		PrimitiveClassReference type = HelperClass.getDataType(
+				((ParameterizedExpr) lhsExpr).getVarName(), gen);
+		Shape<AggrValue<AdvancedMatrixValue>> shape = HelperClass.getShape(
+				((ParameterizedExpr) lhsExpr).getVarName(), gen);
+
+		return new VType(shape, type, VType.Layout.COLUMN_MAJOR,
+				HelperClass.generateComplexityInfo(lhsExpr.getVarName(), gen));
+
+	}
 	// public static Shape<AggrValue<AdvancedMatrixValue>> getOutputShape(
 	// Shape<AggrValue<AdvancedMatrixValue>> lhsShape,
 	// Shape<AggrValue<AdvancedMatrixValue>> rhsShape) {

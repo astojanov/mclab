@@ -77,8 +77,7 @@ public class Main {
 			StringBuffer sb;
 			OperatorMapper.initMap();
 			VrirTypeMapper.initTypeMap();
-			ExprTypeAnalyzer exprAnalysis = new ExprTypeAnalyzer(fTree,
-					analysis, currentOutSet, i);
+			
 			sb = VrirXmlGen.generateVrir((Function) fTree, remainingVars,
 					analysis, currentOutSet, i, size, fileName.split("\\.")[0],
 					analysisEngine);
