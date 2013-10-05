@@ -30,17 +30,15 @@ public class Main {
 		 * the type info is composed like double&3*3&REAL.
 		 */
 		String fileDir = "/home/sameer/mclab/";
-		String fileIn = fileDir + "simple.m";
+		String fileName = "simple.m";
+		String fileIn = fileDir + fileName;
 		GenericFile gFile = GenericFile.create(fileIn);
 		FileEnvironment env = new FileEnvironment(gFile); // get path
 															// environment obj
 		AdvancedTamerTool tool = new AdvancedTamerTool();
 		ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis = tool.analyze(
 				args, env);
-		if (analysis == null) {
-			System.out.println("problem from the start");
-
-		}
+		
 		int size = analysis.getNodeList().size();
 
 		for (int i = 0; i < size; i++) {
@@ -67,7 +65,7 @@ public class Main {
 			Set<String> remainingVars = analysisEngine
 					.getTemporaryVariablesRemovalAnalysis()
 					.getRemainingVariablesNames();
-
+			
 			System.out.println("\ntamer plus analysis result: \n"
 					+ fTree.getPrettyPrinted() + "\n");
 			// System.err.println("remaining variables: \n"+remainingVars);
@@ -78,8 +76,11 @@ public class Main {
 					.println("pretty print the generated VRIR in XML format  .\n");
 			StringBuffer sb;
 			OperatorMapper.initMap();
+			VrirTypeMapper.initTypeMap();
+			
 			sb = VrirXmlGen.generateVrir((Function) fTree, remainingVars,
-					analysis, currentOutSet, i, size);
+					analysis, currentOutSet, i, size, fileName.split("\\.")[0],
+					analysisEngine);
 
 			System.err.println(sb);
 		}

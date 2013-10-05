@@ -2,9 +2,11 @@ package natlab.backends.VRIRGen;
 
 import ast.AssignStmt;
 import ast.EmptyStmt;
+import ast.ForStmt;
 import ast.IfBlock;
 import ast.IfStmt;
 import ast.List;
+import ast.NameExpr;
 import ast.Stmt;
 import ast.SwitchStmt;
 import ast.WhileStmt;
@@ -37,6 +39,38 @@ public class StmtCaseHandler {
 
 	}
 
+	public static void handleForStmt(ForStmt node, VrirXmlGen gen) {
+		gen.appendToPrettyCode(toXMLHead("forstmt"));
+		gen.appendToPrettyCode("<domain>");
+		node.getAssignStmt().getRHS().analyze(gen);
+		gen.appendToPrettyCode("</domain>");
+		gen.appendToPrettyCode("<itervars>");
+		if (node.getAssignStmt().getLHS() instanceof NameExpr) {
+			Symbol sym = gen.getSymbol(((NameExpr) ((Object) node
+					.getAssignStmt().getLHS())).getVarName());
+			if (sym == null) {
+				VType vtype = HelperClass.generateVType(gen.getAnalysis(), gen
+						.getIndex(), ((NameExpr) ((Object) node.getAssignStmt()
+						.getLHS())).getName());
+				gen.addToSymTab(vtype, ((NameExpr) ((Object) node
+						.getAssignStmt().getLHS())).getName().getVarName());
+			}
+			sym = gen.getSymbol(((NameExpr) ((Object) node.getAssignStmt()
+					.getLHS())).getVarName());
+
+			gen.appendToPrettyCode(sym.toXML());
+		}
+
+		gen.appendToPrettyCode("</itervars>");
+		gen.appendToPrettyCode(toXMLHead("stmtlist"));
+		for (Stmt stmt : node.getStmtList()) {
+			stmt.analyze(gen);
+		}
+
+		gen.appendToPrettyCode(toXMLTail());
+		gen.appendToPrettyCode(toXMLTail());
+	}
+
 	public static void handleIfStmt(IfStmt node, VrirXmlGen gen) {
 		for (IfBlock ifblock : node.getIfBlockList()) {
 
@@ -45,7 +79,7 @@ public class StmtCaseHandler {
 			gen.appendToPrettyCode("<if>\n");
 			gen.appendToPrettyCode(toXMLHead("stmtlist"));
 			for (Stmt stmt : ifblock.getStmtList()) {
-				System.out.println("statement " + stmt.getClass().toString());
+
 				stmt.analyze(gen);
 			}
 			gen.appendToPrettyCode(toXMLTail());

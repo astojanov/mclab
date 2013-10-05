@@ -1,11 +1,23 @@
 package natlab.backends.VRIRGen;
 
+import java.util.HashMap;
+
+import natlab.tame.classes.reference.PrimitiveClassReference;
+import natlab.tame.valueanalysis.ValueSet;
+import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
+import natlab.tame.valueanalysis.aggrvalue.AggrValue;
+import natlab.tame.valueanalysis.components.shape.DimValue;
+import natlab.tame.valueanalysis.components.shape.Shape;
+import ast.AssignStmt;
 import ast.Expr;
 import ast.FPLiteralExpr;
 import ast.IntLiteralExpr;
-import ast.LiteralExpr;
+import ast.MatrixExpr;
+import ast.Name;
 import ast.NameExpr;
 import ast.ParameterizedExpr;
+import ast.RangeExpr;
+import ast.Row;
 import ast.StringLiteralExpr;
 
 public class ExprCaseHandler {
@@ -40,15 +52,32 @@ public class ExprCaseHandler {
 			String name) {
 
 		gen.appendToPrettyCode(toXMLHead(name));
-		gen.appendToPrettyCode("<vtype name=float64>\n</vtype>\n");
+
+		// gen.appendToPrettyCode("<vtype name=float64>\n</vtype>\n");
+		HashMap<Expr, Name> map = gen.getAnalysisEngine()
+				.getTemporaryVariablesRemovalAnalysis().getExprToTempVarTable();
+
+		gen.appendToPrettyCode(HelperClass.getBinExprType(node, gen).toXML());
 		gen.appendToPrettyCode("<rhs>\n");
 		node.getArg(1).analyze(gen);
-		System.out.println("class : " + node.getArg(1).getClass().toString());
+
 		gen.appendToPrettyCode("</rhs>\n");
 		gen.appendToPrettyCode("<lhs>\n");
 		node.getArg(0).analyze(gen);
 		gen.appendToPrettyCode("</lhs>\n");
 		gen.appendToPrettyCode(toXMLTail());
+	}
+
+	public static void handleRangeExpr(RangeExpr node, VrirXmlGen gen) {
+		gen.appendToPrettyCode("<start>");
+		node.getLower().analyze(gen);
+		gen.appendToPrettyCode("</start>");
+		gen.appendToPrettyCode("<step>");
+		node.getIncr().analyze(gen);
+		gen.appendToPrettyCode("</step>");
+		gen.appendToPrettyCode("<stop>");
+		node.getUpper().analyze(gen);
+		gen.appendToPrettyCode("</stop>");
 	}
 
 	public static void handleIntLiteralExpr(IntLiteralExpr expr, VrirXmlGen gen) {
