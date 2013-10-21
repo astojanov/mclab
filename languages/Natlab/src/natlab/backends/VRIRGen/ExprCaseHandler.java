@@ -31,7 +31,8 @@ public class ExprCaseHandler {
 	public static void handleUnaryExpr(ParameterizedExpr node, VrirXmlGen gen,
 			String name) {
 		gen.appendToPrettyCode(toXMLHead(name));
-		gen.appendToPrettyCode("<vtype name=float64>\n</vtype>\n");
+		// TODO : Get unary expression type
+		gen.appendToPrettyCode(HelperClass.getUnaryExprType(node, gen).toXML());
 		node.getArg(0).analyze(gen);
 		gen.appendToPrettyCode(toXMLTail());
 	}
@@ -54,21 +55,18 @@ public class ExprCaseHandler {
 
 	public static void handleRangeExpr(RangeExpr node, VrirXmlGen gen) {
 
-		gen.appendToPrettyCode("<start>");
+		gen.appendToPrettyCode(HelperClass.toXML("start"));
 		node.getLower().analyze(gen);
-		gen.appendToPrettyCode("</start>");
-		// TODO:Clean this up
-		gen.appendToPrettyCode("<step>");
-		try {
+		gen.appendToPrettyCode(HelperClass.toXML("/start"));
 
+		if (node.getIncr() != null) {
+			gen.appendToPrettyCode(HelperClass.toXML("step"));
 			node.getIncr().analyze(gen);
-		} catch (NullPointerException e) {
-			System.out.println("Entered catch");
-			gen.appendToPrettyCode("</step>");
+			gen.appendToPrettyCode(HelperClass.toXML("/step"));
 		}
-		gen.appendToPrettyCode("<stop>");
+		gen.appendToPrettyCode(HelperClass.toXML("stop"));
 		node.getUpper().analyze(gen);
-		gen.appendToPrettyCode("</stop>");
+		gen.appendToPrettyCode(HelperClass.toXML("/stop"));
 	}
 
 	public static void handleIntLiteralExpr(IntLiteralExpr expr, VrirXmlGen gen) {

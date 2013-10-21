@@ -9,6 +9,7 @@ import ast.Name;
 import ast.NameExpr;
 import ast.ParameterizedExpr;
 import ast.Row;
+import ast.UnaryExpr;
 import natlab.tame.classes.reference.PrimitiveClassReference;
 import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
@@ -177,7 +178,7 @@ public class HelperClass {
 	}
 
 	public static String generateComplexityInfo(LiteralExpr lit, VrirXmlGen gen) {
-		
+
 		return null;
 	}
 
@@ -219,6 +220,32 @@ public class HelperClass {
 
 		}
 
+		return null;
+	}
+
+	public static VType getUnaryExprType(ParameterizedExpr node, VrirXmlGen gen) {
+		if (node.getParent() instanceof AssignStmt) {
+			Expr lhsExpr = ((AssignStmt) node.getParent()).getLHS();
+			if (lhsExpr instanceof MatrixExpr) {
+				return getLhsType((MatrixExpr) lhsExpr, gen);
+			} else if (lhsExpr instanceof NameExpr) {
+				return getLhsType((NameExpr) lhsExpr, gen);
+			} else if (lhsExpr instanceof ParameterizedExpr) {
+				return getLhsType((ParameterizedExpr) lhsExpr, gen);
+			}
+		} else {
+			Name tempName = (Name) gen.getAnalysisEngine()
+					.getTemporaryVariablesRemovalAnalysis()
+					.getExprToTempVarTable().get(node);
+			PrimitiveClassReference type = HelperClass.getDataType(
+					tempName.getID(), gen);
+			Shape<AggrValue<AdvancedMatrixValue>> shape = HelperClass.getShape(
+					tempName.getID(), gen);
+			String complexity = HelperClass.generateComplexityInfo(
+					tempName.getID(), gen);
+			return new VType(shape, type, VType.Layout.COLUMN_MAJOR, complexity);
+
+		}
 		return null;
 	}
 
@@ -269,7 +296,7 @@ public class HelperClass {
 				HelperClass.generateComplexityInfo(lhsExpr.getVarName(), gen));
 
 	}
-	
+
 	public static String toXML(String str) {
 		return "< " + str + ">\n";
 	}
