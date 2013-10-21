@@ -3,6 +3,7 @@ package natlab.backends.VRIRGen;
 import ast.AssignStmt;
 import ast.Expr;
 import ast.Function;
+import ast.LiteralExpr;
 import ast.MatrixExpr;
 import ast.Name;
 import ast.NameExpr;
@@ -172,6 +173,11 @@ public class HelperClass {
 					.geticType();
 
 		}
+		return null;
+	}
+
+	public static String generateComplexityInfo(LiteralExpr lit, VrirXmlGen gen) {
+		
 		return null;
 	}
 

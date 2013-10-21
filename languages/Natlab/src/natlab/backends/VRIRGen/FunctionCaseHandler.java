@@ -9,7 +9,7 @@ import ast.Name;
 public class FunctionCaseHandler {
 	public static void handleHeader(Function node, VrirXmlGen gen) {
 		gen.appendToPrettyCode("<function name=\"" + node.getName()
-				+ "\"\n <vtype name=\"func\"> \n");
+				+ "\">\n <vtype name=\"func\" > \n");
 		handleArgs(node, gen);
 		gen.appendToPrettyCode("</vtype>\n");
 	}

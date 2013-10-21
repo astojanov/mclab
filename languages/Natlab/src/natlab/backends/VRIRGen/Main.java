@@ -1,5 +1,11 @@
 package natlab.backends.VRIRGen;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Set;
 
 import natlab.backends.Fortran.codegen_readable.FortranCodeASTGenerator;
@@ -38,7 +44,7 @@ public class Main {
 		AdvancedTamerTool tool = new AdvancedTamerTool();
 		ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis = tool.analyze(
 				args, env);
-		
+
 		int size = analysis.getNodeList().size();
 
 		for (int i = 0; i < size; i++) {
@@ -65,24 +71,30 @@ public class Main {
 			Set<String> remainingVars = analysisEngine
 					.getTemporaryVariablesRemovalAnalysis()
 					.getRemainingVariablesNames();
-			
+
 			System.out.println("\ntamer plus analysis result: \n"
 					+ fTree.getPrettyPrinted() + "\n");
-			// System.err.println("remaining variables: \n"+remainingVars);
-			/*
-			 * Fortran code generation.
-			 */
-			System.err
+			
+			System.out
 					.println("pretty print the generated VRIR in XML format  .\n");
 			StringBuffer sb;
 			OperatorMapper.initMap();
 			VrirTypeMapper.initTypeMap();
-			
+
 			sb = VrirXmlGen.generateVrir((Function) fTree, remainingVars,
 					analysis, currentOutSet, i, size, fileName.split("\\.")[0],
 					analysisEngine);
 
 			System.err.println(sb);
+			try {
+				BufferedWriter buffer = Files.newBufferedWriter(
+						Paths.get(fileName.split("\\.")[0] + ".xml"),
+						Charset.forName("US-ASCII"));
+				buffer.write(sb.toString());
+				buffer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 
 	}

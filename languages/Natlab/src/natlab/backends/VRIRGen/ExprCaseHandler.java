@@ -1,23 +1,11 @@
 package natlab.backends.VRIRGen;
 
-import java.util.HashMap;
-
-import natlab.tame.classes.reference.PrimitiveClassReference;
-import natlab.tame.valueanalysis.ValueSet;
-import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
-import natlab.tame.valueanalysis.aggrvalue.AggrValue;
-import natlab.tame.valueanalysis.components.shape.DimValue;
-import natlab.tame.valueanalysis.components.shape.Shape;
-import ast.AssignStmt;
 import ast.Expr;
 import ast.FPLiteralExpr;
 import ast.IntLiteralExpr;
-import ast.MatrixExpr;
-import ast.Name;
 import ast.NameExpr;
 import ast.ParameterizedExpr;
 import ast.RangeExpr;
-import ast.Row;
 import ast.StringLiteralExpr;
 
 public class ExprCaseHandler {
@@ -53,10 +41,6 @@ public class ExprCaseHandler {
 
 		gen.appendToPrettyCode(toXMLHead(name));
 
-		// gen.appendToPrettyCode("<vtype name=float64>\n</vtype>\n");
-		HashMap<Expr, Name> map = gen.getAnalysisEngine()
-				.getTemporaryVariablesRemovalAnalysis().getExprToTempVarTable();
-
 		gen.appendToPrettyCode(HelperClass.getBinExprType(node, gen).toXML());
 		gen.appendToPrettyCode("<rhs>\n");
 		node.getArg(1).analyze(gen);
@@ -83,16 +67,50 @@ public class ExprCaseHandler {
 	public static void handleIntLiteralExpr(IntLiteralExpr expr, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("const", expr.getValue().getValue()
 				.intValue(), "value"));
+		gen.appendToPrettyCode(toXMLTail());
 	}
 
 	public static void handleFpLiteralExpr(FPLiteralExpr expr, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("const", expr.getValue().getValue()
 				.toString(), "value"));
+		// TODO: 2 types of complex expressions : complex and real . Make
+		// changes for that.
+
+		gen.appendToPrettyCode(toXMLTail());
+	}
+
+	public static void handleFunCallExpr(ParameterizedExpr expr, VrirXmlGen gen) {
+		gen.appendToPrettyCode(toXMLHead("FuncallExpr"));
+		gen.appendToPrettyCode(toXML("name"));
+		expr.getChild(0).analyze(gen);
+		gen.appendToPrettyCode(toXML("/name"));
+		gen.appendToPrettyCode(toXML("args"));
+		for (Expr args : expr.getArgList()) {
+			args.analyze(gen);
+		}
+		gen.appendToPrettyCode(toXML("/args"));
+		gen.appendToPrettyCode(toXMLTail());
+	}
+
+	public static void handleArrayIndexExpr(ParameterizedExpr expr,
+			VrirXmlGen gen) {
+		gen.appendToPrettyCode(toXMLHead("ArrayIndexExpr"));
+		gen.appendToPrettyCode(toXML("base"));
+		expr.getChild(0).analyze(gen);
+		gen.appendToPrettyCode(toXML("/base"));
+		gen.appendToPrettyCode(toXML("indices"));
+		// TODO : change to handle index expression after talking with Rahul
+		for (Expr args : expr.getArgList()) {
+			args.analyze(gen);
+		}
+		gen.appendToPrettyCode(toXML("/indices"));
+		gen.appendToPrettyCode(toXMLTail());
 	}
 
 	public static void handleStringLiteralExpr(StringLiteralExpr expr,
 			VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("const", expr.getValue(), "value"));
+		gen.appendToPrettyCode(toXMLTail());
 	}
 
 	public static StringBuffer toXMLHead(String name) {
@@ -111,5 +129,9 @@ public class ExprCaseHandler {
 
 	public static StringBuffer toXMLTail() {
 		return new StringBuffer("</expr>\n");
+	}
+
+	public static String toXML(String str) {
+		return "< " + str + ">\n";
 	}
 }

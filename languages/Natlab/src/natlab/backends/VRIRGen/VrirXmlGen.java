@@ -112,24 +112,24 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	private ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet;
 	private int size;
 	private int index;
-	private int indent = 1;
+	// private int indent = 1;
 	private AnalysisEngine analysisEngine;
 
-	public int getIndent() {
-		return indent;
-	}
-
-	public void setIndent(int indent) {
-		this.indent = indent;
-	}
-
-	public void incIndent() {
-		indent++;
-	}
-
-	public void decIndent() {
-		indent--;
-	}
+	// public int getIndent() {
+	// return indent;
+	// }
+	//
+	// public void setIndent(int indent) {
+	// this.indent = indent;
+	// }
+	//
+	// public void incIndent() {
+	// indent++;
+	// }
+	//
+	// public void decIndent() {
+	// indent--;
+	// }
 
 	VrirXmlGen(Function functionNode, Set<String> remainVars,
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
@@ -143,7 +143,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 		this.size = size;
 		this.index = index;
 		symTab = new SymbolTable();
-		indent = 0;
+		// indent = 0;
 		this.analysisEngine = analysisEngine;
 		genModuleXMLHead(moduleName);
 		functionNode.analyze(this);
@@ -479,16 +479,22 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	public void caseParameterizedExpr(ParameterizedExpr node) {
 
 		if (remainingVars.contains(node.getVarName())) {
-
+			ExprCaseHandler.handleArrayIndexExpr(node, this);
 		} else {
-			// Function call
 
+			// Operator
 			if (OperatorMapper.isOperator(node.getVarName())) {
 				// Binary operator
-				ExprCaseHandler.handleOpExpr(node, this, node.getVarName());
+				ExprCaseHandler.handleOpExpr(node, this,
+						OperatorMapper.get(node.getVarName()));
 				// ExprCaseHandler.handlePlusExpr(node, this);
 
 			}
+			// Function Call
+			else {
+				ExprCaseHandler.handleFunCallExpr(node, this);
+			}
+
 		}
 		// caseLValueExpr(node);
 	}
@@ -500,8 +506,6 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	public void setSymTab(SymbolTable symTab) {
 		this.symTab = symTab;
 	}
-
-	
 
 	public void caseCellIndexExpr(CellIndexExpr node) {
 		caseLValueExpr(node);
