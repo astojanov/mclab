@@ -411,16 +411,18 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseBreakStmt(BreakStmt node) {
+		StmtCaseHandler.handleBreakStmt(node, this);
 		caseStmt(node);
 	}
 
 	public void caseContinueStmt(ContinueStmt node) {
-
+		StmtCaseHandler.handleContinueStmt(node, this);
 		caseStmt(node);
 	}
 
 	public void caseReturnStmt(ReturnStmt node) {
 
+		// TODO: Ask rahul
 		caseStmt(node);
 	}
 
@@ -455,7 +457,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseRangeExpr(RangeExpr node) {
-
+		ExprCaseHandler.handleRangeExpr(node, this);
 		caseExpr(node);
 	}
 
@@ -478,6 +480,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 
 	public void caseParameterizedExpr(ParameterizedExpr node) {
 
+		// Array Index Expression
 		if (remainingVars.contains(node.getVarName())) {
 			ExprCaseHandler.handleArrayIndexExpr(node, this);
 		} else {
@@ -551,125 +554,124 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 		caseLiteralExpr(node);
 	}
 
-	public void caseUMinusExpr(UMinusExpr node) {
-		caseUnaryExpr(node);
-	}
-
-	public void caseUPlusExpr(UPlusExpr node) {
-		caseUnaryExpr(node);
-	}
-
-	public void caseNotExpr(NotExpr node) {
-		caseUnaryExpr(node);
-	}
-
-	public void caseMTransposeExpr(MTransposeExpr node) {
-		caseUnaryExpr(node);
-	}
-
-	public void caseArrayTransposeExpr(ArrayTransposeExpr node) {
-		caseUnaryExpr(node);
-	}
-
-	public void casePlusExpr(PlusExpr node) {
-
-	}
-
-	public void caseMinusExpr(MinusExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseMTimesExpr(MTimesExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseMDivExpr(MDivExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseMLDivExpr(MLDivExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseMPowExpr(MPowExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseETimesExpr(ETimesExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseEDivExpr(EDivExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseELDivExpr(ELDivExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseEPowExpr(EPowExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseAndExpr(AndExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseOrExpr(OrExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseShortCircuitAndExpr(ShortCircuitAndExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseShortCircuitOrExpr(ShortCircuitOrExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseLTExpr(LTExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseGTExpr(GTExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseLEExpr(LEExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseGEExpr(GEExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseEQExpr(EQExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseNEExpr(NEExpr node) {
-		caseBinaryExpr(node);
-	}
-
-	public void caseFunctionHandleExpr(FunctionHandleExpr node) {
-		caseExpr(node);
-	}
-
-	public void caseLambdaExpr(LambdaExpr node) {
-		caseExpr(node);
-	}
-
-	public void caseCSLExpr(CSLExpr node) {
-		caseNameExpr(node);
-	}
-
-	public void caseEndCallExpr(EndCallExpr node) {
-		caseExpr(node);
-	}
-
-	public void caseCheckScalarStmt(CheckScalarStmt node) {
-		caseStmt(node);
-	}
+	// public void caseUMinusExpr(UMinusExpr node) {
+	// caseUnaryExpr(node);
+	// }
+	//
+	// public void caseUPlusExpr(UPlusExpr node) {
+	// caseUnaryExpr(node);
+	// }
+	//
+	// public void caseNotExpr(NotExpr node) {
+	// caseUnaryExpr(node);
+	// }
+	//
+	// public void caseMTransposeExpr(MTransposeExpr node) {
+	// caseUnaryExpr(node);
+	// }
+	//
+	// public void caseArrayTransposeExpr(ArrayTransposeExpr node) {
+	// caseUnaryExpr(node);
+	// }
+	// public void casePlusExpr(PlusExpr node) {
+	//
+	// }
+	//
+	// public void caseMinusExpr(MinusExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseMTimesExpr(MTimesExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseMDivExpr(MDivExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseMLDivExpr(MLDivExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseMPowExpr(MPowExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseETimesExpr(ETimesExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseEDivExpr(EDivExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseELDivExpr(ELDivExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseEPowExpr(EPowExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseAndExpr(AndExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseOrExpr(OrExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseShortCircuitAndExpr(ShortCircuitAndExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseShortCircuitOrExpr(ShortCircuitOrExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseLTExpr(LTExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseGTExpr(GTExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseLEExpr(LEExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseGEExpr(GEExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseEQExpr(EQExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseNEExpr(NEExpr node) {
+	// caseBinaryExpr(node);
+	// }
+	//
+	// public void caseFunctionHandleExpr(FunctionHandleExpr node) {
+	// caseExpr(node);
+	// }
+	//
+	// public void caseLambdaExpr(LambdaExpr node) {
+	// caseExpr(node);
+	// }
+	//
+	// public void caseCSLExpr(CSLExpr node) {
+	// caseNameExpr(node);
+	// }
+	//
+	// public void caseEndCallExpr(EndCallExpr node) {
+	// caseExpr(node);
+	// }
+	//
+	// public void caseCheckScalarStmt(CheckScalarStmt node) {
+	// caseStmt(node);
+	// }
 
 	public static StringBuffer generateVrir(Function functionNode,
 			Set<String> remainingVars,

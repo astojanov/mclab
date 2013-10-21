@@ -53,12 +53,19 @@ public class ExprCaseHandler {
 	}
 
 	public static void handleRangeExpr(RangeExpr node, VrirXmlGen gen) {
+
 		gen.appendToPrettyCode("<start>");
 		node.getLower().analyze(gen);
 		gen.appendToPrettyCode("</start>");
+		// TODO:Clean this up
 		gen.appendToPrettyCode("<step>");
-		node.getIncr().analyze(gen);
-		gen.appendToPrettyCode("</step>");
+		try {
+
+			node.getIncr().analyze(gen);
+		} catch (NullPointerException e) {
+			System.out.println("Entered catch");
+			gen.appendToPrettyCode("</step>");
+		}
 		gen.appendToPrettyCode("<stop>");
 		node.getUpper().analyze(gen);
 		gen.appendToPrettyCode("</stop>");
@@ -81,29 +88,29 @@ public class ExprCaseHandler {
 
 	public static void handleFunCallExpr(ParameterizedExpr expr, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("FuncallExpr"));
-		gen.appendToPrettyCode(toXML("name"));
+		gen.appendToPrettyCode(HelperClass.toXML("name"));
 		expr.getChild(0).analyze(gen);
-		gen.appendToPrettyCode(toXML("/name"));
-		gen.appendToPrettyCode(toXML("args"));
+		gen.appendToPrettyCode(HelperClass.toXML("/name"));
+		gen.appendToPrettyCode(HelperClass.toXML("args"));
 		for (Expr args : expr.getArgList()) {
 			args.analyze(gen);
 		}
-		gen.appendToPrettyCode(toXML("/args"));
+		gen.appendToPrettyCode(HelperClass.toXML("/args"));
 		gen.appendToPrettyCode(toXMLTail());
 	}
 
 	public static void handleArrayIndexExpr(ParameterizedExpr expr,
 			VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("ArrayIndexExpr"));
-		gen.appendToPrettyCode(toXML("base"));
+		gen.appendToPrettyCode(HelperClass.toXML("base"));
 		expr.getChild(0).analyze(gen);
-		gen.appendToPrettyCode(toXML("/base"));
-		gen.appendToPrettyCode(toXML("indices"));
+		gen.appendToPrettyCode(HelperClass.toXML("/base"));
+		gen.appendToPrettyCode(HelperClass.toXML("indices"));
 		// TODO : change to handle index expression after talking with Rahul
 		for (Expr args : expr.getArgList()) {
 			args.analyze(gen);
 		}
-		gen.appendToPrettyCode(toXML("/indices"));
+		gen.appendToPrettyCode(HelperClass.toXML("/indices"));
 		gen.appendToPrettyCode(toXMLTail());
 	}
 
@@ -131,7 +138,4 @@ public class ExprCaseHandler {
 		return new StringBuffer("</expr>\n");
 	}
 
-	public static String toXML(String str) {
-		return "< " + str + ">\n";
-	}
 }

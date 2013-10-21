@@ -1,14 +1,13 @@
 package natlab.backends.VRIRGen;
 
 import ast.AssignStmt;
-import ast.EmptyStmt;
+import ast.BreakStmt;
+import ast.ContinueStmt;
 import ast.ForStmt;
 import ast.IfBlock;
 import ast.IfStmt;
-import ast.List;
 import ast.NameExpr;
 import ast.Stmt;
-import ast.SwitchStmt;
 import ast.WhileStmt;
 
 public class StmtCaseHandler {
@@ -39,12 +38,24 @@ public class StmtCaseHandler {
 
 	}
 
+	public static void handleBreakStmt(BreakStmt node, VrirXmlGen gen) {
+		gen.appendToPrettyCode(toXMLHead("BreakStmt"));
+		gen.appendToPrettyCode(toXMLTail());
+	}
+
+	public static void handleContinueStmt(ContinueStmt node, VrirXmlGen gen) {
+		gen.appendToPrettyCode(toXMLHead("ContStmt"));
+		gen.appendToPrettyCode(toXMLTail());
+	}
+
 	public static void handleForStmt(ForStmt node, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("forstmt"));
-		gen.appendToPrettyCode("<domain>");
+		gen.appendToPrettyCode(HelperClass.toXML("domain"));
+
 		node.getAssignStmt().getRHS().analyze(gen);
-		gen.appendToPrettyCode("</domain>");
-		gen.appendToPrettyCode("<itervars>");
+		gen.appendToPrettyCode(HelperClass.toXML("/domain"));
+		gen.appendToPrettyCode(HelperClass.toXML("itervars"));
+
 		if (node.getAssignStmt().getLHS() instanceof NameExpr) {
 			Symbol sym = gen.getSymbol(((NameExpr) ((Object) node
 					.getAssignStmt().getLHS())).getVarName());
@@ -61,8 +72,9 @@ public class StmtCaseHandler {
 			gen.appendToPrettyCode(sym.toXML());
 		}
 
-		gen.appendToPrettyCode("</itervars>");
+		gen.appendToPrettyCode(HelperClass.toXML("/itervars"));
 		gen.appendToPrettyCode(toXMLHead("stmtlist"));
+
 		for (Stmt stmt : node.getStmtList()) {
 			stmt.analyze(gen);
 		}
@@ -76,35 +88,31 @@ public class StmtCaseHandler {
 
 			gen.appendToPrettyCode(toXMLHead("ifstmt"));
 			ifblock.getCondition().analyze(gen);
-			gen.appendToPrettyCode("<if>\n");
+			gen.appendToPrettyCode(HelperClass.toXML("if"));
 			gen.appendToPrettyCode(toXMLHead("stmtlist"));
 			for (Stmt stmt : ifblock.getStmtList()) {
 
 				stmt.analyze(gen);
 			}
 			gen.appendToPrettyCode(toXMLTail());
-			gen.appendToPrettyCode("</if>\n");
+			gen.appendToPrettyCode(HelperClass.toXML("/if"));
 
 		}
 		if (node.hasElseBlock()) {
-			gen.appendToPrettyCode("<else>\n");
+			gen.appendToPrettyCode(HelperClass.toXML("else"));
 			for (Stmt stmt : node.getElseBlock().getStmtList()) {
 				stmt.analyze(gen);
 			}
-			gen.appendToPrettyCode("</else>\n");
+			gen.appendToPrettyCode(HelperClass.toXML("/else"));
 		}
 		gen.appendToPrettyCode(toXMLTail());
 	}
 
-	public static void handleList(List node, VrirXmlGen gen) {
-
-	}
-
 	public static StringBuffer toXMLHead(String name) {
-		return new StringBuffer("<stmt name=\"" + name + "\">\n");
+		return new StringBuffer(HelperClass.toXML("stmt name=\"" + name + "\""));
 	}
 
 	public static StringBuffer toXMLTail() {
-		return new StringBuffer("</stmt>\n");
+		return new StringBuffer(HelperClass.toXML("/stmt"));
 	}
 }

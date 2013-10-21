@@ -269,6 +269,10 @@ public class HelperClass {
 				HelperClass.generateComplexityInfo(lhsExpr.getVarName(), gen));
 
 	}
+	
+	public static String toXML(String str) {
+		return "< " + str + ">\n";
+	}
 	// public static Shape<AggrValue<AdvancedMatrixValue>> getOutputShape(
 	// Shape<AggrValue<AdvancedMatrixValue>> lhsShape,
 	// Shape<AggrValue<AdvancedMatrixValue>> rhsShape) {
