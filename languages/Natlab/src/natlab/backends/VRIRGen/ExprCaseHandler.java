@@ -60,6 +60,7 @@ public class ExprCaseHandler {
 		gen.appendToPrettyCode(HelperClass.toXML("/start"));
 
 		if (node.getIncr() != null) {
+
 			gen.appendToPrettyCode(HelperClass.toXML("step"));
 			node.getIncr().analyze(gen);
 			gen.appendToPrettyCode(HelperClass.toXML("/step"));

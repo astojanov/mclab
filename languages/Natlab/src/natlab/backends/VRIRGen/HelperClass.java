@@ -298,7 +298,7 @@ public class HelperClass {
 	}
 
 	public static String toXML(String str) {
-		return "< " + str + ">\n";
+		return "<" + str + ">\n";
 	}
 	// public static Shape<AggrValue<AdvancedMatrixValue>> getOutputShape(
 	// Shape<AggrValue<AdvancedMatrixValue>> lhsShape,

@@ -134,7 +134,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	VrirXmlGen(Function functionNode, Set<String> remainVars,
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
 			ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet,
-			int size, int index, String moduleName,
+			int size, int index, 
 			AnalysisEngine analysisEngine) {
 		prettyPrintedCode = new StringBuffer();
 		remainingVars = remainVars;
@@ -145,17 +145,19 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 		symTab = new SymbolTable();
 		// indent = 0;
 		this.analysisEngine = analysisEngine;
-		genModuleXMLHead(moduleName);
+		
+
 		functionNode.analyze(this);
-		genModuleXMLTail();
+		
 	}
 
-	public void genModuleXMLHead(String moduleName) {
-		this.appendToPrettyCode("<module name=\"" + moduleName + "\">\n");
+	public static void genModuleXMLHead(StringBuffer target, String moduleName) {
+		target.append("<module name=\"" + moduleName + "\">\n");
+
 	}
 
-	public void genModuleXMLTail() {
-		this.appendToPrettyCode("</module>\n");
+	public static void genModuleXMLTail(StringBuffer target) {
+		target.append("</module>\n");
 	}
 
 	public void addToSymTab(VType vtype, String name) {
@@ -677,10 +679,10 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 			Set<String> remainingVars,
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
 			ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet,
-			int index, int size, String moduleName,
+			int index, int size,
 			AnalysisEngine analysisEngine) {
 		return (new VrirXmlGen(functionNode, remainingVars, analysis,
-				currentOutSet, size, index, moduleName, analysisEngine))
+				currentOutSet, size, index, analysisEngine))
 				.getPrettyPrintedCode();
 	}
 
