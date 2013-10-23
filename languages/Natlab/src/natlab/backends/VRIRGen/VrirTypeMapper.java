@@ -18,15 +18,15 @@ public class VrirTypeMapper {
 		typeMap = new HashMap<String, String>();
 		typeMap.put("double", "float64");
 		typeMap.put("single", "float32");
-		typeMap.put("char", "char");
-		typeMap.put("int8", "int8");
-		typeMap.put("int16", "int16");
+		typeMap.put("char", null);
+		typeMap.put("int8", null);
+		typeMap.put("int16", null);
 		typeMap.put("int32", "int32");
 		typeMap.put("int64", "int64");
-		typeMap.put("uint8", "uint8");
-		typeMap.put("uint16", "uint16");
-		typeMap.put("uint32", "uint32");
-		typeMap.put("uint64", "uint64");
+		typeMap.put("uint8", null);
+		typeMap.put("uint16", null);
+		typeMap.put("uint32", null);
+		typeMap.put("uint64", null);
 		typeMap.put("logical", "boolean");
 
 	}

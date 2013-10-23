@@ -48,6 +48,9 @@ public class Main {
 		int size = analysis.getNodeList().size();
 		StringBuffer genXML = new StringBuffer();
 		VrirXmlGen.genModuleXMLHead(genXML, fileName.split("\\.")[0]);
+		genXML.append(HelperClass.toXML("fns"));
+		OperatorMapper.initMap();
+		VrirTypeMapper.initTypeMap();
 		for (int i = 0; i < size; i++) {
 			/*
 			 * type inference.
@@ -79,15 +82,13 @@ public class Main {
 			System.out
 					.println("pretty print the generated VRIR in XML format  .\n");
 			StringBuffer sb;
-			OperatorMapper.initMap();
-			VrirTypeMapper.initTypeMap();
 
 			sb = VrirXmlGen.generateVrir((Function) fTree, remainingVars,
 					analysis, currentOutSet, i, size, analysisEngine);
 			genXML.append(sb);
 
 		}
-
+		genXML.append(HelperClass.toXML("/fns"));
 		VrirXmlGen.genModuleXMLTail(genXML);
 		System.err.println(genXML);
 		try {
