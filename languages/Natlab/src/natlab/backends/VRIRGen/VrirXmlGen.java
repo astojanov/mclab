@@ -112,6 +112,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	private ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet;
 	private int size;
 	private int index;
+	final static public boolean onGPU = false;
 	// private int indent = 1;
 	private AnalysisEngine analysisEngine;
 
