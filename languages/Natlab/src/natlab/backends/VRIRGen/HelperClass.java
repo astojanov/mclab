@@ -9,7 +9,6 @@ import ast.Name;
 import ast.NameExpr;
 import ast.ParameterizedExpr;
 import ast.Row;
-import ast.UnaryExpr;
 import natlab.tame.classes.reference.PrimitiveClassReference;
 import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
@@ -132,37 +131,6 @@ public class HelperClass {
 		}
 		return null;
 	}
-
-	// public static VType genBinExprType(ParameterizedExpr node, VrirXmlGen
-	// gen) {
-	// if (node.getArg(0) instanceof NameExpr
-	// && node.getArg(1) instanceof NameExpr) {
-	// AggrValue<?> lhsVal = gen.getAnalysis().getNodeList()
-	// .get(gen.getIndex()).getAnalysis().getCurrentOutSet()
-	// .get((((NameExpr) node.getArg(0)).getName().getID()))
-	// .getSingleton();
-	//
-	// AggrValue<?> rhsVal = gen.getAnalysis().getNodeList()
-	// .get(gen.getIndex()).getAnalysis().getCurrentOutSet()
-	// .get((((NameExpr) node.getArg(1)).getName().getID()))
-	// .getSingleton();
-	// if ((Object) lhsVal instanceof AdvancedMatrixValue
-	// && (Object) rhsVal instanceof AdvancedMatrixValue) {
-	// // ((AdvancedMatrixValue) (Object) lhsVal);
-	//
-	// // ((AdvancedMatrixValue) (Object) rhsVal);
-	// Shape<AggrValue<AdvancedMatrixValue>> outShape = getOutputShape(
-	// ((AdvancedMatrixValue) (Object) lhsVal).getShape(),
-	// ((AdvancedMatrixValue) (Object) rhsVal).getShape());
-	//
-	// }
-	//
-	// } else {
-	//
-	// }
-	//
-	// return null;
-	// }
 
 	public static String generateComplexityInfo(NameExpr node, VrirXmlGen gen) {
 		AggrValue<AdvancedMatrixValue> val = gen.getAnalysis().getNodeList()
@@ -298,7 +266,7 @@ public class HelperClass {
 	}
 
 	public static String toXML(String str) {
-		return "< " + str + ">\n";
+		return "<" + str + ">\n";
 	}
 	// public static Shape<AggrValue<AdvancedMatrixValue>> getOutputShape(
 	// Shape<AggrValue<AdvancedMatrixValue>> lhsShape,

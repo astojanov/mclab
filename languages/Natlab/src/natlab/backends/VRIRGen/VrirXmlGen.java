@@ -112,6 +112,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	private ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet;
 	private int size;
 	private int index;
+	final static public boolean onGPU = false;
 	// private int indent = 1;
 	private AnalysisEngine analysisEngine;
 
@@ -134,8 +135,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	VrirXmlGen(Function functionNode, Set<String> remainVars,
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
 			ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet,
-			int size, int index, String moduleName,
-			AnalysisEngine analysisEngine) {
+			int size, int index, AnalysisEngine analysisEngine) {
 		prettyPrintedCode = new StringBuffer();
 		remainingVars = remainVars;
 		this.analysis = analysis;
@@ -145,17 +145,18 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 		symTab = new SymbolTable();
 		// indent = 0;
 		this.analysisEngine = analysisEngine;
-		genModuleXMLHead(moduleName);
+
 		functionNode.analyze(this);
-		genModuleXMLTail();
+
 	}
 
-	public void genModuleXMLHead(String moduleName) {
-		this.appendToPrettyCode("<module name=\"" + moduleName + "\">\n");
+	public static void genModuleXMLHead(StringBuffer target, String moduleName) {
+		target.append("<module name=\"" + moduleName + "\">\n");
+
 	}
 
-	public void genModuleXMLTail() {
-		this.appendToPrettyCode("</module>\n");
+	public static void genModuleXMLTail(StringBuffer target) {
+		target.append("</module>\n");
 	}
 
 	public void addToSymTab(VType vtype, String name) {
@@ -234,61 +235,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	@Override
-	public void caseProgram(Program node) {
-		caseASTNode(node);
-	}
-
-	@Override
-	public void caseBody(Body node) {
-		caseASTNode(node);
-	}
-
-	@Override
-	public void caseFunctionOrSignatureOrPropertyAccessOrStmt(
-			FunctionOrSignatureOrPropertyAccessOrStmt node) {
-		caseASTNode(node);
-	}
-
-	@Override
-	public void caseHelpComment(HelpComment node) {
-		caseASTNode(node);
-	}
-
-	@Override
 	public void caseExpr(Expr node) {
-		caseASTNode(node);
-	}
-
-	public void caseCompilationUnits(CompilationUnits node) {
-		caseASTNode(node);
-	}
-
-	public void caseAttribute(Attribute node) {
-		caseASTNode(node);
-	}
-
-	public void caseSuperClass(SuperClass node) {
-		caseASTNode(node);
-	}
-
-	public void caseProperty(Property node) {
-		caseASTNode(node);
-	}
-
-	public void caseEvent(Event node) {
-		caseASTNode(node);
-	}
-
-	public void caseName(Name node) {
-		caseASTNode(node);
-	}
-
-	public void caseSwitchCaseBlock(SwitchCaseBlock node) {
-
-		caseASTNode(node);
-	}
-
-	public void caseDefaultCaseBlock(DefaultCaseBlock node) {
 		caseASTNode(node);
 	}
 
@@ -304,90 +251,23 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 		caseASTNode(node);
 	}
 
-	public void caseClassBody(ClassBody node) {
-		caseBody(node);
-	}
-
-	public void caseStmt(Stmt node) {
-		caseFunctionOrSignatureOrPropertyAccessOrStmt(node);
-	}
-
-	public void caseLValueExpr(LValueExpr node) {
-
-		caseExpr(node);
-	}
-
-	public void caseLiteralExpr(LiteralExpr node) {
-		caseExpr(node);
-	}
-
-	public void caseUnaryExpr(UnaryExpr node) {
-		caseExpr(node);
-	}
-
-	public void caseBinaryExpr(BinaryExpr node) {
-		caseExpr(node);
-	}
-
-	public void caseScript(Script node) {
-		caseProgram(node);
-	}
-
 	public void caseFunctionList(FunctionList node) {
 		caseProgram(node);
-	}
-
-	public void caseEmptyProgram(EmptyProgram node) {
-		caseProgram(node);
-	}
-
-	public void caseClassDef(ClassDef node) {
-		caseProgram(node);
-	}
-
-	public void caseProperties(Properties node) {
-		caseClassBody(node);
-	}
-
-	public void caseMethods(Methods node) {
-	}
-
-	public void caseSignature(Signature node) {
-		caseFunctionOrSignatureOrPropertyAccessOrStmt(node);
-	}
-
-	public void casePropertyAccess(PropertyAccess node) {
-		caseFunctionOrSignatureOrPropertyAccessOrStmt(node);
-	}
-
-	public void caseClassEvents(ClassEvents node) {
-		caseClassBody(node);
 	}
 
 	public void caseFunction(Function node) {
 		// caseFunctionOrSignatureOrPropertyAccessOrStmt(node);
 		FunctionCaseHandler.handleHeader(node, this);
-
+		this.appendToPrettyCode(HelperClass.toXML("body"));
 		for (Stmt stmt : node.getStmts()) {
 
 			stmt.analyze(this);
 		}
+		this.appendToPrettyCode(HelperClass.toXML("/body"));
 		this.appendToPrettyCode(symTab.toXML());
-
+		HelperClass.toXML("/body");
 		FunctionCaseHandler.handleTail(node, this);
 
-	}
-
-	public void caseOneLineHelpComment(OneLineHelpComment node) {
-		caseHelpComment(node);
-	}
-
-	public void caseMultiLineHelpComment(MultiLineHelpComment node) {
-		caseHelpComment(node);
-	}
-
-	public void caseExprStmt(ExprStmt node) {
-		caseStmt(node);
 	}
 
 	public void caseAssignStmt(AssignStmt node) {
@@ -396,18 +276,6 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 
 		// caseStmt(node);
 
-	}
-
-	public void caseGlobalStmt(GlobalStmt node) {
-		caseStmt(node);
-	}
-
-	public void casePersistentStmt(PersistentStmt node) {
-		caseStmt(node);
-	}
-
-	public void caseShellCommandStmt(ShellCommandStmt node) {
-		caseStmt(node);
 	}
 
 	public void caseBreakStmt(BreakStmt node) {
@@ -677,10 +545,9 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 			Set<String> remainingVars,
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
 			ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet,
-			int index, int size, String moduleName,
-			AnalysisEngine analysisEngine) {
+			int index, int size, AnalysisEngine analysisEngine) {
 		return (new VrirXmlGen(functionNode, remainingVars, analysis,
-				currentOutSet, size, index, moduleName, analysisEngine))
+				currentOutSet, size, index, analysisEngine))
 				.getPrettyPrintedCode();
 	}
 

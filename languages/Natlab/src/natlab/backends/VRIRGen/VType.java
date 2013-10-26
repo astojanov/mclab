@@ -57,9 +57,7 @@ public class VType {
 	}
 
 	private String getVarType() {
-		if (complexity.equalsIgnoreCase("COMPLEX")) {
-			return "complex";
-		}
+
 		return VrirTypeMapper.getType(type.getName());
 
 	}
@@ -78,7 +76,8 @@ public class VType {
 	}
 
 	private void genScalarXML(StringBuffer vTypeXML) {
-		vTypeXML.append("<vtype name= \"" + getVarType() + "\"");
+		vTypeXML.append("<vtype ctype= " + getComplexity() + " name= \""
+				+ getVarType() + "\"");
 		vTypeXML.append(">\n");
 		vTypeXML.append("</vtype>\n");
 	}

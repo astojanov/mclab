@@ -46,7 +46,11 @@ public class Main {
 				args, env);
 
 		int size = analysis.getNodeList().size();
-
+		StringBuffer genXML = new StringBuffer();
+		VrirXmlGen.genModuleXMLHead(genXML, fileName.split("\\.")[0]);
+		genXML.append(HelperClass.toXML("fns"));
+		OperatorMapper.initMap();
+		VrirTypeMapper.initTypeMap();
 		for (int i = 0; i < size; i++) {
 			/*
 			 * type inference.
@@ -74,27 +78,27 @@ public class Main {
 
 			System.out.println("\ntamer plus analysis result: \n"
 					+ fTree.getPrettyPrinted() + "\n");
-			
+
 			System.out
 					.println("pretty print the generated VRIR in XML format  .\n");
 			StringBuffer sb;
-			OperatorMapper.initMap();
-			VrirTypeMapper.initTypeMap();
 
 			sb = VrirXmlGen.generateVrir((Function) fTree, remainingVars,
-					analysis, currentOutSet, i, size, fileName.split("\\.")[0],
-					analysisEngine);
+					analysis, currentOutSet, i, size, analysisEngine);
+			genXML.append(sb);
 
-			System.err.println(sb);
-			try {
-				BufferedWriter buffer = Files.newBufferedWriter(
-						Paths.get(fileName.split("\\.")[0] + ".xml"),
-						Charset.forName("US-ASCII"));
-				buffer.write(sb.toString());
-				buffer.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		}
+		genXML.append(HelperClass.toXML("/fns"));
+		VrirXmlGen.genModuleXMLTail(genXML);
+		System.err.println(genXML);
+		try {
+			BufferedWriter buffer = Files.newBufferedWriter(
+					Paths.get(fileName.split("\\.")[0] + ".xml"),
+					Charset.forName("US-ASCII"));
+			buffer.write(genXML.toString());
+			buffer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
 	}

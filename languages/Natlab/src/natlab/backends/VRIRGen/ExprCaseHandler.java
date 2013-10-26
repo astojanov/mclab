@@ -21,8 +21,7 @@ public class ExprCaseHandler {
 			String name) {
 		if (node.getArgList().getNumChild() == 2) {
 			handleBinExpr(node, gen, name);
-		}
-		if (node.getArgList().getNumChild() == 1) {
+		} else if (node.getArgList().getNumChild() == 1) {
 			handleUnaryExpr(node, gen, name);
 
 		}
@@ -33,7 +32,9 @@ public class ExprCaseHandler {
 		gen.appendToPrettyCode(toXMLHead(name));
 		// TODO : Get unary expression type
 		gen.appendToPrettyCode(HelperClass.getUnaryExprType(node, gen).toXML());
+		gen.appendToPrettyCode(HelperClass.toXML("base"));
 		node.getArg(0).analyze(gen);
+		gen.appendToPrettyCode(HelperClass.toXML("/base"));
 		gen.appendToPrettyCode(toXMLTail());
 	}
 
@@ -45,7 +46,6 @@ public class ExprCaseHandler {
 		gen.appendToPrettyCode(HelperClass.getBinExprType(node, gen).toXML());
 		gen.appendToPrettyCode("<rhs>\n");
 		node.getArg(1).analyze(gen);
-
 		gen.appendToPrettyCode("</rhs>\n");
 		gen.appendToPrettyCode("<lhs>\n");
 		node.getArg(0).analyze(gen);
@@ -60,6 +60,7 @@ public class ExprCaseHandler {
 		gen.appendToPrettyCode(HelperClass.toXML("/start"));
 
 		if (node.getIncr() != null) {
+
 			gen.appendToPrettyCode(HelperClass.toXML("step"));
 			node.getIncr().analyze(gen);
 			gen.appendToPrettyCode(HelperClass.toXML("/step"));
@@ -78,6 +79,7 @@ public class ExprCaseHandler {
 	public static void handleFpLiteralExpr(FPLiteralExpr expr, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("const", expr.getValue().getValue()
 				.toString(), "value"));
+		
 		// TODO: 2 types of complex expressions : complex and real . Make
 		// changes for that.
 
