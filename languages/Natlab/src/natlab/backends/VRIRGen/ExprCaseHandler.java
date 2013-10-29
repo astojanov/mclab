@@ -59,7 +59,7 @@ public class ExprCaseHandler {
 		node.getLower().analyze(gen);
 		gen.appendToPrettyCode(HelperClass.toXML("/start"));
 
-		if (node.getIncr() != null) {
+		if (node.hasIncr()) {
 
 			gen.appendToPrettyCode(HelperClass.toXML("step"));
 			node.getIncr().analyze(gen);
@@ -79,7 +79,7 @@ public class ExprCaseHandler {
 	public static void handleFpLiteralExpr(FPLiteralExpr expr, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("const", expr.getValue().getValue()
 				.toString(), "value"));
-		
+
 		// TODO: 2 types of complex expressions : complex and real . Make
 		// changes for that.
 
