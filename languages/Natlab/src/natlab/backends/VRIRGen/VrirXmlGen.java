@@ -338,11 +338,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseNameExpr(NameExpr node) {
-		VType vtype = HelperClass.generateVType(analysis, getIndex(),
-				node.getName());
-		if (!symTab.contains(node.getName().getID())) {
-			symTab.putSymbol(vtype, node.getName().getID());
-		}
+		
 		ExprCaseHandler.handleNameExpr(node, this);
 	}
 
@@ -350,6 +346,8 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 
 		// Array Index Expression
 		if (remainingVars.contains(node.getVarName())) {
+			// System.out.println("name  in parameterized expression"
+			// + node.getVarName());
 			ExprCaseHandler.handleArrayIndexExpr(node, this);
 		} else {
 

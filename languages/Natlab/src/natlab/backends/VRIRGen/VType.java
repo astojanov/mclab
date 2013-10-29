@@ -76,7 +76,7 @@ public class VType {
 	}
 
 	private void genScalarXML(StringBuffer vTypeXML) {
-		vTypeXML.append("<vtype ctype= " + getComplexity() + " name= \""
+		vTypeXML.append("<vtype ctype= \"" + getComplexity() + "\" name= \""
 				+ getVarType() + "\"");
 		vTypeXML.append(">\n");
 		vTypeXML.append("</vtype>\n");

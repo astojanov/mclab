@@ -114,8 +114,8 @@ public class StmtCaseHandler {
 
 	public static StringBuffer toListXMLHead(boolean onGpu) {
 		StringBuffer buff = new StringBuffer();
-		buff.append(HelperClass.toXML("StmtList onGpu="
-				+ Boolean.toString(onGpu)));
+		buff.append(HelperClass.toXML("stmt name=\"StmtList\" onGpu=\""
+				+ Boolean.toString(onGpu) + "\""));
 		buff.append(HelperClass.toXML("stmts"));
 		return buff;
 	}

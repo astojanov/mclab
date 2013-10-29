@@ -35,8 +35,10 @@ public class Main {
 		 * pass the type info of the input argument to the program, currently,
 		 * the type info is composed like double&3*3&REAL.
 		 */
-		String fileDir = "/home/sameer/mclab/";
-		String fileName = "simple.m";
+		String fileDir = "/home/2012/sjagda/mclab/adpt/";
+		String fileName = "drv_adpt.m";
+		// String fileDir = "/home/2012/sjagda/mclab/";
+		// String fileName = "simple.m";
 		String fileIn = fileDir + fileName;
 		GenericFile gFile = GenericFile.create(fileIn);
 		FileEnvironment env = new FileEnvironment(gFile); // get path
@@ -51,13 +53,14 @@ public class Main {
 		genXML.append(HelperClass.toXML("fns"));
 		OperatorMapper.initMap();
 		VrirTypeMapper.initTypeMap();
+
 		for (int i = 0; i < size; i++) {
 			/*
 			 * type inference.
 			 */
 			ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet = analysis
 					.getNodeList().get(i).getAnalysis().getCurrentOutSet();
-			// System.err.println(currentOutSet);
+
 			/*
 			 * tamer plus analysis.
 			 */
@@ -65,8 +68,10 @@ public class Main {
 					.getFunction();
 			// TamerPlusUtils.debugMode();
 			// System.out.println("tamer pretty print: \n"+function.getAst().getPrettyPrinted());
+
 			TransformationEngine transformationEngine = TransformationEngine
 					.forAST(function.getAst());
+
 			AnalysisEngine analysisEngine = transformationEngine
 					.getAnalysisEngine();
 			@SuppressWarnings("rawtypes")
@@ -82,15 +87,18 @@ public class Main {
 			System.out
 					.println("pretty print the generated VRIR in XML format  .\n");
 			StringBuffer sb;
-
+			System.out.println("size    " + size + "     i    " + i);
 			sb = VrirXmlGen.generateVrir((Function) fTree, remainingVars,
 					analysis, currentOutSet, i, size, analysisEngine);
 			genXML.append(sb);
 
 		}
 		genXML.append(HelperClass.toXML("/fns"));
+
 		VrirXmlGen.genModuleXMLTail(genXML);
+
 		System.err.println(genXML);
+
 		try {
 			BufferedWriter buffer = Files.newBufferedWriter(
 					Paths.get(fileName.split("\\.")[0] + ".xml"),
