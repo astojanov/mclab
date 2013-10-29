@@ -13,15 +13,22 @@ import natlab.tame.classes.reference.PrimitiveClassReference;
 import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
 import natlab.tame.valueanalysis.aggrvalue.AggrValue;
+import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
 import natlab.tame.valueanalysis.components.shape.Shape;
 
 public class HelperClass {
 	public static PrimitiveClassReference getDataType(
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
-			int graphIndex, Function node, String ID, int i) {
+			int graphIndex, Function node, String ID, int paramIndx) {
 
+		System.out.println("Function name  "
+				+ node.getName()
+				+ "   number of arguments "
+				+ analysis.getNodeList().get(graphIndex).getAnalysis()
+						.getArgs().size() + "  paramIndx     " + paramIndx);
 		AdvancedMatrixValue temp = (AdvancedMatrixValue) (analysis
-				.getNodeList().get(graphIndex).getAnalysis().getArgs().get(i));
+				.getNodeList().get(graphIndex).getAnalysis().getArgs()
+				.get(paramIndx));
 
 		return temp.getMatlabClass();
 
@@ -45,13 +52,14 @@ public class HelperClass {
 
 	public static VType generateVType(
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
-			int graphIndex, Function node, Name param, int i) {
+			int graphIndex, Function node, Name param, int paramIndx) {
+		// System.out.println("paramindx in gen vtype " + paramIndx);
 		PrimitiveClassReference paramType = HelperClass.getDataType(analysis,
-				graphIndex, node, param.getID(), i);
+				graphIndex, node, param.getID(), paramIndx);
 		Shape<AggrValue<AdvancedMatrixValue>> shape = HelperClass.getShape(
-				analysis, graphIndex, node, param.getID(), i);
+				analysis, graphIndex, node, param.getID(), paramIndx);
 		String complexity = generateComplexityInfo(analysis, graphIndex, node,
-				param, i);
+				param, paramIndx);
 		return new VType(shape, paramType, VType.Layout.COLUMN_MAJOR,
 				complexity);
 	}
@@ -59,9 +67,14 @@ public class HelperClass {
 	public static VType generateVType(
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
 			int graphIndex, Name node) {
+		// if (analysis.getNodeList().get(graphIndex).getAnalysis()
+		// .getCurrentOutSet().get(node.getID()) == null) {
+		// System.out.println("node where error  " + node.getID());
+		// }
 		AggrValue<?> temp = analysis.getNodeList().get(graphIndex)
 				.getAnalysis().getCurrentOutSet().get(node.getID())
 				.getSingleton();
+
 		if ((Object) temp instanceof AdvancedMatrixValue) {
 			return new VType(
 					(((AdvancedMatrixValue) (Object) temp)).getShape(),
@@ -263,6 +276,14 @@ public class HelperClass {
 		return new VType(shape, type, VType.Layout.COLUMN_MAJOR,
 				HelperClass.generateComplexityInfo(lhsExpr.getVarName(), gen));
 
+	}
+
+	public static boolean isVar(VrirXmlGen gen, String name) {
+		return gen.getRemainingVars().contains(name);
+	}
+
+	public static boolean isVar(VrirXmlGen gen, NameExpr expr) {
+		return gen.getRemainingVars().contains(expr.getName().getID());
 	}
 
 	public static String toXML(String str) {

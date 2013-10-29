@@ -10,10 +10,22 @@ import ast.StringLiteralExpr;
 
 public class ExprCaseHandler {
 	public static void handleNameExpr(NameExpr node, VrirXmlGen gen) {
-		gen.appendToPrettyCode(toXMLHead(node.getName().getID(),
-				gen.getSymbol(node.getName().getID()).getId(), "id"));
-		gen.appendToPrettyCode(gen.getSymbol(node.getName().getID()).getVtype()
-				.toXML());
+		if (HelperClass.isVar(gen, node)) {
+
+			if (!gen.getSymTab().contains(node.getName().getID())) {
+				VType vtype = HelperClass.generateVType(gen.getAnalysis(),
+						gen.getIndex(), node.getName());
+				gen.getSymTab().putSymbol(vtype, node.getName().getID());
+			}
+		}
+		if (gen.getSymbol(node.getName().getID()) != null) {
+			gen.appendToPrettyCode(toXMLHead(node.getName().getID(), gen
+					.getSymbol(node.getName().getID()).getId(), "id"));
+		} else {
+			gen.appendToPrettyCode(toXMLHead(node.getName().getID(), 1, "id"));
+		}
+		// gen.appendToPrettyCode(gen.getSymbol(node.getName().getID()).getVtype()
+		// .toXML());
 		gen.appendToPrettyCode(toXMLTail());
 	}
 
