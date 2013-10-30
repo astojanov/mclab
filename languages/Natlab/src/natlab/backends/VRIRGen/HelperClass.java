@@ -13,6 +13,7 @@ import natlab.tame.classes.reference.PrimitiveClassReference;
 import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
 import natlab.tame.valueanalysis.aggrvalue.AggrValue;
+import natlab.tame.valueanalysis.aggrvalue.CellValue;
 import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
 import natlab.tame.valueanalysis.components.shape.Shape;
 
@@ -21,11 +22,6 @@ public class HelperClass {
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
 			int graphIndex, Function node, String ID, int paramIndx) {
 
-		System.out.println("Function name  "
-				+ node.getName()
-				+ "   number of arguments "
-				+ analysis.getNodeList().get(graphIndex).getAnalysis()
-						.getArgs().size() + "  paramIndx     " + paramIndx);
 		AdvancedMatrixValue temp = (AdvancedMatrixValue) (analysis
 				.getNodeList().get(graphIndex).getAnalysis().getArgs()
 				.get(paramIndx));
@@ -82,6 +78,12 @@ public class HelperClass {
 					VType.Layout.COLUMN_MAJOR,
 					(((AdvancedMatrixValue) (Object) temp)).getisComplexInfo()
 							.geticType());
+		} else if ((Object) temp instanceof CellValue) {
+
+			(((CellValue) (Object) temp)).getValues();
+
+		} else {
+			System.out.println("class " + temp.getClass().toString());
 		}
 
 		return null;
@@ -191,6 +193,11 @@ public class HelperClass {
 			Name tempName = (Name) gen.getAnalysisEngine()
 					.getTemporaryVariablesRemovalAnalysis()
 					.getExprToTempVarTable().get(node);
+			if (tempName == null) {
+				System.out.println("temp name   " + node.getVarName()
+						+ " args   "
+						+ ((ParameterizedExpr) node.getArg(0)).getVarName());
+			}
 			PrimitiveClassReference type = HelperClass.getDataType(
 					tempName.getID(), gen);
 			Shape<AggrValue<AdvancedMatrixValue>> shape = HelperClass.getShape(
