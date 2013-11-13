@@ -138,17 +138,20 @@ public class GenerateSubroutine {
 				VariableList varList = new VariableList();
 				if (Debug) System.out.println(variable + "'s value is " + fcg.getMatrixValue(variable));
 				/*
-				 * declare types
+				 * declare types, especially character string.
 				 */
 				if (fcg.getMatrixValue(variable).getMatlabClass().equals(PrimitiveClassReference.CHAR) 
 						&& !fcg.getMatrixValue(variable).getShape().isScalar()) {
 					declStmt.setType(fcg.fortranMapping.getFortranTypeMapping("char")
 							+"("+fcg.getMatrixValue(variable).getShape().getDimensions().get(1)+")");
 				}
+				else if (fcg.forceToInt.contains(variable)) {
+					declStmt.setType("INTEGER(KIND=4)");
+				}
 				else declStmt.setType(fcg.fortranMapping.getFortranTypeMapping(
 						fcg.getMatrixValue(variable).getMatlabClass().toString()));
 				/*
-				 * declare arrays.
+				 * declare arrays, but not character string.
 				 */
 				if (!fcg.getMatrixValue(variable).getMatlabClass().equals(PrimitiveClassReference.CHAR) 
 						&& !fcg.getMatrixValue(variable).getShape().isScalar()) {
@@ -170,7 +173,7 @@ public class GenerateSubroutine {
 					if (!variableShapeIsKnown) {
 						StringBuffer tempBuf = new StringBuffer();
 						tempBuf.append("DIMENSION(");
-						for (int i=1; i<=dim.size(); i++) {
+						for (int i = 0; i < dim.size(); i++) {
 							if (counter) tempBuf.append(",");
 							tempBuf.append(":");
 							counter = true;
@@ -178,7 +181,7 @@ public class GenerateSubroutine {
 						tempBuf.append(") , ALLOCATABLE");
 						keyword.setName(tempBuf.toString());
 						keywordList.addKeyword(keyword);
-						if (fcg.inArgs.contains(variable) 
+						/*if (fcg.inArgs.contains(variable) 
 								&& !fcg.inputHasChanged.contains(variable)) {
 							Keyword keyword2 = new Keyword();
 							keyword2.setName("INTENT(IN)");
@@ -188,14 +191,14 @@ public class GenerateSubroutine {
 							Keyword keyword2 = new Keyword();
 							keyword2.setName("INTENT(OUT)");
 							keywordList.addKeyword(keyword2);
-						}
+						}*/
 						Variable var = new Variable();
 						var.setName(variable);
 						varList.addVariable(var);
-						// need extra temporaries for runtime allocate variables.
+						/*// need extra temporaries for runtime reallocate variables.
 						Variable var_bk = new Variable();
 						var_bk.setName(variable+"_bk");
-						varList.addVariable(var_bk);
+						varList.addVariable(var_bk);*/
 						declStmt.setKeywordList(keywordList);
 						declStmt.setVariableList(varList);
 					}
@@ -208,14 +211,9 @@ public class GenerateSubroutine {
 						StringBuffer tempBuf = new StringBuffer();
 						tempBuf.append("DIMENSION(");
 						for (int i = 0; i < dim.size(); i++) {
-							if (i == 0 && dim.get(0).getIntValue().equals(1)) {
-								// transform 2-dimensional 1-by-n array to a vector.
-							}
-							else {
-								if (counter) tempBuf.append(",");
-								tempBuf.append(dim.get(i).toString());
-								counter = true;								
-							}
+							if (counter) tempBuf.append(",");
+							tempBuf.append(dim.get(i).toString());
+							counter = true;
 						}
 						tempBuf.append(")");
 						keyword.setName(tempBuf.toString());
@@ -225,7 +223,7 @@ public class GenerateSubroutine {
 						 * the input has been modified, but for main 
 						 * programs or functions, we don't need to care.
 						 */
-						if (fcg.inArgs.contains(variable) 
+						/*if (fcg.inArgs.contains(variable) 
 								&& !fcg.inputHasChanged.contains(variable)) {
 							Keyword keyword2 = new Keyword();
 							keyword2.setName("INTENT(IN)");
@@ -235,7 +233,7 @@ public class GenerateSubroutine {
 							Keyword keyword2 = new Keyword();
 							keyword2.setName("INTENT(OUT)");
 							keywordList.addKeyword(keyword2);
-						}
+						}*/
 						Variable var = new Variable();
 						var.setName(variable);
 						varList.addVariable(var);
@@ -252,7 +250,7 @@ public class GenerateSubroutine {
 				 * declare scalars.
 				 */
 				else {
-					if (fcg.inArgs.contains(variable) 
+					/*if (fcg.inArgs.contains(variable) 
 							&& !fcg.inputHasChanged.contains(variable)) {
 						Keyword keyword = new Keyword();
 						keyword.setName("INTENT(IN)");
@@ -264,7 +262,7 @@ public class GenerateSubroutine {
 						keyword.setName("INTENT(OUT)");
 						keywordList.addKeyword(keyword);
 						declStmt.setKeywordList(keywordList);
-					}
+					}*/
 					Variable var = new Variable();
 					var.setName(variable);
 					varList.addVariable(var);
@@ -275,7 +273,22 @@ public class GenerateSubroutine {
 					}
 					declStmt.setVariableList(varList);
 				}
-				declSection.addDeclStmt(declStmt);
+				/* 
+				 * if several variables have the same type declaration, 
+				 * we should declare them in one line (for readability).
+				 * we need a method to compare declStmt.
+				 */
+				boolean redundant = false;
+				for (int i = 0; i < declSection.getDeclStmtList().getNumChild(); i++) {
+					if (GenerateMainEntryPoint.compareDecl(declSection.getDeclStmt(i), declStmt)) {
+						for (int j = 0; j < declStmt.getVariableList().getNumChild(); j++) {
+							declSection.getDeclStmt(i).getVariableList().addVariable(
+									declStmt.getVariableList().getVariable(j));
+						}
+						redundant = true;
+					}
+				}
+				if (!redundant) declSection.addDeclStmt(declStmt);
 			}
 		}
 		/*
@@ -301,7 +314,22 @@ public class GenerateSubroutine {
 			var.setName(tmpVariable);
 			varList.addVariable(var);
 			declStmt.setVariableList(varList);
-			declSection.addDeclStmt(declStmt);
+			/* 
+			 * if several variables have the same type declaration, 
+			 * we should declare them in one line (for readability).
+			 * we need a method to compare declStmt.
+			 */
+			boolean redundant = false;
+			for (int i = 0; i < declSection.getDeclStmtList().getNumChild(); i++) {
+				if (GenerateMainEntryPoint.compareDecl(declSection.getDeclStmt(i), declStmt)) {
+					for (int j = 0; j < declStmt.getVariableList().getNumChild(); j++) {
+						declSection.getDeclStmt(i).getVariableList().addVariable(
+								declStmt.getVariableList().getVariable(j));
+					}
+					redundant = true;
+				}
+			}
+			if (!redundant) declSection.addDeclStmt(declStmt);
 		}
 		subroutine.setDeclarationSection(declSection);
 		subroutine.setProgramEnd("END SUBROUTINE");

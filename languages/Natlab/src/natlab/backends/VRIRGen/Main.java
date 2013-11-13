@@ -35,10 +35,10 @@ public class Main {
 		 * pass the type info of the input argument to the program, currently,
 		 * the type info is composed like double&3*3&REAL.
 		 */
-		String fileDir = "/home/2012/sjagda/mclab/adpt/";
-		String fileName = "drv_adpt.m";
-		// String fileDir = "/home/2012/sjagda/mclab/";
-		// String fileName = "simple.m";
+		// String fileDir = "/home/2012/sjagda/mclab/mbrt/";
+		// String fileName = "drv_mbrt.m";
+		String fileDir = "/home/2012/sjagda/mclab/";
+		String fileName = "simple.m";
 		String fileIn = fileDir + fileName;
 		GenericFile gFile = GenericFile.create(fileIn);
 		FileEnvironment env = new FileEnvironment(gFile); // get path
@@ -97,7 +97,7 @@ public class Main {
 
 		VrirXmlGen.genModuleXMLTail(genXML);
 
-		System.err.println(genXML);
+		// System.err.println(genXML);
 
 		try {
 			BufferedWriter buffer = Files.newBufferedWriter(

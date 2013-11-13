@@ -1,11 +1,15 @@
 package natlab.backends.Fortran.codegen_readable.astCaseHandler;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import ast.Function;
 
 import natlab.tame.classes.reference.PrimitiveClassReference;
+import natlab.tame.valueanalysis.aggrvalue.AggrValue;
+import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
 import natlab.tame.valueanalysis.components.shape.DimValue;
+import natlab.tame.valueanalysis.components.shape.ShapeFactory;
 import natlab.backends.Fortran.codegen_readable.*;
 import natlab.backends.Fortran.codegen_readable.FortranAST_readable.*;
 
@@ -39,6 +43,9 @@ public class GenerateMainEntryPoint {
 		fcg.subprogram = preMainEntry;
 		StatementSection preStmtSection = new StatementSection();
 		preMainEntry.setStatementSection(preStmtSection);
+		if (fcg.inArgs.size() != 0) {
+			fcg.forceToInt.add(fcg.inArgs.get(0));
+		}
 		fcg.iterateStatements(node.getStmts());
 		/* 
 		 * second pass of all the statements, using 
@@ -48,6 +55,49 @@ public class GenerateMainEntryPoint {
 		fcg.subprogram = mainEntry;
 		StatementSection stmtSection = new StatementSection();
 		mainEntry.setStatementSection(stmtSection);
+		if (fcg.inArgs.size() != 0) {
+			GetInput getInput = new GetInput();
+			StringBuffer temp = new StringBuffer();
+			temp.append("\nint_tmpvar = 0\n");
+			temp.append("arg_buffer = '0000000000'\n");
+			temp.append("DO int_tmpvar = 1 , IARGC()\n");
+			temp.append(fcg.standardIndent + "CALL GETARG(int_tmpvar, arg_buffer)\n");
+			temp.append(fcg.standardIndent + "IF ((int_tmpvar == 1)) THEN\n");
+			temp.append(fcg.standardIndent + fcg.standardIndent + "READ(arg_buffer, *) scale\n");
+			temp.append(fcg.standardIndent + "END IF\n");
+			temp.append("END DO\n");
+			
+			// here is a hack to add timing TODO find a better way.
+			temp.append("\nCALL CPU_TIME(t1);\n");
+			fcg.fotranTemporaries.put("t1", new BasicMatrixValue(
+					null, 
+					PrimitiveClassReference.DOUBLE, 
+					new ShapeFactory<AggrValue<BasicMatrixValue>>().getScalarShape(), 
+					null));
+			fcg.fotranTemporaries.put("t2", new BasicMatrixValue(
+					null, 
+					PrimitiveClassReference.DOUBLE, 
+					new ShapeFactory<AggrValue<BasicMatrixValue>>().getScalarShape(), 
+					null));
+			
+			getInput.setBlock(temp.toString());
+			mainEntry.setGetInput(getInput);
+			fcg.fotranTemporaries.put("int_tmpvar", new BasicMatrixValue(
+					null, 
+					PrimitiveClassReference.INT32, 
+					new ShapeFactory<AggrValue<BasicMatrixValue>>().getScalarShape(), 
+					null));
+			ArrayList<Integer> tempShape = new ArrayList<Integer>();
+			tempShape.add(1);
+			tempShape.add(10);
+			fcg.fotranTemporaries.put("arg_buffer", new BasicMatrixValue(
+					null, 
+					PrimitiveClassReference.CHAR, 
+					new ShapeFactory<AggrValue<BasicMatrixValue>>().newShapeFromIntegers(tempShape), 
+					null));
+			// TODO currently, we only support one input.
+			fcg.forceToInt.add(fcg.inArgs.get(0));
+		}
 		fcg.iterateStatements(node.getStmts());
 		/*
 		 *  set the title.
@@ -122,18 +172,21 @@ public class GenerateMainEntryPoint {
 				VariableList varList = new VariableList();
 				if (Debug) System.out.println(variable + "'s value is " + fcg.getMatrixValue(variable));
 				/*
-				 * declare types.
+				 * declare types, especially character string.
 				 */
 				if (fcg.getMatrixValue(variable).getMatlabClass().equals(PrimitiveClassReference.CHAR) 
 						&& !fcg.getMatrixValue(variable).getShape().isScalar()) {
 					declStmt.setType(fcg.fortranMapping.getFortranTypeMapping("char")
 							+"("+fcg.getMatrixValue(variable).getShape().getDimensions().get(1)+")");
 				}
+				else if (fcg.forceToInt.contains(variable)) {
+					declStmt.setType("INTEGER(KIND=4)");
+				}
 				else 
 					declStmt.setType(fcg.fortranMapping.getFortranTypeMapping(
 						fcg.getMatrixValue(variable).getMatlabClass().toString()));
 				/*
-				 * declare arrays, but not character strings.
+				 * declare arrays, but not character string.
 				 */
 				if (!fcg.getMatrixValue(variable).getMatlabClass().equals(PrimitiveClassReference.CHAR) 
 						&& !fcg.getMatrixValue(variable).getShape().isScalar()) {
@@ -155,7 +208,7 @@ public class GenerateMainEntryPoint {
 					if (!variableShapeIsKnown) {
 						StringBuffer tempBuf = new StringBuffer();
 						tempBuf.append("DIMENSION(");
-						for (int i=1; i<=dim.size(); i++) {
+						for (int i = 0; i < dim.size(); i++) {
 							if (counter) tempBuf.append(",");
 							tempBuf.append(":");
 							counter = true;
@@ -166,10 +219,10 @@ public class GenerateMainEntryPoint {
 						Variable var = new Variable();
 						var.setName(variable);
 						varList.addVariable(var);
-						// need extra temporaries for runtime allocate variables.
+						/*// need extra temporaries for runtime reallocate variables.
 						Variable var_bk = new Variable();
 						var_bk.setName(variable+"_bk");
-						varList.addVariable(var_bk);
+						varList.addVariable(var_bk);*/
 						declStmt.setKeywordList(keywordList);
 						declStmt.setVariableList(varList);
 					}
@@ -183,14 +236,9 @@ public class GenerateMainEntryPoint {
 						StringBuffer tempBuf = new StringBuffer();
 						tempBuf.append("DIMENSION(");
 						for (int i = 0; i < dim.size(); i++) {
-							if (i == 0 && dim.get(0).getIntValue().equals(1)) {
-								// transform 2-dimensional 1-by-n array to a vector.
-							}
-							else {
-								if (counter) tempBuf.append(",");
-								tempBuf.append(dim.get(i).toString());
-								counter = true;
-							}
+							if (counter) tempBuf.append(",");
+							tempBuf.append(dim.get(i).toString());
+							counter = true;
 						}
 						tempBuf.append(")");
 						keyword.setName(tempBuf.toString());
@@ -211,7 +259,22 @@ public class GenerateMainEntryPoint {
 					varList.addVariable(var);
 					declStmt.setVariableList(varList);
 				}
-				declSection.addDeclStmt(declStmt);
+				/* 
+				 * if several variables have the same type declaration, 
+				 * we should declare them in one line (for readability).
+				 * we need a method to compare declStmt.
+				 */
+				boolean redundant = false;
+				for (int i = 0; i < declSection.getDeclStmtList().getNumChild(); i++) {
+					if (compareDecl(declSection.getDeclStmt(i), declStmt)) {
+						for (int j = 0; j < declStmt.getVariableList().getNumChild(); j++) {
+							declSection.getDeclStmt(i).getVariableList().addVariable(
+									declStmt.getVariableList().getVariable(j));
+						}
+						redundant = true;
+					}
+				}
+				if (!redundant) declSection.addDeclStmt(declStmt);
 			}
 		}
 		/*
@@ -223,9 +286,19 @@ public class GenerateMainEntryPoint {
 			// type is already a token, don't forget.
 			ShapeInfo shapeInfo = new ShapeInfo();
 			VariableList varList = new VariableList();
-			declStmt.setType(fcg.fortranMapping.getFortranTypeMapping(
+			/*
+			 * declare types, especially character string.
+			 */
+			if (fcg.fotranTemporaries.get(tmpVariable).getMatlabClass().equals(PrimitiveClassReference.CHAR) 
+					&& !fcg.fotranTemporaries.get(tmpVariable).getShape().isScalar()) {
+				declStmt.setType(fcg.fortranMapping.getFortranTypeMapping("char")
+						+"("+fcg.fotranTemporaries.get(tmpVariable).getShape().getDimensions().get(1)+")");
+			}
+			else 
+				declStmt.setType(fcg.fortranMapping.getFortranTypeMapping(
 					fcg.fotranTemporaries.get(tmpVariable).getMatlabClass().toString()));
-			if (!fcg.fotranTemporaries.get(tmpVariable).getShape().isScalar()) {
+			if (!fcg.fotranTemporaries.get(tmpVariable).getMatlabClass().equals(PrimitiveClassReference.CHAR) 
+					&& !fcg.fotranTemporaries.get(tmpVariable).getShape().isScalar()) {
 				KeywordList keywordList = new KeywordList();
 				Keyword keyword = new Keyword();
 				keyword.setName("DIMENSION("+fcg.fotranTemporaries.get(tmpVariable).getShape()
@@ -237,10 +310,58 @@ public class GenerateMainEntryPoint {
 			var.setName(tmpVariable);
 			varList.addVariable(var);
 			declStmt.setVariableList(varList);
-			declSection.addDeclStmt(declStmt);
+			/* 
+			 * if several variables have the same type declaration, 
+			 * we should declare them in one line (for readability).
+			 * we need a method to compare declStmt.
+			 */
+			boolean redundant = false;
+			for (int i = 0; i < declSection.getDeclStmtList().getNumChild(); i++) {
+				if (GenerateMainEntryPoint.compareDecl(declSection.getDeclStmt(i), declStmt)) {
+					for (int j = 0; j < declStmt.getVariableList().getNumChild(); j++) {
+						declSection.getDeclStmt(i).getVariableList().addVariable(
+								declStmt.getVariableList().getVariable(j));
+					}
+					redundant = true;
+				}
+			}
+			if (!redundant) declSection.addDeclStmt(declStmt);
 		}
 		mainEntry.setDeclarationSection(declSection);
-		mainEntry.setProgramEnd("END PROGRAM");
+		// here a hack to add timing TODO find a better way.
+		StringBuffer timeEnd = new StringBuffer();
+		timeEnd.append("\nCALL CPU_TIME(t2);\n");
+		timeEnd.append("PRINT '(\"Time = \", f6.3, \" seconds.\")', t2-t1;\n\n");
+		mainEntry.setProgramEnd(timeEnd + "END PROGRAM");
 		return fcg;
+	}
+	
+	/**
+	 *  helper method to compare declStmt. since 
+	 *  DeclStmt ::= <Type> [KeywordList] [ShapeInfo] VariableList
+	 *  we should compare each of the components.
+	 */
+	public static boolean compareDecl(DeclStmt declStmt1, DeclStmt declStmt2) {
+		if (!declStmt1.getType().equals(declStmt2.getType())) {
+			return false;
+		}
+		if (declStmt1.hasKeywordList() ^ declStmt2.hasKeywordList()) {
+			return false;
+		}
+		if (declStmt1.hasKeywordList() && declStmt2.hasKeywordList()) {
+			if (declStmt1.getKeywordList().getNumChild() 
+					!= declStmt2.getKeywordList().getNumChild()) {
+				return false;
+			}
+			else {
+				for (int i = 0; i < declStmt1.getKeywordList().getNumChild(); i++) {
+					if (!declStmt1.getKeywordList().getChild(i).equals(
+							declStmt2.getKeywordList().getChild(i))) {
+						return false;
+					}			
+				}
+			}
+		}		
+		return true;
 	}
 }
