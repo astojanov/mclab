@@ -389,6 +389,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseCellArrayExpr(CellArrayExpr node) {
+		
 		caseExpr(node);
 	}
 
