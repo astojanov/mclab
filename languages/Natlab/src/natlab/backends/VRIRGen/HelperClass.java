@@ -50,8 +50,13 @@ public class HelperClass {
 	public static VType generateVType(
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
 			int graphIndex, Function node, Name param, int paramIndx) {
+
 		// System.out.println("paramindx in gen vtype " + paramIndx);
-		PrimitiveClassReference paramType = HelperClass.getDataType(analysis,
+		Value temp = analysis.getNodeList().get(graphIndex).getAnalysis()
+				.getArgs().get(paramIndx);
+			return generateVType(temp);
+		
+		/*PrimitiveClassReference paramType = HelperClass.getDataType(analysis,
 				graphIndex, node, param.getID(), paramIndx);
 		Shape<AggrValue<AdvancedMatrixValue>> shape = HelperClass.getShape(
 				analysis, graphIndex, node, param.getID(), paramIndx);
@@ -59,6 +64,7 @@ public class HelperClass {
 				param, paramIndx);
 		return new VTypeMatrix(shape, paramType,
 				VTypeMatrix.Layout.COLUMN_MAJOR, complexity);
+				*/
 	}
 
 	public static VType generateVType(
@@ -106,9 +112,6 @@ public class HelperClass {
 					(((AdvancedMatrixValue) (Object) value)).getisComplexInfo()
 							.geticType());
 		} else if ((Object) value instanceof CellValue) {
-
-			System.out.println("in gen vtype name of matlab class"
-					+ (((CellValue<?>) (Object) value)).getMatlabClass());
 			VTypeCell vtypeCell = new VTypeCell();
 			for (Value val : (((CellValue<?>) (Object) value)).getValues()) {
 				System.out.println("iterating over cell array"

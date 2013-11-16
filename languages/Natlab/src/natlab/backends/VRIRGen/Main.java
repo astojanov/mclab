@@ -37,8 +37,8 @@ public class Main {
 		 */
 		// String fileDir = "/home/2012/sjagda/mclab/mbrt/";
 		// String fileName = "drv_mbrt.m";
-		String fileDir = "/home/sameer/mclab/";
-		String fileName = "simple.m";
+		String fileDir = "/home/sameer/mclab/adpt/";
+		String fileName = "drv_adpt.m";
 		String fileIn = fileDir + fileName;
 		GenericFile gFile = GenericFile.create(fileIn);
 		FileEnvironment env = new FileEnvironment(gFile); // get path
