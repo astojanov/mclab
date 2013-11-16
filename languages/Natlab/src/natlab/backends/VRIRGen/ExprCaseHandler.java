@@ -13,6 +13,7 @@ public class ExprCaseHandler {
 		if (HelperClass.isVar(gen, node)) {
 
 			if (!gen.getSymTab().contains(node.getName().getID())) {
+
 				VType vtype = HelperClass.generateVType(gen.getAnalysis(),
 						gen.getIndex(), node.getName());
 				gen.getSymTab().putSymbol(vtype, node.getName().getID());
@@ -21,7 +22,9 @@ public class ExprCaseHandler {
 		if (gen.getSymbol(node.getName().getID()) != null) {
 			gen.appendToPrettyCode(toXMLHead(node.getName().getID(), gen
 					.getSymbol(node.getName().getID()).getId(), "id"));
-		} else {
+		}
+		// TODO :In case of functions. Still to be handled.
+		else {
 			gen.appendToPrettyCode(toXMLHead(node.getName().getID(), 1, "id"));
 		}
 		// gen.appendToPrettyCode(gen.getSymbol(node.getName().getID()).getVtype()

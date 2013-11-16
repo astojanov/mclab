@@ -224,7 +224,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	@Override
 	@SuppressWarnings("rawtypes")
 	public void caseASTNode(ASTNode node) {
-
+		// System.out.println("unsupported ast node" + node.getClass());
 	}
 
 	@Override
@@ -300,7 +300,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 
 	public void caseForStmt(ForStmt node) {
 		StmtCaseHandler.handleForStmt(node, this);
-		caseStmt(node);
+		// caseStmt(node);
 	}
 
 	public void caseWhileStmt(WhileStmt node) {
@@ -321,15 +321,16 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	public void caseIfStmt(IfStmt node) {
 		StmtCaseHandler.handleIfStmt(node, this);
 
-		caseStmt(node);
+		// caseStmt(node);
 	}
 
 	public void caseRangeExpr(RangeExpr node) {
 		ExprCaseHandler.handleRangeExpr(node, this);
-		caseExpr(node);
+		// caseExpr(node);
 	}
 
 	public void caseColonExpr(ColonExpr node) {
+
 		caseExpr(node);
 	}
 
@@ -362,7 +363,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 			// Function Call
 			else {
 				ExprCaseHandler.handleFunCallExpr(node, this);
-				
+
 			}
 
 		}
@@ -386,22 +387,49 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseMatrixExpr(MatrixExpr node) {
-		caseLValueExpr(node);
+		// TODO : Support Matrix expressions asap
+		if (node.getRows().getNumChild() > 1) {
+			System.out.println("Multiple rows now supported");
+			System.exit(1);
+		}
+		// for a single element
+		if (node.getRow(0).getElementList().getNumChild() == 1) {
+			System.out.println("in matrix expression class type "
+					+ node.getRow(0).getElement(0).getClass());
+			if (node.getRow(0).getElement(0) instanceof NameExpr) {
+				System.out.println("Name of element "
+						+ ((NameExpr) node.getRow(0).getElement(0)).getName()
+								.getID());
+			}
+			node.getRow(0).getElement(0).analyze(this);
+			
+		} else {
+			// tuple type for multiple elements
+			HelperClass.toXML("TupleExpr");
+			HelperClass.toXML("elems");
+			for (Expr expr : node.getRow(0).getElementList()) {
+				System.out.println("in matrix expression class type "
+						+ expr.getClass());
+				if (expr instanceof NameExpr) {
+					System.out.println("Name of element "
+							+ ((NameExpr) expr).getName().getID());
+				}
+				expr.analyze(this);
+
+			}
+			HelperClass.toXML("/elems");
+			HelperClass.toXML("/TupleExpr");
+		}
+		// caseLValueExpr(node);
 	}
 
 	public void caseCellArrayExpr(CellArrayExpr node) {
-		
+
 		caseExpr(node);
 	}
 
 	public void caseSuperClassMethodExpr(SuperClassMethodExpr node) {
 		caseExpr(node);
-	}
-
-	public void caseIntLiteralExpr(IntLiteralExpr node) {
-
-		ExprCaseHandler.handleIntLiteralExpr(node, this);
-		caseLiteralExpr(node);
 	}
 
 	public AnalysisEngine getAnalysisEngine() {
@@ -412,14 +440,20 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 		this.analysisEngine = analysisEngine;
 	}
 
+	public void caseIntLiteralExpr(IntLiteralExpr node) {
+
+		ExprCaseHandler.handleIntLiteralExpr(node, this);
+		// caseLiteralExpr(node);
+	}
+
 	public void caseFPLiteralExpr(FPLiteralExpr node) {
 		ExprCaseHandler.handleFpLiteralExpr(node, this);
-		caseLiteralExpr(node);
+		// caseLiteralExpr(node);
 	}
 
 	public void caseStringLiteralExpr(StringLiteralExpr node) {
 		ExprCaseHandler.handleStringLiteralExpr(node, this);
-		caseLiteralExpr(node);
+		// caseLiteralExpr(node);
 	}
 
 	// public void caseUMinusExpr(UMinusExpr node) {

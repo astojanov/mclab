@@ -33,7 +33,7 @@ public class SymbolTable {
 		return symbolMap.get(name);
 	}
 
-	public void putSymbol(VType vtype, String name, int id) {
+	public void putSymbol(VTypeMatrix vtype, String name, int id) {
 		symbolMap.put(name, new Symbol(vtype, name, id));
 		this.currentId = id;
 	}

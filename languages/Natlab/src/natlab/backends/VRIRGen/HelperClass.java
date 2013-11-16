@@ -16,6 +16,7 @@ import natlab.tame.valueanalysis.aggrvalue.AggrValue;
 import natlab.tame.valueanalysis.aggrvalue.CellValue;
 import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
 import natlab.tame.valueanalysis.components.shape.Shape;
+import natlab.tame.valueanalysis.value.Value;
 
 public class HelperClass {
 	public static PrimitiveClassReference getDataType(
@@ -56,8 +57,8 @@ public class HelperClass {
 				analysis, graphIndex, node, param.getID(), paramIndx);
 		String complexity = generateComplexityInfo(analysis, graphIndex, node,
 				param, paramIndx);
-		return new VType(shape, paramType, VType.Layout.COLUMN_MAJOR,
-				complexity);
+		return new VTypeMatrix(shape, paramType,
+				VTypeMatrix.Layout.COLUMN_MAJOR, complexity);
 	}
 
 	public static VType generateVType(
@@ -71,21 +72,53 @@ public class HelperClass {
 				.getAnalysis().getCurrentOutSet().get(node.getID())
 				.getSingleton();
 
-		if ((Object) temp instanceof AdvancedMatrixValue) {
-			return new VType(
-					(((AdvancedMatrixValue) (Object) temp)).getShape(),
-					(((AdvancedMatrixValue) (Object) temp)).getMatlabClass(),
-					VType.Layout.COLUMN_MAJOR,
-					(((AdvancedMatrixValue) (Object) temp)).getisComplexInfo()
+		return generateVType(temp);
+		/*
+		 * if ((Object) temp instanceof AdvancedMatrixValue) { return new VType(
+		 * (((AdvancedMatrixValue) (Object) temp)).getShape(),
+		 * (((AdvancedMatrixValue) (Object) temp)).getMatlabClass(),
+		 * VType.Layout.COLUMN_MAJOR, (((AdvancedMatrixValue) (Object)
+		 * temp)).getisComplexInfo() .geticType()); } else if ((Object) temp
+		 * instanceof CellValue) {
+		 * 
+		 * System.out.println("in gen vtype name of matlab class" +
+		 * (((CellValue<?>) (Object) temp)).getMatlabClass());
+		 * 
+		 * for (Value val : (((CellValue<?>) (Object) temp)).getValues()) {
+		 * System.out .println("iterating over cell array" + val.getClass()); if
+		 * (val instanceof AdvancedMatrixValue) {
+		 * 
+		 * } } System.exit(0);
+		 * 
+		 * } /* else { //System.out.println("class " +
+		 * temp.getClass().toString()); }
+		 */
+
+		// return null;
+	}
+
+	public static VType generateVType(Value value) {
+		if ((Object) value instanceof AdvancedMatrixValue) {
+			return new VTypeMatrix(
+					(((AdvancedMatrixValue) (Object) value)).getShape(),
+					(((AdvancedMatrixValue) (Object) value)).getMatlabClass(),
+					VTypeMatrix.Layout.COLUMN_MAJOR,
+					(((AdvancedMatrixValue) (Object) value)).getisComplexInfo()
 							.geticType());
-		} else if ((Object) temp instanceof CellValue) {
+		} else if ((Object) value instanceof CellValue) {
 
-			(((CellValue) (Object) temp)).getValues();
+			System.out.println("in gen vtype name of matlab class"
+					+ (((CellValue<?>) (Object) value)).getMatlabClass());
+			VTypeCell vtypeCell = new VTypeCell();
+			for (Value val : (((CellValue<?>) (Object) value)).getValues()) {
+				System.out.println("iterating over cell array"
+						+ value.getClass());
 
-		} else {
-			System.out.println("class " + temp.getClass().toString());
+				vtypeCell.addElement(generateVType(val));
+
+			}
+			return vtypeCell;
 		}
-
 		return null;
 	}
 
@@ -128,7 +161,15 @@ public class HelperClass {
 				.get(((NameExpr) node).getName().getID()).getSingleton();
 		if ((Object) val instanceof AdvancedMatrixValue) {
 
+			System.out.println("output type"
+					+ (((AdvancedMatrixValue) (Object) val)).getMatlabClass()
+							.toString());
+
 			return (((AdvancedMatrixValue) (Object) val)).getMatlabClass();
+
+		} else {
+			System.out
+					.println("Analyses other than cell value are currently not supported   ");
 
 		}
 		return null;
@@ -178,7 +219,8 @@ public class HelperClass {
 		return null;
 	}
 
-	public static VType getBinExprType(ParameterizedExpr node, VrirXmlGen gen) {
+	public static VTypeMatrix getBinExprType(ParameterizedExpr node,
+			VrirXmlGen gen) {
 		if (node.getParent() instanceof AssignStmt) {
 			Expr lhsExpr = ((AssignStmt) node.getParent()).getLHS();
 			if (lhsExpr instanceof MatrixExpr) {
@@ -190,13 +232,19 @@ public class HelperClass {
 			}
 
 		} else {
+
 			Name tempName = (Name) gen.getAnalysisEngine()
 					.getTemporaryVariablesRemovalAnalysis()
 					.getExprToTempVarTable().get(node);
 			if (tempName == null) {
+
 				System.out.println("temp name   " + node.getVarName()
-						+ " args   "
-						+ ((ParameterizedExpr) node.getArg(0)).getVarName());
+						+ " args   " + node.getArgList().getNumChild());
+				if (node.getArg(0).getClass() != null) {
+					System.out.println("class name "
+							+ ((NameExpr) (node.getArg(0))).getName().getID());
+				}
+
 			}
 			PrimitiveClassReference type = HelperClass.getDataType(
 					tempName.getID(), gen);
@@ -204,14 +252,16 @@ public class HelperClass {
 					tempName.getID(), gen);
 			String complexity = HelperClass.generateComplexityInfo(
 					tempName.getID(), gen);
-			return new VType(shape, type, VType.Layout.COLUMN_MAJOR, complexity);
+			return new VTypeMatrix(shape, type,
+					VTypeMatrix.Layout.COLUMN_MAJOR, complexity);
 
 		}
 
 		return null;
 	}
 
-	public static VType getUnaryExprType(ParameterizedExpr node, VrirXmlGen gen) {
+	public static VTypeMatrix getUnaryExprType(ParameterizedExpr node,
+			VrirXmlGen gen) {
 		if (node.getParent() instanceof AssignStmt) {
 			Expr lhsExpr = ((AssignStmt) node.getParent()).getLHS();
 			if (lhsExpr instanceof MatrixExpr) {
@@ -231,15 +281,19 @@ public class HelperClass {
 					tempName.getID(), gen);
 			String complexity = HelperClass.generateComplexityInfo(
 					tempName.getID(), gen);
-			return new VType(shape, type, VType.Layout.COLUMN_MAJOR, complexity);
+			return new VTypeMatrix(shape, type,
+					VTypeMatrix.Layout.COLUMN_MAJOR, complexity);
 
 		}
 		return null;
 	}
 
-	public static VType getLhsType(MatrixExpr lhsExpr, VrirXmlGen gen) {
+	public static VTypeMatrix getLhsType(MatrixExpr lhsExpr, VrirXmlGen gen) {
 
 		if (((MatrixExpr) lhsExpr).getNumRow() > 1) {
+			System.out
+					.println("Multiple return types for binary expressions not supported . ");
+			System.exit(0);
 			return null;
 		}
 
@@ -264,23 +318,24 @@ public class HelperClass {
 		return null;
 	}
 
-	public static VType getLhsType(NameExpr lhsExpr, VrirXmlGen gen) {
+	public static VTypeMatrix getLhsType(NameExpr lhsExpr, VrirXmlGen gen) {
 		PrimitiveClassReference type = HelperClass.getDataType(
 				(NameExpr) lhsExpr, gen);
 		Shape<AggrValue<AdvancedMatrixValue>> shape = HelperClass.getShape(
 				(NameExpr) lhsExpr, gen);
-		return new VType(shape, type, VType.Layout.COLUMN_MAJOR,
+		return new VTypeMatrix(shape, type, VTypeMatrix.Layout.COLUMN_MAJOR,
 				HelperClass.generateComplexityInfo((NameExpr) lhsExpr, gen));
 
 	}
 
-	public static VType getLhsType(ParameterizedExpr lhsExpr, VrirXmlGen gen) {
+	public static VTypeMatrix getLhsType(ParameterizedExpr lhsExpr,
+			VrirXmlGen gen) {
 		PrimitiveClassReference type = HelperClass.getDataType(
 				((ParameterizedExpr) lhsExpr).getVarName(), gen);
 		Shape<AggrValue<AdvancedMatrixValue>> shape = HelperClass.getShape(
 				((ParameterizedExpr) lhsExpr).getVarName(), gen);
 
-		return new VType(shape, type, VType.Layout.COLUMN_MAJOR,
+		return new VTypeMatrix(shape, type, VTypeMatrix.Layout.COLUMN_MAJOR,
 				HelperClass.generateComplexityInfo(lhsExpr.getVarName(), gen));
 
 	}

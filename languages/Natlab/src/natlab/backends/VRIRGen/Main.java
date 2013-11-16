@@ -37,7 +37,7 @@ public class Main {
 		 */
 		// String fileDir = "/home/2012/sjagda/mclab/mbrt/";
 		// String fileName = "drv_mbrt.m";
-		String fileDir = "/home/2012/sjagda/mclab/";
+		String fileDir = "/home/sameer/mclab/";
 		String fileName = "simple.m";
 		String fileIn = fileDir + fileName;
 		GenericFile gFile = GenericFile.create(fileIn);
@@ -87,7 +87,7 @@ public class Main {
 			System.out
 					.println("pretty print the generated VRIR in XML format  .\n");
 			StringBuffer sb;
-			System.out.println("size    " + size + "     i    " + i);
+			// System.out.println("size    " + size + "     i    " + i);
 			sb = VrirXmlGen.generateVrir((Function) fTree, remainingVars,
 					analysis, currentOutSet, i, size, analysisEngine);
 			genXML.append(sb);

@@ -15,7 +15,7 @@ public class Symbol {
 		return vtype;
 	}
 
-	public void setVtype(VType vtype) {
+	public void setVtype(VTypeMatrix vtype) {
 		this.vtype = vtype;
 	}
 
@@ -39,6 +39,9 @@ public class Symbol {
 		StringBuffer xmlBuff = new StringBuffer();
 		xmlBuff.append("<sym id=\"" + getId() + "\" name=\"" + getName()
 				+ "\">\n");
+		if (getVtype() == null) {
+			System.out.println("name of null element" + this.getName());
+		}
 		xmlBuff.append(getVtype().toXML());
 		return xmlBuff.append("</sym>\n");
 
