@@ -114,6 +114,10 @@ public class ExprCaseHandler {
 		gen.appendToPrettyCode(toXMLTail());
 	}
 
+	public static void handleFunCallExpr(NameExpr expr, VrirXmlGen gen) {
+		
+	}
+
 	public static void handleArrayIndexExpr(ParameterizedExpr expr,
 			VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("ArrayIndexExpr"));

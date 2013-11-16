@@ -394,26 +394,14 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 		}
 		// for a single element
 		if (node.getRow(0).getElementList().getNumChild() == 1) {
-			System.out.println("in matrix expression class type "
-					+ node.getRow(0).getElement(0).getClass());
-			if (node.getRow(0).getElement(0) instanceof NameExpr) {
-				System.out.println("Name of element "
-						+ ((NameExpr) node.getRow(0).getElement(0)).getName()
-								.getID());
-			}
 			node.getRow(0).getElement(0).analyze(this);
-			
+
 		} else {
 			// tuple type for multiple elements
 			HelperClass.toXML("TupleExpr");
 			HelperClass.toXML("elems");
 			for (Expr expr : node.getRow(0).getElementList()) {
-				System.out.println("in matrix expression class type "
-						+ expr.getClass());
-				if (expr instanceof NameExpr) {
-					System.out.println("Name of element "
-							+ ((NameExpr) expr).getName().getID());
-				}
+
 				expr.analyze(this);
 
 			}

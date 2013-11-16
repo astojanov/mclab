@@ -14,11 +14,9 @@ public class StmtCaseHandler {
 	public static void handleAssignStmt(AssignStmt node, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("assignstmt"));
 		gen.appendToPrettyCode(HelperClass.toXML("targets"));
-
 		node.getLHS().analyze(gen);
 		gen.appendToPrettyCode(HelperClass.toXML("/targets"));
 		gen.appendToPrettyCode(HelperClass.toXML("rhs"));
-		System.out.println("class in Assgn stmt" + node.getLHS().getClass());
 		node.getRHS().analyze(gen);
 		gen.appendToPrettyCode(HelperClass.toXML("/rhs"));
 		gen.appendToPrettyCode(toXMLTail());
