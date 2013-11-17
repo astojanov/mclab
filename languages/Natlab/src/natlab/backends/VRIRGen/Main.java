@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.Set;
 
 import natlab.backends.Fortran.codegen_readable.FortranCodeASTGenerator;
@@ -37,8 +38,8 @@ public class Main {
 		 */
 		// String fileDir = "/home/2012/sjagda/mclab/mbrt/";
 		// String fileName = "drv_mbrt.m";
-		String fileDir = "/home/sameer/mclab/adpt/";
-		String fileName = "drv_adpt.m";
+		String fileDir = "/home/sameer/mclab/mbrt/";
+		String fileName = "drv_mbrt.m";
 		String fileIn = fileDir + fileName;
 		GenericFile gFile = GenericFile.create(fileIn);
 		FileEnvironment env = new FileEnvironment(gFile); // get path
@@ -53,7 +54,7 @@ public class Main {
 		genXML.append(HelperClass.toXML("fns"));
 		OperatorMapper.initMap();
 		VrirTypeMapper.initTypeMap();
-
+		HashSet<StaticFunction> funcSet = new HashSet<StaticFunction>();
 		for (int i = 0; i < size; i++) {
 			/*
 			 * type inference.
@@ -66,49 +67,51 @@ public class Main {
 			 */
 			StaticFunction function = analysis.getNodeList().get(i)
 					.getFunction();
-			// TamerPlusUtils.debugMode();
-			// System.out.println("tamer pretty print: \n"+function.getAst().getPrettyPrinted());
+			if (!funcSet.contains(function)) {
+				// TamerPlusUtils.debugMode();
+				// System.out.println("tamer pretty print: \n"+function.getAst().getPrettyPrinted());
 
-			TransformationEngine transformationEngine = TransformationEngine
-					.forAST(function.getAst());
+				TransformationEngine transformationEngine = TransformationEngine
+						.forAST(function.getAst());
 
-			AnalysisEngine analysisEngine = transformationEngine
-					.getAnalysisEngine();
-			@SuppressWarnings("rawtypes")
-			ASTNode fTree = transformationEngine.getTIRToMcSAFIRWithoutTemp()
-					.getTransformedTree();
-			Set<String> remainingVars = analysisEngine
-					.getTemporaryVariablesRemovalAnalysis()
-					.getRemainingVariablesNames();
+				AnalysisEngine analysisEngine = transformationEngine
+						.getAnalysisEngine();
+				@SuppressWarnings("rawtypes")
+				ASTNode fTree = transformationEngine
+						.getTIRToMcSAFIRWithoutTemp().getTransformedTree();
+				Set<String> remainingVars = analysisEngine
+						.getTemporaryVariablesRemovalAnalysis()
+						.getRemainingVariablesNames();
 
-			System.out.println("\ntamer plus analysis result: \n"
-					+ fTree.getPrettyPrinted() + "\n");
+				System.out.println("\ntamer plus analysis result: \n"
+						+ fTree.getPrettyPrinted() + "\n");
 
-			System.out
-					.println("pretty print the generated VRIR in XML format  .\n");
-			StringBuffer sb;
-			// System.out.println("size    " + size + "     i    " + i);
-			sb = VrirXmlGen.generateVrir((Function) fTree, remainingVars,
-					analysis, currentOutSet, i, size, analysisEngine);
-			genXML.append(sb);
+				System.out
+						.println("pretty print the generated VRIR in XML format  .\n");
+				StringBuffer sb;
+				// System.out.println("size    " + size + "     i    " + i);
+				sb = VrirXmlGen.generateVrir((Function) fTree, remainingVars,
+						analysis, currentOutSet, i, size, analysisEngine);
+				genXML.append(sb);
 
+			}
+			genXML.append(HelperClass.toXML("/fns"));
+
+			VrirXmlGen.genModuleXMLTail(genXML);
+
+			// System.err.println(genXML);
+
+			try {
+				BufferedWriter buffer = Files.newBufferedWriter(
+						Paths.get(fileName.split("\\.")[0] + ".xml"),
+						Charset.forName("US-ASCII"));
+				buffer.write(genXML.toString());
+				buffer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			funcSet.add(function);
 		}
-		genXML.append(HelperClass.toXML("/fns"));
-
-		VrirXmlGen.genModuleXMLTail(genXML);
-
-		// System.err.println(genXML);
-
-		try {
-			BufferedWriter buffer = Files.newBufferedWriter(
-					Paths.get(fileName.split("\\.")[0] + ".xml"),
-					Charset.forName("US-ASCII"));
-			buffer.write(genXML.toString());
-			buffer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
 	}
 
 }
