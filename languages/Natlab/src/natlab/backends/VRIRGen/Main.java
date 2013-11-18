@@ -1,6 +1,7 @@
 package natlab.backends.VRIRGen;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -38,8 +39,10 @@ public class Main {
 		 */
 		// String fileDir = "/home/2012/sjagda/mclab/mbrt/";
 		// String fileName = "drv_mbrt.m";
-		String fileDir = "/home/sameer/mclab/mbrt/";
-		String fileName = "drv_mbrt.m";
+		String fileDir = File.separator + "home" + File.separator + "sameer"
+				+ File.separator + "mclab" + File.separator + "dich"
+				+ File.separator;
+		String fileName = "drv_dich.m";
 		String fileIn = fileDir + fileName;
 		GenericFile gFile = GenericFile.create(fileIn);
 		FileEnvironment env = new FileEnvironment(gFile); // get path
