@@ -20,33 +20,33 @@ import natlab.tame.valueanalysis.components.shape.Shape;
 import natlab.tame.valueanalysis.value.Value;
 
 public class HelperClass {
-	public static PrimitiveClassReference getDataType(
-			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
-			int graphIndex, Function node, String ID, int paramIndx) {
-
-		AdvancedMatrixValue temp = (AdvancedMatrixValue) (analysis
-				.getNodeList().get(graphIndex).getAnalysis().getArgs()
-				.get(paramIndx));
-
-		return temp.getMatlabClass();
-
-	}
-
-	public static Shape<AggrValue<AdvancedMatrixValue>> getShape(
-			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
-			int graphIndex, Function node, String ID, int i) {
-		AdvancedMatrixValue temp = (AdvancedMatrixValue) (analysis
-				.getNodeList().get(graphIndex).getAnalysis().getArgs().get(i));
-		return temp.getShape();
-	}
-
-	public static String generateComplexityInfo(
-			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
-			int graphIndex, Function node, Name param, int i) {
-		AdvancedMatrixValue temp = (AdvancedMatrixValue) (analysis
-				.getNodeList().get(graphIndex).getAnalysis().getArgs().get(i));
-		return temp.getisComplexInfo().geticType();
-	}
+	// public static PrimitiveClassReference getDataType(
+	// ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
+	// int graphIndex, Function node, String ID, int paramIndx) {
+	//
+	// AdvancedMatrixValue temp = (AdvancedMatrixValue) (analysis
+	// .getNodeList().get(graphIndex).getAnalysis().getArgs()
+	// .get(paramIndx));
+	//
+	// return temp.getMatlabClass();
+	//
+	// }
+	//
+	// public static Shape<AggrValue<AdvancedMatrixValue>> getShape(
+	// ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
+	// int graphIndex, Function node, String ID, int i) {
+	// AdvancedMatrixValue temp = (AdvancedMatrixValue) (analysis
+	// .getNodeList().get(graphIndex).getAnalysis().getArgs().get(i));
+	// return temp.getShape();
+	// }
+	//
+	// public static String generateComplexityInfo(
+	// ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
+	// int graphIndex, Function node, Name param, int i) {
+	// AdvancedMatrixValue temp = (AdvancedMatrixValue) (analysis
+	// .getNodeList().get(graphIndex).getAnalysis().getArgs().get(i));
+	// return temp.getisComplexInfo().geticType();
+	// }
 
 	public static VType generateVType(
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
@@ -170,18 +170,19 @@ public class HelperClass {
 		return null;
 	}
 
-	public static String generateComplexityInfo(String name, VrirXmlGen gen) {
-		AggrValue<AdvancedMatrixValue> val = gen.getAnalysis().getNodeList()
-				.get(gen.getIndex()).getAnalysis().getCurrentOutSet().get(name)
-				.getSingleton();
-		if ((Object) val instanceof AdvancedMatrixValue) {
-
-			return (((AdvancedMatrixValue) (Object) val)).getisComplexInfo()
-					.geticType();
-
-		}
-		return null;
-	}
+	// public static String generateComplexityInfo(String name, VrirXmlGen gen)
+	// {
+	// AggrValue<AdvancedMatrixValue> val = gen.getAnalysis().getNodeList()
+	// .get(gen.getIndex()).getAnalysis().getCurrentOutSet().get(name)
+	// .getSingleton();
+	// if ((Object) val instanceof AdvancedMatrixValue) {
+	//
+	// return (((AdvancedMatrixValue) (Object) val)).getisComplexInfo()
+	// .geticType();
+	//
+	// }
+	// return null;
+	// }
 
 	public static VType getBinExprType(ParameterizedExpr node, VrirXmlGen gen) {
 		if (node.getParent() instanceof AssignStmt) {
