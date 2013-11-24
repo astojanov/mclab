@@ -11,6 +11,7 @@ import ast.Name;
 import ast.NameExpr;
 import ast.ParameterizedExpr;
 import ast.Row;
+import natlab.tame.callgraph.StaticFunction;
 import natlab.tame.classes.reference.PrimitiveClassReference;
 import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
@@ -79,7 +80,7 @@ public class HelperClass {
 					(((AdvancedMatrixValue) (Object) value)).getisComplexInfo()
 							.geticType());
 		} else if ((Object) value instanceof CellValue) {
-			VTypeCell vtypeCell = new VTypeCell();
+			VTypeTuple vtypeCell = new VTypeTuple();
 			for (Value val : (((CellValue<?>) (Object) value)).getValues()) {
 				vtypeCell.addElement(generateVType(val));
 			}
@@ -131,7 +132,7 @@ public class HelperClass {
 
 		} else {
 			System.out
-					.println("Analyses other than cell value are currently not supported   ");
+					.println("Analyses other than cell value and Advanced matrix value not supported. are currently not supported   ");
 
 		}
 		return null;
@@ -284,6 +285,50 @@ public class HelperClass {
 				.getSingleton();
 		return generateVType(val);
 
+	}
+
+	public static VTypeFunction generateFuncType(VrirXmlGen gen, String name) {
+		VTypeFunction funcType = new VTypeFunction();
+		StaticFunction func = null;
+		int i;
+		for (i = 0; i < gen.getAnalysis().getNodeList().size(); i++) {
+			if (gen.getAnalysis().getNodeList().get(i).getFunction().getName()
+					.equalsIgnoreCase(name)) {
+				func = gen.getAnalysis().getNodeList().get(i).getFunction();
+				break;
+			}
+
+		}
+		if (func == null) {
+
+			System.err.println("function not found in call graph" + name);
+			System.exit(0);
+		}
+
+		for (Name nm : func.getAst().getInputParamList()) {
+			Symbol sym = gen.getSymbol(nm.getID());
+			if (sym == null) {
+				VType vtype = HelperClass.generateVType(gen.getAnalysis(), i,
+						nm);
+				gen.addToSymTab(vtype, nm.getID());
+				sym = gen.getSymbol(nm.getID());
+			}
+			funcType.addInType(sym.getVtype());
+
+		}
+		for (Name nm : func.getAst().getOutputParamList()) {
+			Symbol sym = gen.getSymbol(nm.getID());
+			if (sym == null) {
+				VType vtype = HelperClass.generateVType(gen.getAnalysis(), i,
+						nm);
+				gen.addToSymTab(vtype, nm.getID());
+				sym = gen.getSymbol(nm.getID());
+			}
+			funcType.addOutType(sym.getVtype());
+
+		}
+
+		return funcType;
 	}
 
 	public static boolean isVar(VrirXmlGen gen, String name) {
