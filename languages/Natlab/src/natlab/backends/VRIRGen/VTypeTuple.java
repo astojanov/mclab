@@ -2,10 +2,10 @@ package natlab.backends.VRIRGen;
 
 import java.util.ArrayList;
 
-public class VTypeCell extends VType {
+public class VTypeTuple extends VType {
 	ArrayList<VType> elementList;
 
-	public VTypeCell() {
+	public VTypeTuple() {
 		// TODO Auto-generated constructor stub
 		elementList = new ArrayList<VType>();
 	}

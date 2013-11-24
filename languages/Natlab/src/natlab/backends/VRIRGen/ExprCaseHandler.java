@@ -25,7 +25,14 @@ public class ExprCaseHandler {
 		}
 		// TODO :In case of functions. Still to be handled.
 		else {
-			gen.appendToPrettyCode(toXMLHead(node.getName().getID(), 1, "id"));
+
+			if (!gen.getSymTab().contains(node.getName().getID())) {
+				VTypeFunction funcType = HelperClass.generateFuncType(gen, node
+						.getName().getID());
+				gen.addToSymTab(funcType, node.getName().getID());
+			}
+			gen.appendToPrettyCode(toXMLHead(node.getName().getID(), gen
+					.getSymbol(node.getName().getID()).getId(), "id"));
 		}
 		// gen.appendToPrettyCode(gen.getSymbol(node.getName().getID()).getVtype()
 		// .toXML());
@@ -115,7 +122,7 @@ public class ExprCaseHandler {
 	}
 
 	public static void handleFunCallExpr(NameExpr expr, VrirXmlGen gen) {
-		
+
 	}
 
 	public static void handleArrayIndexExpr(ParameterizedExpr expr,

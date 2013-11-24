@@ -5,14 +5,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Path;
+
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 
-import natlab.backends.Fortran.codegen_readable.FortranCodeASTGenerator;
 import natlab.tame.AdvancedTamerTool;
-import natlab.tame.BasicTamerTool;
+
 import natlab.tame.callgraph.StaticFunction;
 import natlab.tame.tamerplus.analysis.AnalysisEngine;
 import natlab.tame.tamerplus.transformation.TransformationEngine;
@@ -20,7 +19,7 @@ import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.ValueFlowMap;
 import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
 import natlab.tame.valueanalysis.aggrvalue.AggrValue;
-import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
+
 import natlab.toolkits.filehandling.GenericFile;
 import natlab.toolkits.path.FileEnvironment;
 import ast.ASTNode;
@@ -40,9 +39,9 @@ public class Main {
 		// String fileDir = "/home/2012/sjagda/mclab/mbrt/";
 		// String fileName = "drv_mbrt.m";
 		String fileDir = File.separator + "home" + File.separator + "sameer"
-				+ File.separator + "mclab" + File.separator + "dich"
+				+ File.separator + "mclab" + File.separator + "mbrt"
 				+ File.separator;
-		String fileName = "drv_dich.m";
+		String fileName = "drv_mbrt.m";
 		String fileIn = fileDir + fileName;
 		GenericFile gFile = GenericFile.create(fileIn);
 		FileEnvironment env = new FileEnvironment(gFile); // get path
@@ -52,6 +51,9 @@ public class Main {
 				args, env);
 
 		int size = analysis.getNodeList().size();
+		
+		
+		System.exit(0);
 		StringBuffer genXML = new StringBuffer();
 		VrirXmlGen.genModuleXMLHead(genXML, fileName.split("\\.")[0]);
 		genXML.append(HelperClass.toXML("fns"));
