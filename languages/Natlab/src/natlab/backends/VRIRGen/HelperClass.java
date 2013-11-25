@@ -1,5 +1,7 @@
 package natlab.backends.VRIRGen;
 
+import java.util.ArrayList;
+
 import ast.AssignStmt;
 import ast.Expr;
 import ast.FPLiteralExpr;
@@ -302,7 +304,8 @@ public class HelperClass {
 		if (func == null) {
 
 			System.err.println("function not found in call graph" + name);
-			System.exit(0);
+			return new VTypeFunction(new ArrayList<VType>(),
+					new ArrayList<VType>());
 		}
 
 		for (Name nm : func.getAst().getInputParamList()) {
@@ -315,6 +318,9 @@ public class HelperClass {
 			}
 			funcType.addInType(sym.getVtype());
 
+		}
+		if (func.getAst().getOutputParamList().getNumChild() == 0) {
+			funcType.addOutType(new VoidType());
 		}
 		for (Name nm : func.getAst().getOutputParamList()) {
 			Symbol sym = gen.getSymbol(nm.getID());

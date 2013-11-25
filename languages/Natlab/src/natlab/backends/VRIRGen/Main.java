@@ -51,9 +51,9 @@ public class Main {
 				args, env);
 
 		int size = analysis.getNodeList().size();
-		
-		
-		System.exit(0);
+
+		System.out.println("size");
+
 		StringBuffer genXML = new StringBuffer();
 		VrirXmlGen.genModuleXMLHead(genXML, fileName.split("\\.")[0]);
 		genXML.append(HelperClass.toXML("fns"));
@@ -61,9 +61,11 @@ public class Main {
 		VrirTypeMapper.initTypeMap();
 		HashSet<StaticFunction> funcSet = new HashSet<StaticFunction>();
 		for (int i = 0; i < size; i++) {
+			StringBuffer sb;
 			/*
 			 * type inference.
 			 */
+
 			ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet = analysis
 					.getNodeList().get(i).getAnalysis().getCurrentOutSet();
 
@@ -93,30 +95,30 @@ public class Main {
 
 				System.out
 						.println("pretty print the generated VRIR in XML format  .\n");
-				StringBuffer sb;
-				// System.out.println("size    " + size + "     i    " + i);
+
 				sb = VrirXmlGen.generateVrir((Function) fTree, remainingVars,
 						analysis, currentOutSet, i, size, analysisEngine);
 				genXML.append(sb);
 
 			}
-			genXML.append(HelperClass.toXML("/fns"));
-
-			VrirXmlGen.genModuleXMLTail(genXML);
-
-			// System.err.println(genXML);
-
-			try {
-				BufferedWriter buffer = Files.newBufferedWriter(
-						Paths.get(fileName.split("\\.")[0] + ".xml"),
-						Charset.forName("US-ASCII"));
-				buffer.write(genXML.toString());
-				buffer.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 			funcSet.add(function);
 		}
+		genXML.append(HelperClass.toXML("/fns"));
+
+		VrirXmlGen.genModuleXMLTail(genXML);
+
+		System.err.println(genXML);
+
+		try {
+			BufferedWriter buffer = Files.newBufferedWriter(
+					Paths.get(fileName.split("\\.")[0] + ".xml"),
+					Charset.forName("US-ASCII"));
+			buffer.write(genXML.toString());
+			buffer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 }
