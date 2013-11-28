@@ -21,9 +21,13 @@ public class CppWrapperGenerator extends WrapperGenerator {
 	}
 
 	@Override
-	public void genWrapper() {
+	public String genWrapper() {
 		// TODO Auto-generated method stub
-
+		StringBuffer sb = new StringBuffer();
+		
+		return null;
+		
 	}
+	
 
 }

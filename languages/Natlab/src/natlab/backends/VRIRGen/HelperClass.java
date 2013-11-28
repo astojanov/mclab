@@ -13,6 +13,7 @@ import ast.Name;
 import ast.NameExpr;
 import ast.ParameterizedExpr;
 import ast.Row;
+import natlab.tame.builtin.Builtin;
 import natlab.tame.callgraph.StaticFunction;
 import natlab.tame.classes.reference.PrimitiveClassReference;
 import natlab.tame.valueanalysis.ValueAnalysis;
@@ -23,38 +24,12 @@ import natlab.tame.valueanalysis.components.shape.Shape;
 import natlab.tame.valueanalysis.value.Value;
 
 public class HelperClass {
-	// public static PrimitiveClassReference getDataType(
-	// ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
-	// int graphIndex, Function node, String ID, int paramIndx) {
-	//
-	// AdvancedMatrixValue temp = (AdvancedMatrixValue) (analysis
-	// .getNodeList().get(graphIndex).getAnalysis().getArgs()
-	// .get(paramIndx));
-	//
-	// return temp.getMatlabClass();
-	//
-	// }
-	//
-	// public static Shape<AggrValue<AdvancedMatrixValue>> getShape(
-	// ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
-	// int graphIndex, Function node, String ID, int i) {
-	// AdvancedMatrixValue temp = (AdvancedMatrixValue) (analysis
-	// .getNodeList().get(graphIndex).getAnalysis().getArgs().get(i));
-	// return temp.getShape();
-	// }
-	//
-	// public static String generateComplexityInfo(
-	// ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
-	// int graphIndex, Function node, Name param, int i) {
-	// AdvancedMatrixValue temp = (AdvancedMatrixValue) (analysis
-	// .getNodeList().get(graphIndex).getAnalysis().getArgs().get(i));
-	// return temp.getisComplexInfo().geticType();
-	// }
 
 	public static VType generateVType(
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
 			int graphIndex, Function node, Name param, int paramIndx) {
 
+		@SuppressWarnings("rawtypes")
 		Value temp = analysis.getNodeList().get(graphIndex).getAnalysis()
 				.getArgs().get(paramIndx);
 		return generateVType(temp);
@@ -73,7 +48,7 @@ public class HelperClass {
 
 	}
 
-	public static VType generateVType(Value value) {
+	public static VType generateVType(@SuppressWarnings("rawtypes") Value value) {
 		if ((Object) value instanceof AdvancedMatrixValue) {
 			return new VTypeMatrix(
 					(((AdvancedMatrixValue) (Object) value)).getShape(),
@@ -173,75 +148,63 @@ public class HelperClass {
 		return null;
 	}
 
-	// public static String generateComplexityInfo(String name, VrirXmlGen gen)
-	// {
-	// AggrValue<AdvancedMatrixValue> val = gen.getAnalysis().getNodeList()
-	// .get(gen.getIndex()).getAnalysis().getCurrentOutSet().get(name)
-	// .getSingleton();
-	// if ((Object) val instanceof AdvancedMatrixValue) {
+	// public static VType getBinExprType(ParameterizedExpr node, VrirXmlGen
+	// gen) {
+	// if (node.getParent() instanceof AssignStmt) {
+	// Expr lhsExpr = ((AssignStmt) node.getParent()).getLHS();
+	// if (lhsExpr instanceof MatrixExpr) {
+	// return getLhsType((MatrixExpr) lhsExpr, gen);
+	// } else if (lhsExpr instanceof NameExpr) {
+	// return getLhsType((NameExpr) lhsExpr, gen);
+	// } else if (lhsExpr instanceof ParameterizedExpr) {
+	// return getLhsType((ParameterizedExpr) lhsExpr, gen);
+	// }
 	//
-	// return (((AdvancedMatrixValue) (Object) val)).getisComplexInfo()
-	// .geticType();
+	// } else {
+	//
+	// Name tempName = (Name) gen.getAnalysisEngine()
+	// .getTemporaryVariablesRemovalAnalysis()
+	// .getExprToTempVarTable().get(node);
+	//
+	// if (tempName == null) {
+	//
+	// throw new NullPointerException(
+	// "No equivalent temporary variable exists.");
 	//
 	// }
+	//
+	// AggrValue<?> val = gen.getAnalysis().getNodeList()
+	// .get(gen.getIndex()).getAnalysis().getCurrentOutSet()
+	// .get(tempName.getID()).getSingleton();
+	// return generateVType(val);
+	// }
+	//
 	// return null;
 	// }
 
-	public static VType getBinExprType(ParameterizedExpr node, VrirXmlGen gen) {
-		if (node.getParent() instanceof AssignStmt) {
-			Expr lhsExpr = ((AssignStmt) node.getParent()).getLHS();
-			if (lhsExpr instanceof MatrixExpr) {
-				return getLhsType((MatrixExpr) lhsExpr, gen);
-			} else if (lhsExpr instanceof NameExpr) {
-				return getLhsType((NameExpr) lhsExpr, gen);
-			} else if (lhsExpr instanceof ParameterizedExpr) {
-				return getLhsType((ParameterizedExpr) lhsExpr, gen);
-			}
-
-		} else {
-
-			Name tempName = (Name) gen.getAnalysisEngine()
-					.getTemporaryVariablesRemovalAnalysis()
-					.getExprToTempVarTable().get(node);
-
-			if (tempName == null) {
-
-				throw new NullPointerException(
-						"No equivalent temporary variable exists.");
-
-			}
-
-			AggrValue<?> val = gen.getAnalysis().getNodeList()
-					.get(gen.getIndex()).getAnalysis().getCurrentOutSet()
-					.get(tempName.getID()).getSingleton();
-			return generateVType(val);
-		}
-
-		return null;
-	}
-
-	public static VType getUnaryExprType(ParameterizedExpr node, VrirXmlGen gen) {
-		if (node.getParent() instanceof AssignStmt) {
-			Expr lhsExpr = ((AssignStmt) node.getParent()).getLHS();
-			if (lhsExpr instanceof MatrixExpr) {
-				return getLhsType((MatrixExpr) lhsExpr, gen);
-			} else if (lhsExpr instanceof NameExpr) {
-				return getLhsType((NameExpr) lhsExpr, gen);
-			} else if (lhsExpr instanceof ParameterizedExpr) {
-				return getLhsType((ParameterizedExpr) lhsExpr, gen);
-			}
-		} else {
-			Name tempName = (Name) gen.getAnalysisEngine()
-					.getTemporaryVariablesRemovalAnalysis()
-					.getExprToTempVarTable().get(node);
-
-			AggrValue<?> val = gen.getAnalysis().getNodeList()
-					.get(gen.getIndex()).getAnalysis().getCurrentOutSet()
-					.get(tempName.getID()).getSingleton();
-			return generateVType(val);
-		}
-		return null;
-	}
+	// public static VType getUnaryExprType(ParameterizedExpr node, VrirXmlGen
+	// gen) {
+	// if (node.getParent() instanceof AssignStmt) {
+	// Expr lhsExpr = ((AssignStmt) node.getParent()).getLHS();
+	// if (lhsExpr instanceof MatrixExpr) {
+	// return getLhsType((MatrixExpr) lhsExpr, gen);
+	// } else if (lhsExpr instanceof NameExpr) {
+	// return getLhsType((NameExpr) lhsExpr, gen);
+	// } else if (lhsExpr instanceof ParameterizedExpr) {
+	// return getLhsType((ParameterizedExpr) lhsExpr, gen);
+	// }
+	// } else {
+	// Name tempName = (Name) gen.getAnalysisEngine()
+	// .getTemporaryVariablesRemovalAnalysis()
+	// .getExprToTempVarTable().get(node);
+	//
+	// AggrValue<?> val = gen.getAnalysis().getNodeList()
+	// .get(gen.getIndex()).getAnalysis().getCurrentOutSet()
+	// .get(tempName.getID()).getSingleton();
+	// return generateVType(val);
+	// }
+	// return null;
+	// }
 
 	public static VType getLhsType(MatrixExpr lhsExpr, VrirXmlGen gen) {
 
@@ -273,6 +236,36 @@ public class HelperClass {
 		return null;
 	}
 
+	public static VType getExprType(Expr expr, VrirXmlGen gen) {
+		if (expr.getParent() instanceof AssignStmt) {
+			Expr lhsExpr = ((AssignStmt) expr.getParent()).getLHS();
+			if (lhsExpr instanceof MatrixExpr) {
+				return getLhsType((MatrixExpr) lhsExpr, gen);
+			} else if (lhsExpr instanceof NameExpr) {
+				return getLhsType((NameExpr) lhsExpr, gen);
+			} else if (lhsExpr instanceof ParameterizedExpr) {
+				return getLhsType((ParameterizedExpr) lhsExpr, gen);
+			}
+		} else {
+			Name tempName = (Name) gen.getAnalysisEngine()
+					.getTemporaryVariablesRemovalAnalysis()
+					.getExprToTempVarTable().get(expr);
+
+			if (tempName == null) {
+
+				throw new NullPointerException(
+						"No equivalent temporary variable exists.");
+
+			}
+
+			AggrValue<?> val = gen.getAnalysis().getNodeList()
+					.get(gen.getIndex()).getAnalysis().getCurrentOutSet()
+					.get(tempName.getID()).getSingleton();
+			return generateVType(val);
+		}
+		return null;
+	}
+
 	public static VType getLhsType(NameExpr lhsExpr, VrirXmlGen gen) {
 		AggrValue<?> val = gen.getAnalysis().getNodeList().get(gen.getIndex())
 				.getAnalysis().getCurrentOutSet()
@@ -289,13 +282,18 @@ public class HelperClass {
 
 	}
 
-	public static VTypeFunction generateFuncType(VrirXmlGen gen, String name) {
+	public static VTypeFunction generateFuncType(VrirXmlGen gen,
+			ParameterizedExpr expr) {
 		VTypeFunction funcType = new VTypeFunction();
 		StaticFunction func = null;
 		int i;
+		if (Builtin.getInstance(expr.getVarName()) != null) {
+			System.out.println("Function is a builtin");
+
+		}
 		for (i = 0; i < gen.getAnalysis().getNodeList().size(); i++) {
 			if (gen.getAnalysis().getNodeList().get(i).getFunction().getName()
-					.equalsIgnoreCase(name)) {
+					.equalsIgnoreCase(expr.getVarName())) {
 				func = gen.getAnalysis().getNodeList().get(i).getFunction();
 				break;
 			}
@@ -303,7 +301,59 @@ public class HelperClass {
 		}
 		if (func == null) {
 
-			System.err.println("function not found in call graph" + name);
+			System.err.println("function not found in call graph" + expr);
+			return new VTypeFunction(new ArrayList<VType>(),
+					new ArrayList<VType>());
+		}
+
+		for (Name nm : func.getAst().getInputParamList()) {
+			Symbol sym = gen.getSymbol(nm.getID());
+			if (sym == null) {
+				VType vtype = HelperClass.generateVType(gen.getAnalysis(), i,
+						nm);
+				gen.addToSymTab(vtype, nm.getID());
+				sym = gen.getSymbol(nm.getID());
+			}
+			funcType.addInType(sym.getVtype());
+
+		}
+		if (func.getAst().getOutputParamList().getNumChild() == 0) {
+			funcType.addOutType(new VoidType());
+		}
+		for (Name nm : func.getAst().getOutputParamList()) {
+			Symbol sym = gen.getSymbol(nm.getID());
+			if (sym == null) {
+				VType vtype = HelperClass.generateVType(gen.getAnalysis(), i,
+						nm);
+				gen.addToSymTab(vtype, nm.getID());
+				sym = gen.getSymbol(nm.getID());
+			}
+			funcType.addOutType(sym.getVtype());
+
+		}
+
+		return funcType;
+	}
+
+	public static VTypeFunction generateFuncType(VrirXmlGen gen, NameExpr expr) {
+		VTypeFunction funcType = new VTypeFunction();
+		StaticFunction func = null;
+		int i;
+		if (Builtin.getInstance(expr.getVarName()) != null) {
+			System.out.println("Function is a builtin");
+
+		}
+		for (i = 0; i < gen.getAnalysis().getNodeList().size(); i++) {
+			if (gen.getAnalysis().getNodeList().get(i).getFunction().getName()
+					.equalsIgnoreCase(expr.getVarName())) {
+				func = gen.getAnalysis().getNodeList().get(i).getFunction();
+				break;
+			}
+
+		}
+		if (func == null) {
+
+			System.err.println("function not found in call graph" + expr);
 			return new VTypeFunction(new ArrayList<VType>(),
 					new ArrayList<VType>());
 		}

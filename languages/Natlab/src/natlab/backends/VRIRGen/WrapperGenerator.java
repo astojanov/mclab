@@ -3,11 +3,11 @@ package natlab.backends.VRIRGen;
 import natlab.tame.callgraph.StaticFunction;
 
 public abstract class WrapperGenerator {
-	StaticFunction func;
+	 StaticFunction func;
 
 	public WrapperGenerator(StaticFunction func) {
 		this.func = func;
 	}
 
-	public abstract void genWrapper();
+	public abstract String genWrapper();
 }
