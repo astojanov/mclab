@@ -111,7 +111,18 @@ public class ExprCaseHandler {
 	public static void handleFunCallExpr(ParameterizedExpr expr, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("FuncallExpr"));
 		gen.appendToPrettyCode(HelperClass.toXML("name"));
-		expr.getChild(0).analyze(gen);
+		Symbol sym = gen.getSymbol(expr.getVarName());
+		if (sym == null) {
+			VType vt = HelperClass.generateFuncType(gen, expr);
+			if (vt == null) {
+				System.out.println("problem!!!");
+				System.exit(0);
+			}
+			gen.addToSymTab(vt, expr.getVarName());
+		}
+		gen.appendToPrettyCode(toXMLHead(expr.getVarName(),
+				gen.getSymbol(expr.getVarName()).getId(), "id"));
+		// expr.getChild(0).analyze(gen);
 		gen.appendToPrettyCode(HelperClass.toXML("/name"));
 		gen.appendToPrettyCode(HelperClass.toXML("args"));
 		for (Expr args : expr.getArgList()) {

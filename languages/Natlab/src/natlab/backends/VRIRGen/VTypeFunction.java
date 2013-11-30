@@ -48,6 +48,7 @@ public class VTypeFunction extends VType {
 		sb.append(HelperClass.toXML("FuncType"));
 		sb.append(HelperClass.toXML("intypes"));
 		for (VType vtype : inType) {
+			
 			sb.append(vtype.toXML());
 		}
 		sb.append(HelperClass.toXML("/intypes"));

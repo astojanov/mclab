@@ -7,6 +7,7 @@ import ast.Expr;
 import ast.FPLiteralExpr;
 import ast.Function;
 import ast.IntLiteralExpr;
+import ast.List;
 import ast.LiteralExpr;
 import ast.MatrixExpr;
 import ast.Name;
@@ -57,11 +58,11 @@ public class HelperClass {
 					(((AdvancedMatrixValue) (Object) value)).getisComplexInfo()
 							.geticType());
 		} else if ((Object) value instanceof CellValue) {
-			VTypeTuple vtypeCell = new VTypeTuple();
+			VTypeTuple vtypeTuple = new VTypeTuple();
 			for (Value val : (((CellValue<?>) (Object) value)).getValues()) {
-				vtypeCell.addElement(generateVType(val));
+				vtypeTuple.addElement(generateVType(val));
 			}
-			return vtypeCell;
+			return vtypeTuple;
 		}
 		return null;
 	}
@@ -143,7 +144,7 @@ public class HelperClass {
 
 	public static String generateComplexityInfo(LiteralExpr lit, VrirXmlGen gen) {
 		if (lit instanceof FPLiteralExpr) {
-			((IntLiteralExpr) lit).getValue().isImaginary();
+			((FPLiteralExpr) lit).getValue().isImaginary();
 		}
 		return null;
 	}
@@ -216,11 +217,9 @@ public class HelperClass {
 		}
 
 		for (Row row : ((MatrixExpr) lhsExpr).getRowList()) {
-			if (row.getNumElement() > 1) {
-				System.out.println("Multiple row case not handled");
-				return null;
-			} else {
+			if (row.getNumChild() == 1) {
 				Expr expr = row.getElement(0);
+
 				if (expr instanceof NameExpr) {
 					return getLhsType((NameExpr) expr, gen);
 
@@ -230,13 +229,32 @@ public class HelperClass {
 					return null;
 				}
 
+			} else {
+				VTypeTuple vtype = new VTypeTuple();
+				for (Expr expr : row.getElementList()) {
+					if (expr instanceof NameExpr) {
+						vtype.addElement(getLhsType((NameExpr) expr, gen));
+
+					} else if (expr instanceof ParameterizedExpr) {
+						vtype.addElement(getLhsType((ParameterizedExpr) expr,
+								gen));
+					}
+				}
+				return vtype;
 			}
+
 		}
 
 		return null;
 	}
 
 	public static VType getExprType(Expr expr, VrirXmlGen gen) {
+		System.out.println("expression " + expr.getClass());
+		if (expr instanceof NameExpr && gen.getRemainingVars().contains(((NameExpr) expr).getName().getID())) {
+			
+			return generateVType(gen.getAnalysis(), gen.getIndex(),
+					((NameExpr) expr).getName());
+		}
 		if (expr.getParent() instanceof AssignStmt) {
 			Expr lhsExpr = ((AssignStmt) expr.getParent()).getLHS();
 			if (lhsExpr instanceof MatrixExpr) {
@@ -246,15 +264,25 @@ public class HelperClass {
 			} else if (lhsExpr instanceof ParameterizedExpr) {
 				return getLhsType((ParameterizedExpr) lhsExpr, gen);
 			}
-		} else {
+		}
+
+		else {
+			System.out
+					.println("expression type " + expr.getParent().getClass());
 			Name tempName = (Name) gen.getAnalysisEngine()
 					.getTemporaryVariablesRemovalAnalysis()
 					.getExprToTempVarTable().get(expr);
 
 			if (tempName == null) {
-
-				throw new NullPointerException(
-						"No equivalent temporary variable exists.");
+				for (Expr ex : gen.getAnalysisEngine()
+						.getTemporaryVariablesRemovalAnalysis()
+						.getExprToTempVarTable().keySet()) {
+					if (ex instanceof NameExpr) {
+						System.out.println("asdas"
+								+ ((NameExpr) ex).getName().getID());
+					}
+				}
+				return null;
 
 			}
 
@@ -286,11 +314,34 @@ public class HelperClass {
 			ParameterizedExpr expr) {
 		VTypeFunction funcType = new VTypeFunction();
 		StaticFunction func = null;
-		int i;
+
 		if (Builtin.getInstance(expr.getVarName()) != null) {
 			System.out.println("Function is a builtin");
+			VType vtype = getExprType(expr, gen);
 
+			// TODO : What about the case of multiple returns ?
+			if (vtype == null) {
+				funcType.addOutType(new VoidType());
+			} else {
+				funcType.addOutType(vtype);
+			}
+			if (expr.getArgList().getNumChild() == 0) {
+				funcType.addInType(new VoidType());
+			}
+
+			for (Expr param : expr.getArgList()) {
+
+				System.out.println("null expr" + param.getClass() + "  "
+						+ expr.getVarName());
+				vtype = getExprType(param, gen);
+				if (vtype == null) {
+
+				}
+				funcType.addInType(vtype);
+			}
+			return funcType;
 		}
+		int i;
 		for (i = 0; i < gen.getAnalysis().getNodeList().size(); i++) {
 			if (gen.getAnalysis().getNodeList().get(i).getFunction().getName()
 					.equalsIgnoreCase(expr.getVarName())) {
@@ -302,6 +353,7 @@ public class HelperClass {
 		if (func == null) {
 
 			System.err.println("function not found in call graph" + expr);
+
 			return new VTypeFunction(new ArrayList<VType>(),
 					new ArrayList<VType>());
 		}
@@ -340,7 +392,20 @@ public class HelperClass {
 		StaticFunction func = null;
 		int i;
 		if (Builtin.getInstance(expr.getVarName()) != null) {
-			System.out.println("Function is a builtin");
+			System.out.println("Function is a builtin " + expr.getVarName());
+
+			VType vtype = getExprType(expr, gen);
+			if (vtype == null) {
+				funcType.addOutType(new VoidType());
+			} else {
+				// TODO : What about the case of multiple returns ?
+				funcType.addOutType(vtype);
+			}
+			// for (Expr param : expr.getArgList()) {
+			// funcType.addInType(getExprType(param, gen));
+			// }
+			funcType.addInType(new VoidType());
+			return funcType;
 
 		}
 		for (i = 0; i < gen.getAnalysis().getNodeList().size(); i++) {
