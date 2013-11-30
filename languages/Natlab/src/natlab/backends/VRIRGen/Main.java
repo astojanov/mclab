@@ -74,6 +74,7 @@ public class Main {
 			 */
 			StaticFunction function = analysis.getNodeList().get(i)
 					.getFunction();
+			System.out.println("Analysis function  " + function.getName());
 			if (!funcSet.contains(function)) {
 				// TamerPlusUtils.debugMode();
 				// System.out.println("tamer pretty print: \n"+function.getAst().getPrettyPrinted());

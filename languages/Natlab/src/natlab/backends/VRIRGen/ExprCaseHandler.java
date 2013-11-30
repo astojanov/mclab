@@ -27,8 +27,8 @@ public class ExprCaseHandler {
 		else {
 
 			if (!gen.getSymTab().contains(node.getName().getID())) {
-				VTypeFunction funcType = HelperClass.generateFuncType(gen, node
-						.getName().getID());
+				VTypeFunction funcType = HelperClass
+						.generateFuncType(gen, node);
 				gen.addToSymTab(funcType, node.getName().getID());
 			}
 			gen.appendToPrettyCode(toXMLHead(node.getName().getID(), gen
@@ -53,7 +53,7 @@ public class ExprCaseHandler {
 			String name) {
 		gen.appendToPrettyCode(toXMLHead(name));
 		// TODO : Get unary expression type
-		gen.appendToPrettyCode(HelperClass.getUnaryExprType(node, gen).toXML());
+		gen.appendToPrettyCode(HelperClass.getExprType(node, gen).toXML());
 		gen.appendToPrettyCode(HelperClass.toXML("base"));
 		node.getArg(0).analyze(gen);
 		gen.appendToPrettyCode(HelperClass.toXML("/base"));
@@ -65,7 +65,7 @@ public class ExprCaseHandler {
 
 		gen.appendToPrettyCode(toXMLHead(name));
 
-		gen.appendToPrettyCode(HelperClass.getBinExprType(node, gen).toXML());
+		gen.appendToPrettyCode(HelperClass.getExprType(node, gen).toXML());
 		gen.appendToPrettyCode("<rhs>\n");
 		node.getArg(1).analyze(gen);
 		gen.appendToPrettyCode("</rhs>\n");
@@ -111,7 +111,18 @@ public class ExprCaseHandler {
 	public static void handleFunCallExpr(ParameterizedExpr expr, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("FuncallExpr"));
 		gen.appendToPrettyCode(HelperClass.toXML("name"));
-		expr.getChild(0).analyze(gen);
+		Symbol sym = gen.getSymbol(expr.getVarName());
+		if (sym == null) {
+			VType vt = HelperClass.generateFuncType(gen, expr);
+			if (vt == null) {
+				System.out.println("problem!!!");
+				System.exit(0);
+			}
+			gen.addToSymTab(vt, expr.getVarName());
+		}
+		gen.appendToPrettyCode(toXMLHead(expr.getVarName(),
+				gen.getSymbol(expr.getVarName()).getId(), "id"));
+		// expr.getChild(0).analyze(gen);
 		gen.appendToPrettyCode(HelperClass.toXML("/name"));
 		gen.appendToPrettyCode(HelperClass.toXML("args"));
 		for (Expr args : expr.getArgList()) {
