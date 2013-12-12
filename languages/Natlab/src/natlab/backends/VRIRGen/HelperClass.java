@@ -142,11 +142,12 @@ public class HelperClass {
 		return null;
 	}
 
-	public static String generateComplexityInfo(LiteralExpr lit, VrirXmlGen gen) {
+	public static boolean generateComplexityInfo(LiteralExpr lit, VrirXmlGen gen) {
 		if (lit instanceof FPLiteralExpr) {
 			((FPLiteralExpr) lit).getValue().isImaginary();
+			
 		}
-		return null;
+		return false;
 	}
 
 	// public static VType getBinExprType(ParameterizedExpr node, VrirXmlGen
@@ -250,8 +251,10 @@ public class HelperClass {
 
 	public static VType getExprType(Expr expr, VrirXmlGen gen) {
 		System.out.println("expression " + expr.getClass());
-		if (expr instanceof NameExpr && gen.getRemainingVars().contains(((NameExpr) expr).getName().getID())) {
-			
+		if (expr instanceof NameExpr
+				&& gen.getRemainingVars().contains(
+						((NameExpr) expr).getName().getID())) {
+
 			return generateVType(gen.getAnalysis(), gen.getIndex(),
 					((NameExpr) expr).getName());
 		}
