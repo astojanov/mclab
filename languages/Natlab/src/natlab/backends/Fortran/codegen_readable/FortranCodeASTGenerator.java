@@ -26,6 +26,8 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 	 * TODO split this huge class... 
 	 */
 	static boolean Debug = false;
+	static int tempCounter = 0;
+	public int passCounter;
 	// this currentOutSet is the out set at the end point of the program.
 	private ValueFlowMap<AggrValue<BasicMatrixValue>> currentOutSet;
 	public Set<String> remainingVars;
@@ -59,6 +61,7 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 	private boolean rhsArrayAssign;
 	private String overloadedRelational;
 	private String overloadedRelationalFlag; // l means lhs is array, r means rhs is array.
+	public boolean forLoopTransform;
 	// temporary variables generated in Fortran code generation.
 	public Map<String, BasicMatrixValue> fotranTemporaries;
 	public boolean mustBeInt;
@@ -84,6 +87,7 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 			AnalysisEngine analysisEngine, 
 			boolean nocheck) 
 	{
+		passCounter = 0;
 		this.currentOutSet = currentOutSet;
 		this.remainingVars = remainingVars;
 		this.entryPointFile = entryPointFile;
@@ -115,6 +119,7 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 		rhsArrayAssign = false;
 		overloadedRelational = "";
 		overloadedRelationalFlag = "";
+		forLoopTransform = false;
 		fotranTemporaries = new HashMap<String,BasicMatrixValue>();
 		mustBeInt = false;
 		forceToInt = new HashSet<String>();
@@ -140,31 +145,16 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 	 * for comment statements.
 	 */
 	public void caseEmptyStmt(EmptyStmt node) {
-		if (ifWhileForBlockNest != 0) {
-			if (!node.getPrettyPrinted().equals("")) {
-				String comment = node.getPrettyPrinted();
-				if (Debug) System.out.println(comment);
-				FCommentStmt fComment = new FCommentStmt();
-				String indent = "";
-				for (int i = 0; i < indentNum; i++) {
-					indent = indent + standardIndent;
-				}
-				fComment.setIndent(indent);
-				fComment.setFComment(comment.subSequence(1, comment.length()).toString());
+		if (!node.getPrettyPrinted().equals("")) {
+			String comment = node.getPrettyPrinted();
+			if (Debug) System.out.println(comment);
+			FCommentStmt fComment = new FCommentStmt();
+			fComment.setIndent(getMoreIndent(0));
+			fComment.setFComment(comment.subSequence(1, comment.length()).toString());
+			if (ifWhileForBlockNest != 0) {
 				stmtSecForIfWhileForBlock.addStatement(fComment);
 			}
-		}
-		else {
-			if (!node.getPrettyPrinted().equals("")) {
-				String comment = node.getPrettyPrinted();
-				if (Debug) System.out.println(comment);
-				FCommentStmt fComment = new FCommentStmt();
-				String indent = "";
-				for (int i = 0; i < indentNum; i++) {
-					indent = indent + standardIndent;
-				}
-				fComment.setIndent(indent);
-				fComment.setFComment(comment.subSequence(1, comment.length()).toString());
+			else {
 				subprogram.getStatementSection().addStatement(fComment);
 			}
 		}
@@ -173,11 +163,7 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 	@Override
 	public void caseAssignStmt(AssignStmt node)	{
 		FAssignStmt fAssignStmt = new FAssignStmt();
-		String indent = "";
-		for (int i = 0; i < indentNum; i++) {
-			indent = indent + standardIndent;
-		}
-		fAssignStmt.setIndent(indent);
+		fAssignStmt.setIndent(getMoreIndent(0));
 		/*
 		 * translate matlab function with more than 
 		 * one returns to subroutines in fortran.
@@ -193,7 +179,7 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 							(((NameExpr)((ParameterizedExpr)node.getRHS()).getChild(0))
 									.getName().getID()))) {
 						FSubroutines fSubroutines = new FSubroutines();
-						fSubroutines.setIndent(indent);
+						fSubroutines.setIndent(getMoreIndent(0));
 						node.getRHS().analyze(this);
 						sb.replace(sb.length()-1, sb.length(), "");
 						sb.append(", ");
@@ -267,7 +253,7 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 		}
 		else if (randnFlag) {
 			FSubroutines fSubroutines = new FSubroutines();
-			fSubroutines.setIndent(indent);
+			fSubroutines.setIndent(getMoreIndent(0));
 			fSubroutines.setFunctionCall("RANDOM_NUMBER("+lhsName+")");
 			randnFlag = false;
 			sb.setLength(0);
@@ -278,9 +264,9 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 				node.getRHS().getChild(1).analyze(this);
 				insideArray--;
 				StringBuffer rtBuffer = new StringBuffer();
-				rtBuffer.append(indent + "IF ((.NOT. ALLOCATED(" + lhsName + "))) THEN\n");
-				rtBuffer.append(indent + standardIndent + "ALLOCATE(" + lhsName + "(" + sb.toString() + "))\n");
-				rtBuffer.append(indent + "END IF\n");
+				rtBuffer.append(getMoreIndent(0) + "IF ((.NOT.ALLOCATED(" + lhsName + "))) THEN\n");
+				rtBuffer.append(getMoreIndent(0) + standardIndent + "ALLOCATE(" + lhsName + "(" + sb.toString() + "))\n");
+				rtBuffer.append(getMoreIndent(0) + "END IF\n");
 				RuntimeAllocate rtAllocate = new RuntimeAllocate();
 				rtAllocate.setBlock(rtBuffer.toString());
 				fSubroutines.setRuntimeAllocate(rtAllocate);
@@ -296,7 +282,7 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 		else if (convertUserFuncToSubroutine) {
 			sb.setLength(0);
 			FSubroutines fSubroutines = new FSubroutines();
-			fSubroutines.setIndent(indent);
+			fSubroutines.setIndent(getMoreIndent(0));
 			fSubroutines.setFunctionCall(rhsString.substring(0, rhsString.length()-1) + ", " + lhsName + ")");
 			if (sbForRuntimeInline.length() != 0 && !storageAlloc) {
 				RuntimeAllocate runtimeInline = new RuntimeAllocate();
@@ -403,7 +389,7 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 					&& storageAlloc) {
 				sbForRuntimeInline.setLength(0);
 				RuntimeAllocate runtimeInline = new RuntimeAllocate();
-				sbForRuntimeInline.append("IF (.NOT. ALLOCATED(" 
+				sbForRuntimeInline.append("IF (.NOT.ALLOCATED(" 
 						+ lhsName
 						+ ")) THEN\n" + getMoreIndent(1));
 				runtimeInline.setBlock(sbForRuntimeInline.toString());
@@ -855,7 +841,7 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 				 * a new matlab built-in function. the only thing we 
 				 * need to do is making a user-defined function by 
 				 * ourselves or "find" one, and then update the Mc2For 
-				 * lib. TODO shipped with Mc2For, we should at least 
+				 * lib. shipped with Mc2For, we should at least 
 				 * provide a significant number of user-defined fortran 
 				 * functions to "fill" the "hole" of those commonly 
 				 * used matlab built-in functions, like ones, zeros...
@@ -868,10 +854,61 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 				 * replaced by swapping operands and then use right 
 				 * division, and : (colon operator), which can be 
 				 * replaced by using implied DO loop in an array
-				 * constructor. TODO this tmr.
+				 * constructor.
 				 */
 				if (Debug) System.out.println("this is a function call");
 				int inputNum = node.getChild(1).getNumChild();
+				if (userDefinedFunctions.contains(name) 
+						&& !(node.getParent() instanceof AssignStmt)) {
+					/*
+					 * convert user defined one-return-value function to 
+					 * subroutine call in fortran, and replace the original 
+					 * function with one temporary variable, i.e. check 
+					 * out the benchmark diff.
+					 * 
+					 * add a subroutine call to the statement list, and 
+					 * replace the whole parameterizedExpr with the 
+					 * temporary variable.
+					 */
+					if (Debug) System.out.println("user defined one-return-value function:" + name);
+					StringBuffer sb_bk = new StringBuffer();
+					sb_bk.append(sb);
+					sb.setLength(0);
+					FSubroutines tempSubroutine = new FSubroutines();
+					String tempName = name + "_tmp" + tempCounter;
+					if (passCounter > 0) {
+						tempCounter++;
+					}
+					// add temp variable to the variable list.
+					BasicMatrixValue exprValue = getMatrixValue(((Name)analysisEngine
+							.getTemporaryVariablesRemovalAnalysis()
+							.getExprToTempVarTable()
+							.get(node)).getID());
+					// TODO add class, range, isComplex.
+					if (passCounter > 0) {
+						fotranTemporaries.put(tempName, new BasicMatrixValue(
+								exprValue.getSymbolic(), 
+								exprValue.getMatlabClass(), 
+								exprValue.getShape(), 
+								exprValue.getRangeValue(), 
+								exprValue.getisComplexInfo()
+								));
+					}
+					sb.append(getMoreIndent(0) + name + "(");
+					for (int i = 0; i < inputNum; i++) {
+						// TODO fix this double conversion.
+						sb.append("DBLE(");
+						node.getChild(1).getChild(i).analyze(this);
+						sb.append("), ");
+					}
+					sb.append(tempName + ")");
+					tempSubroutine.setFunctionCall(sb.toString());
+					sb.setLength(0);
+					sb.append(sb_bk + tempName);
+					allSubprograms.add(name);
+					subprogram.getStatementSection().addStatement(tempSubroutine);
+					return;
+				}
 				/*
 				 * deal with storage allocation builtin, zeros and ones.
 				 * TODO does rand and randn count?
@@ -916,6 +953,12 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 								// any other expressions?
 							}
 						}
+						else if (name.equals("sqrt")) {
+							sb.append(fortranMapping.getFortranDirectBuiltinMapping(name));
+							sb.append("(DBLE(");
+							node.getChild(1).getChild(0).analyze(this);
+							sb.append("))");
+						}
 						else {
 							sb.append(fortranMapping.getFortranDirectBuiltinMapping(name));
 							sb.append("(");
@@ -938,7 +981,7 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 						sb.append(name + "(");
 						node.getChild(1).analyze(this);
 						sb.append(")");
-						allSubprograms.add(node.getChild(0).getNodeString());
+						allSubprograms.add(name);
 					}
 				}
 				/*
@@ -1215,7 +1258,7 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 						sb.append(", ");
 						node.getChild(1).getChild(1).analyze(this);
 						sb.append(")");
-						allSubprograms.add(node.getChild(0).getNodeString());
+						allSubprograms.add(name);
 					}
 				}
 				/*
@@ -1259,7 +1302,7 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 							sb_bk.setLength(0);
 						}
 						sb.append(")");
-						allSubprograms.add(node.getChild(0).getNodeString());						
+						allSubprograms.add(name);						
 					}
 				}
 			}
@@ -1371,7 +1414,8 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 			/*
 			 * start
 			 */
-			if (node.getChild(0) instanceof NameExpr 
+			if (!forLoopTransform 
+					&& node.getChild(0) instanceof NameExpr 
 					&& !forceToInt.contains(((NameExpr)node.getChild(0)).getName().getID())
 					&& !getMatrixValue(((NameExpr)node.getChild(0)).getName().getID())
 					.getMatlabClass().equals(PrimitiveClassReference.INT32)) {
@@ -1379,7 +1423,8 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 				node.getChild(0).analyze(this);
 				sb.append(")");
 			}
-			else if (node.getChild(0) instanceof ParameterizedExpr) {
+			else if (!forLoopTransform 
+						&& node.getChild(0) instanceof ParameterizedExpr) {
 				/*
 				 * back up the StringBuffer, test whether the step is integer.
 				 */
@@ -1407,7 +1452,8 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 			/*
 			 * end
 			 */
-			if (node.getChild(2) instanceof NameExpr 
+			if (!forLoopTransform 
+					&& node.getChild(2) instanceof NameExpr 
 					&& !forceToInt.contains(((NameExpr)node.getChild(2)).getName().getID())
 					&& !getMatrixValue(((NameExpr)node.getChild(2)).getName().getID())
 					.getMatlabClass().equals(PrimitiveClassReference.INT32)) {
@@ -1415,7 +1461,8 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 				node.getChild(2).analyze(this);
 				sb.append(")");
 			}
-			else if (node.getChild(2) instanceof ParameterizedExpr) {
+			else if (!forLoopTransform 
+						&& node.getChild(2) instanceof ParameterizedExpr) {
 				/*
 				 * back up the StringBuffer, test whether the step is integer.
 				 */
@@ -1444,7 +1491,8 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 			 */
 			if (node.getChild(1).getNumChild() != 0) {
 				sb.append(", ");
-				if (node.getChild(1).getChild(0) instanceof NameExpr 
+				if (!forLoopTransform 
+						&& node.getChild(1).getChild(0) instanceof NameExpr 
 						&& !forceToInt.contains(((NameExpr)node.getChild(1).getChild(0)).getName().getID())
 						&& !getMatrixValue(((NameExpr)node.getChild(1).getChild(0)).getName().getID())
 						.getMatlabClass().equals(PrimitiveClassReference.INT32)) {
@@ -1452,7 +1500,8 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 					node.getChild(1).getChild(0).analyze(this);
 					sb.append(")");
 				}
-				else if (node.getChild(1).getChild(0) instanceof ParameterizedExpr) {
+				else if (!forLoopTransform 
+							&& node.getChild(1).getChild(0) instanceof ParameterizedExpr) {
 					/*
 					 * back up the StringBuffer, test whether the step is integer.
 					 */
@@ -1505,6 +1554,15 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 	@Override
 	public void caseBreakStmt(BreakStmt node) {
 		// TODO add an exit statment.
+		FBreakStmt breakStmt = new FBreakStmt();
+		breakStmt.setIndent(getMoreIndent(0));
+		breakStmt.setFBreak("EXIT;");
+		if (ifWhileForBlockNest != 0) {
+			stmtSecForIfWhileForBlock.addStatement(breakStmt);
+		}
+		else {
+			subprogram.getStatementSection().addStatement(breakStmt);
+		}
 	}
 	
 	@Override
