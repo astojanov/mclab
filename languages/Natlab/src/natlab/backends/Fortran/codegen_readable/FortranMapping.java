@@ -65,6 +65,7 @@ public class FortranMapping {
 		FortranBinOperatorMap.put("gt", ".GT.");
 		FortranBinOperatorMap.put("ge", ".GE.");
 		FortranBinOperatorMap.put("eq", ".EQ.");
+		FortranBinOperatorMap.put("isequal", ".EQ.");
 		FortranBinOperatorMap.put("ne", ".NE.");
 		// logical operators
 		FortranBinOperatorMap.put("and", ".AND.");
@@ -125,7 +126,7 @@ public class FortranMapping {
 		FortranDirectBuiltinMap.put("min", "MIN");
 		FortranDirectBuiltinMap.put("max", "MAX");
 		FortranDirectBuiltinMap.put("numel", "SIZE");
-		FortranDirectBuiltinMap.put("size", "SHAPE");
+		FortranDirectBuiltinMap.put("size", "SHAPE"); // for char string, map to LEN.
 		FortranDirectBuiltinMap.put("length", "SIZE");
 		// logical operators
 		FortranDirectBuiltinMap.put("any", "ANY");
