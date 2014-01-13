@@ -10,7 +10,7 @@ import ast.StringLiteralExpr;
 
 public class ExprCaseHandler {
 	public static void handleNameExpr(NameExpr node, VrirXmlGen gen) {
-		if (HelperClass.isVar(gen, node)) {
+		if (HelperClass.isVar(gen, node.getName().getID())) {
 
 			if (!gen.getSymTab().contains(node.getName().getID())) {
 
@@ -101,7 +101,7 @@ public class ExprCaseHandler {
 	public static void handleFpLiteralExpr(FPLiteralExpr expr, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("const", expr.getValue().getValue()
 				.toString(), "value"));
-		
+
 		// TODO: 2 types of complex expressions : complex and real . Make
 		// changes for that.
 

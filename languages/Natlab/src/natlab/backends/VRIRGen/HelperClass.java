@@ -6,8 +6,6 @@ import ast.AssignStmt;
 import ast.Expr;
 import ast.FPLiteralExpr;
 import ast.Function;
-import ast.IntLiteralExpr;
-import ast.List;
 import ast.LiteralExpr;
 import ast.MatrixExpr;
 import ast.Name;
@@ -59,7 +57,7 @@ public class HelperClass {
 							.geticType());
 		} else if ((Object) value instanceof CellValue) {
 			VTypeTuple vtypeTuple = new VTypeTuple();
-			for (Value val : (((CellValue<?>) (Object) value)).getValues()) {
+			for (Value<?> val : (((CellValue<?>) (Object) value)).getValues()) {
 				vtypeTuple.addElement(generateVType(val));
 			}
 			return vtypeTuple;
@@ -145,76 +143,18 @@ public class HelperClass {
 	public static boolean generateComplexityInfo(LiteralExpr lit, VrirXmlGen gen) {
 		if (lit instanceof FPLiteralExpr) {
 			((FPLiteralExpr) lit).getValue().isImaginary();
-			
+
 		}
 		return false;
 	}
-
-	// public static VType getBinExprType(ParameterizedExpr node, VrirXmlGen
-	// gen) {
-	// if (node.getParent() instanceof AssignStmt) {
-	// Expr lhsExpr = ((AssignStmt) node.getParent()).getLHS();
-	// if (lhsExpr instanceof MatrixExpr) {
-	// return getLhsType((MatrixExpr) lhsExpr, gen);
-	// } else if (lhsExpr instanceof NameExpr) {
-	// return getLhsType((NameExpr) lhsExpr, gen);
-	// } else if (lhsExpr instanceof ParameterizedExpr) {
-	// return getLhsType((ParameterizedExpr) lhsExpr, gen);
-	// }
-	//
-	// } else {
-	//
-	// Name tempName = (Name) gen.getAnalysisEngine()
-	// .getTemporaryVariablesRemovalAnalysis()
-	// .getExprToTempVarTable().get(node);
-	//
-	// if (tempName == null) {
-	//
-	// throw new NullPointerException(
-	// "No equivalent temporary variable exists.");
-	//
-	// }
-	//
-	// AggrValue<?> val = gen.getAnalysis().getNodeList()
-	// .get(gen.getIndex()).getAnalysis().getCurrentOutSet()
-	// .get(tempName.getID()).getSingleton();
-	// return generateVType(val);
-	// }
-	//
-	// return null;
-	// }
-
-	// public static VType getUnaryExprType(ParameterizedExpr node, VrirXmlGen
-	// gen) {
-	// if (node.getParent() instanceof AssignStmt) {
-	// Expr lhsExpr = ((AssignStmt) node.getParent()).getLHS();
-	// if (lhsExpr instanceof MatrixExpr) {
-	// return getLhsType((MatrixExpr) lhsExpr, gen);
-	// } else if (lhsExpr instanceof NameExpr) {
-	// return getLhsType((NameExpr) lhsExpr, gen);
-	// } else if (lhsExpr instanceof ParameterizedExpr) {
-	// return getLhsType((ParameterizedExpr) lhsExpr, gen);
-	// }
-	// } else {
-	// Name tempName = (Name) gen.getAnalysisEngine()
-	// .getTemporaryVariablesRemovalAnalysis()
-	// .getExprToTempVarTable().get(node);
-	//
-	// AggrValue<?> val = gen.getAnalysis().getNodeList()
-	// .get(gen.getIndex()).getAnalysis().getCurrentOutSet()
-	// .get(tempName.getID()).getSingleton();
-	// return generateVType(val);
-	// }
-	// return null;
-	// }
 
 	public static VType getLhsType(MatrixExpr lhsExpr, VrirXmlGen gen) {
 
 		if (((MatrixExpr) lhsExpr).getNumRow() > 1) {
 			System.out
-					.println("Multiple return types for binary expressions not supported . ");
+					.println("Multiple return types for binary expressions not supported. ");
 			System.exit(0);
-			return null;
+			//return null;
 		}
 
 		for (Row row : ((MatrixExpr) lhsExpr).getRowList()) {
@@ -250,10 +190,9 @@ public class HelperClass {
 	}
 
 	public static VType getExprType(Expr expr, VrirXmlGen gen) {
-		System.out.println("expression " + expr.getClass());
+
 		if (expr instanceof NameExpr
-				&& gen.getRemainingVars().contains(
-						((NameExpr) expr).getName().getID())) {
+				&& isVar(gen, ((NameExpr) expr).getName().getID())) {
 
 			return generateVType(gen.getAnalysis(), gen.getIndex(),
 					((NameExpr) expr).getName());
@@ -270,23 +209,13 @@ public class HelperClass {
 		}
 
 		else {
-			System.out
-					.println("expression type " + expr.getParent().getClass());
+
 			Name tempName = (Name) gen.getAnalysisEngine()
 					.getTemporaryVariablesRemovalAnalysis()
 					.getExprToTempVarTable().get(expr);
-
 			if (tempName == null) {
-				for (Expr ex : gen.getAnalysisEngine()
-						.getTemporaryVariablesRemovalAnalysis()
-						.getExprToTempVarTable().keySet()) {
-					if (ex instanceof NameExpr) {
-						System.out.println("asdas"
-								+ ((NameExpr) ex).getName().getID());
-					}
-				}
-				return null;
-
+				throw new NullPointerException(
+						"Temporary variable for the expression not found");
 			}
 
 			AggrValue<?> val = gen.getAnalysis().getNodeList()
@@ -457,10 +386,6 @@ public class HelperClass {
 
 	public static boolean isVar(VrirXmlGen gen, String name) {
 		return gen.getRemainingVars().contains(name);
-	}
-
-	public static boolean isVar(VrirXmlGen gen, NameExpr expr) {
-		return gen.getRemainingVars().contains(expr.getName().getID());
 	}
 
 	public static String toXML(String str) {
