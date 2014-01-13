@@ -48,6 +48,11 @@ public class GenerateMainEntryPoint {
 		fcg.iterateStatements(node.getStmts());
 		fcg.passCounter++;
 		fcg.allocatedArrays.clear();
+		fcg.sbForRuntimeInline.setLength(0);
+		fcg.zerosAlloc = false;;
+		fcg.colonAlloc = false;
+		fcg.horzcat = false;
+		fcg.vertcat = false;
 		/* 
 		 * second pass of all the statements, using 
 		 * information collected from the first pass.
@@ -177,7 +182,6 @@ public class GenerateMainEntryPoint {
 				DeclStmt declStmt = new DeclStmt();
 				// type is already a token, don't forget.
 				KeywordList keywordList = new KeywordList();
-				ShapeInfo shapeInfo = new ShapeInfo();
 				VariableList varList = new VariableList();
 				if (Debug) System.out.println(variable + "'s value is " + fcg.getMatrixValue(variable));
 				/*
@@ -308,7 +312,6 @@ public class GenerateMainEntryPoint {
 		for (String tmpVariable : fcg.fotranTemporaries.keySet()) {
 			DeclStmt declStmt = new DeclStmt();
 			// type is already a token, don't forget.
-			ShapeInfo shapeInfo = new ShapeInfo();
 			VariableList varList = new VariableList();
 			/*
 			 * declare types, especially character string.
