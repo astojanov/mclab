@@ -36,11 +36,11 @@ public class Main {
 		 * pass the type info of the input argument to the program, currently,
 		 * the type info is composed like double&3*3&REAL.
 		 */
-		// String fileDir = "/home/2012/sjagda/mclab/mbrt/";
+		 String fileDir = "/home/2012/sjagda/mclab/mbrt/";
 		// String fileName = "drv_mbrt.m";
-		String fileDir = File.separator + "home" + File.separator + "sameer"
-				+ File.separator + "mclab" + File.separator + "mbrt"
-				+ File.separator;
+//		String fileDir = File.separator + "home" + File.separator
+//				+ "2012" + "sjagda" + File.separator + "mclab"
+//				+ File.separator + "mbrt" + File.separator;
 		String fileName = "drv_mbrt.m";
 		String fileIn = fileDir + fileName;
 		GenericFile gFile = GenericFile.create(fileIn);
@@ -52,7 +52,7 @@ public class Main {
 
 		int size = analysis.getNodeList().size();
 
-		System.out.println("size");
+		
 
 		StringBuffer genXML = new StringBuffer();
 		VrirXmlGen.genModuleXMLHead(genXML, fileName.split("\\.")[0]);

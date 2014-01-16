@@ -9,6 +9,30 @@ import ast.RangeExpr;
 import ast.StringLiteralExpr;
 
 public class ExprCaseHandler {
+	public static void handleParameterizedExpr(ParameterizedExpr node,
+			VrirXmlGen gen) {
+		if (gen.getRemainingVars().contains(node.getVarName())) {
+
+			ExprCaseHandler.handleArrayIndexExpr(node, gen);
+		} else {
+
+			// Operator
+			if (OperatorMapper.isOperator(node.getVarName())) {
+				// Binary operator
+				ExprCaseHandler.handleOpExpr(node, gen,
+						OperatorMapper.get(node.getVarName()));
+				// ExprCaseHandler.handlePlusExpr(node, this);
+
+			}
+			// Function Call
+			else {
+				ExprCaseHandler.handleFunCallExpr(node, gen);
+
+			}
+
+		}
+	}
+
 	public static void handleNameExpr(NameExpr node, VrirXmlGen gen) {
 		if (HelperClass.isVar(gen, node.getName().getID())) {
 
@@ -22,6 +46,7 @@ public class ExprCaseHandler {
 		if (gen.getSymbol(node.getName().getID()) != null) {
 			gen.appendToPrettyCode(toXMLHead(node.getName().getID(), gen
 					.getSymbol(node.getName().getID()).getId(), "id"));
+
 		}
 		// TODO :In case of functions. Still to be handled.
 		else {
@@ -33,6 +58,7 @@ public class ExprCaseHandler {
 			}
 			gen.appendToPrettyCode(toXMLHead(node.getName().getID(), gen
 					.getSymbol(node.getName().getID()).getId(), "id"));
+			// gen.appendToPrettyCode(toXMLTail());
 		}
 		// gen.appendToPrettyCode(gen.getSymbol(node.getName().getID()).getVtype()
 		// .toXML());
@@ -109,19 +135,20 @@ public class ExprCaseHandler {
 	}
 
 	public static void handleFunCallExpr(ParameterizedExpr expr, VrirXmlGen gen) {
-		gen.appendToPrettyCode(toXMLHead("FuncallExpr"));
+		gen.appendToPrettyCode(toXMLHead("Fncall"));
 		gen.appendToPrettyCode(HelperClass.toXML("name"));
 		Symbol sym = gen.getSymbol(expr.getVarName());
 		if (sym == null) {
 			VType vt = HelperClass.generateFuncType(gen, expr);
 			if (vt == null) {
-				System.out.println("problem!!!");
-				System.exit(0);
+				throw new NullPointerException("Type of function is null");
+
 			}
 			gen.addToSymTab(vt, expr.getVarName());
 		}
 		gen.appendToPrettyCode(toXMLHead(expr.getVarName(),
 				gen.getSymbol(expr.getVarName()).getId(), "id"));
+		gen.appendToPrettyCode(toXMLTail());
 		// expr.getChild(0).analyze(gen);
 		gen.appendToPrettyCode(HelperClass.toXML("/name"));
 		gen.appendToPrettyCode(HelperClass.toXML("args"));
