@@ -345,27 +345,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 
 	public void caseParameterizedExpr(ParameterizedExpr node) {
 
-		// Array Index Expression
-		// if (remainingVars.contains(node.getVarName())) {
-		//
-		// ExprCaseHandler.handleArrayIndexExpr(node, this);
-		// } else {
-		//
-		// // Operator
-		// if (OperatorMapper.isOperator(node.getVarName())) {
-		// // Binary operator
-		// ExprCaseHandler.handleOpExpr(node, this,
-		// OperatorMapper.get(node.getVarName()));
-		// // ExprCaseHandler.handlePlusExpr(node, this);
-		//
-		// }
-		// // Function Call
-		// else {
-		// ExprCaseHandler.handleFunCallExpr(node, this);
-		//
-		// }
-		//
-		// }
+		
 		ExprCaseHandler.handleParameterizedExpr(node, this);
 		// caseLValueExpr(node);
 	}
