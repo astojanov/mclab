@@ -48,14 +48,14 @@ public class ExprCaseHandler {
 					.getSymbol(node.getName().getID()).getId(), "id"));
 
 		}
-		// TODO :In case of functions. Still to be handled.
+		
 		else {
 
-			if (!gen.getSymTab().contains(node.getName().getID())) {
-				VTypeFunction funcType = HelperClass
-						.generateFuncType(gen, node);
-				gen.addToSymTab(funcType, node.getName().getID());
-			}
+//			if (!gen.getSymTab().contains(node.getName().getID())) {
+//				VTypeFunction funcType = HelperClass
+//						.generateFuncType(gen, node);
+//				gen.addToSymTab(funcType, node.getName().getID());
+//			}
 			gen.appendToPrettyCode(toXMLHead(node.getName().getID(), gen
 					.getSymbol(node.getName().getID()).getId(), "id"));
 			// gen.appendToPrettyCode(toXMLTail());
@@ -135,22 +135,22 @@ public class ExprCaseHandler {
 	}
 
 	public static void handleFunCallExpr(ParameterizedExpr expr, VrirXmlGen gen) {
-		gen.appendToPrettyCode(toXMLHead("Fncall"));
-		gen.appendToPrettyCode(HelperClass.toXML("name"));
-		Symbol sym = gen.getSymbol(expr.getVarName());
-		if (sym == null) {
-			VType vt = HelperClass.generateFuncType(gen, expr);
-			if (vt == null) {
-				throw new NullPointerException("Type of function is null");
-
-			}
-			gen.addToSymTab(vt, expr.getVarName());
-		}
-		gen.appendToPrettyCode(toXMLHead(expr.getVarName(),
-				gen.getSymbol(expr.getVarName()).getId(), "id"));
-		gen.appendToPrettyCode(toXMLTail());
+		gen.appendToPrettyCode(toXMLHead("Fncall",expr.getVarName(),"fnname"));
+		//gen.appendToPrettyCode(HelperClass.toXML("name"));
+//		Symbol sym = gen.getSymbol(expr.getVarName());
+//		if (sym == null) {
+//			VType vt = HelperClass.generateFuncType(gen, expr);
+//			if (vt == null) {
+//				throw new NullPointerException("Type of function is null");
+//
+//			}
+//			gen.addToSymTab(vt, expr.getVarName());
+//		}
+//		gen.appendToPrettyCode(toXMLHead(expr.getVarName(),
+//				gen.getSymbol(expr.getVarName()).getId(), "id"));
+//		gen.appendToPrettyCode(toXMLTail());
 		// expr.getChild(0).analyze(gen);
-		gen.appendToPrettyCode(HelperClass.toXML("/name"));
+		//gen.appendToPrettyCode(HelperClass.toXML("/name"));
 		gen.appendToPrettyCode(HelperClass.toXML("args"));
 		for (Expr args : expr.getArgList()) {
 			args.analyze(gen);
@@ -162,7 +162,7 @@ public class ExprCaseHandler {
 	public static void handleFunCallExpr(NameExpr expr, VrirXmlGen gen) {
 
 	}
-
+//TODO:  Revisit . Problem with indices
 	public static void handleArrayIndexExpr(ParameterizedExpr expr,
 			VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("ArrayIndexExpr"));

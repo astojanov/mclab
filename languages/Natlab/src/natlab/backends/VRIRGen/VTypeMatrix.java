@@ -7,8 +7,8 @@ import natlab.tame.valueanalysis.components.shape.Shape;
 
 public class VTypeMatrix extends VType {
 	public static enum Layout {
-		ROW_MAJOR("RowMajorLayout"), COLUMN_MAJOR("ColumnMajorLayout"), STRIDE_MAJOR(
-				"StrideMajorLayout");
+		ROW_MAJOR("RowMajorLayout"), COLUMN_MAJOR("ColMajorLayout"), STRIDE_MAJOR(
+				"StrideLayout");
 
 		private String str;
 
