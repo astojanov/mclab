@@ -45,10 +45,10 @@ public class VTypeFunction extends VType {
 	public StringBuffer toXML() {
 		// TODO Auto-generated method stub
 		StringBuffer sb = new StringBuffer();
-		sb.append(HelperClass.toXML("FuncType"));
+		sb.append(HelperClass.toXML("vtype name=\"func\""));
 		sb.append(HelperClass.toXML("intypes"));
 		for (VType vtype : inType) {
-			
+
 			sb.append(vtype.toXML());
 		}
 		sb.append(HelperClass.toXML("/intypes"));
@@ -57,9 +57,11 @@ public class VTypeFunction extends VType {
 			for (VType vtype : outType) {
 				sb.append(vtype.toXML());
 			}
+		} else {
+			sb.append(HelperClass.toXML("vtype name=\"void\""));
 		}
 		sb.append(HelperClass.toXML("/outtypes"));
-		sb.append(HelperClass.toXML("/FuncType"));
+		sb.append(HelperClass.toXML("/vtype"));
 		return sb;
 	}
 

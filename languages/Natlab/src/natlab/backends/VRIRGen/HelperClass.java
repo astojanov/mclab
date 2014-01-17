@@ -6,6 +6,7 @@ import ast.AssignStmt;
 import ast.Expr;
 import ast.FPLiteralExpr;
 import ast.Function;
+import ast.List;
 import ast.LiteralExpr;
 import ast.MatrixExpr;
 import ast.Name;
@@ -154,7 +155,7 @@ public class HelperClass {
 			System.out
 					.println("Multiple return types for binary expressions not supported. ");
 			System.exit(0);
-			//return null;
+			// return null;
 		}
 
 		for (Row row : ((MatrixExpr) lhsExpr).getRowList()) {
@@ -382,6 +383,19 @@ public class HelperClass {
 		}
 
 		return funcType;
+	}
+
+	public static ArrayList<Arg> generateArgList(List<Name> paramList,
+			VrirXmlGen gen) {
+		ArrayList<Arg> argList = new ArrayList<Arg>();
+		for (int i = 0; i < paramList.getNumChild(); i++) {
+			Symbol sym = gen.getSymbol(paramList.getChild(i).getID());
+			if (sym == null) {
+				throw new NullPointerException("Symbol not found");
+			}
+			argList.add(new Arg(sym.getId(), false));
+		}
+		return argList;
 	}
 
 	public static boolean isVar(VrirXmlGen gen, String name) {

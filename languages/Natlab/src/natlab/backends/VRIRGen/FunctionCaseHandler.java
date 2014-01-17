@@ -1,5 +1,7 @@
 package natlab.backends.VRIRGen;
 
+import java.util.ArrayList;
+
 import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
 import natlab.tame.valueanalysis.aggrvalue.AggrValue;
@@ -8,37 +10,41 @@ import ast.Name;
 
 public class FunctionCaseHandler {
 	public static void handleHeader(Function node, VrirXmlGen gen) {
-		gen.appendToPrettyCode("<function name=\"" + node.getName()
-				+ "\">\n <vtype name=\"func\" > \n");
+		gen.appendToPrettyCode(HelperClass.toXML("function name=\""
+				+ node.getName() + "\" "));
+		handleParams(node, gen);
 		handleArgs(node, gen);
-		gen.appendToPrettyCode("</vtype>\n");
+
 	}
 
-	public static void handleArgs(Function node, VrirXmlGen gen) {
+	public static void handleFuncType(Function node, VrirXmlGen gen) {
 
 		ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis = gen
 				.getAnalysis();
-		gen.appendToPrettyCode("<intypes>\n");
-
+		// gen.appendToPrettyCode("<intypes>\n");
+		ArrayList<VType> inParamType = new ArrayList<VType>();
+		ArrayList<VType> outParamType = new ArrayList<VType>();
 		for (int i = 0; i < node.getInputParams().getNumChild(); i++) {
 
 			Name param = node.getInputParam(i);
 
 			VType vtype = HelperClass.generateVType(analysis, gen.getIndex(),
 					node, param, i);
+
+			if (vtype == null) {
+				throw new NullPointerException("VType is null");
+			}
+			inParamType.add(vtype);
 			gen.addToSymTab(vtype, param.getID());
-			gen.appendToPrettyCode(vtype.toXML());
+
 		}
-		gen.appendToPrettyCode("</intypes>\n");
-		gen.appendToPrettyCode("<outtypes>\n");
-		if (node.getOutputParamList().getNumChild() == 0) {
-			gen.appendToPrettyCode("<vtype name=\"Void\">\n</vtype>\n");
-		}
+
 		for (int i = 0; i < node.getOutputParams().getNumChild(); i++) {
 			Name param = node.getOutputParam(i);
 
 			VType vtype = HelperClass.generateVType(gen.getAnalysis(),
 					gen.getIndex(), param);
+
 			/*
 			 * if (vtype == null) { System.out.println("vtype null for param  "
 			 * + param.getID()); }
@@ -46,13 +52,26 @@ public class FunctionCaseHandler {
 			// VType vtype = HelperClass.generateVType(analysis, gen.getIndex(),
 			// node, param, i);
 			// TODO: temporary. Should not be null
-			if (vtype != null) {
-				gen.addToSymTab(vtype, param.getID());
-				gen.appendToPrettyCode(vtype.toXML());
+			if (vtype == null) {
+				throw new NullPointerException("VType is null");
 			}
-		}
-		gen.appendToPrettyCode("</outtypes>\n");
+			outParamType.add(vtype);
+			gen.addToSymTab(vtype, param.getID());
 
+		}
+		VTypeFunction vtf = new VTypeFunction(inParamType, outParamType);
+		gen.appendToPrettyCode(vtf.toXML());
+
+	}
+
+	public static void handleParams(Function node, VrirXmlGen gen) {
+		handleFuncType(node, gen);
+
+	}
+
+	public static void handleArgs(Function node, VrirXmlGen gen) {
+		gen.appendToPrettyCode(new ArgList(HelperClass.generateArgList(
+				node.getInputParamList(), gen)).toXML());
 	}
 
 	public static void handleTail(Function node, VrirXmlGen gen) {

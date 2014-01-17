@@ -7,8 +7,8 @@ import natlab.tame.valueanalysis.components.shape.Shape;
 
 public class VTypeMatrix extends VType {
 	public static enum Layout {
-		ROW_MAJOR("RowMajorLayout"), COLUMN_MAJOR("ColMajorLayout"), STRIDE_MAJOR(
-				"StrideLayout");
+		ROW_MAJOR("rowmajor"), COLUMN_MAJOR("colmajor"), STRIDE_MAJOR(
+				"stride");
 
 		private String str;
 
@@ -90,7 +90,7 @@ public class VTypeMatrix extends VType {
 	}
 
 	private void genArrayXML(StringBuffer vTypeXML) {
-		vTypeXML.append("<vtype Layout= \"" + getLayoutString()
+		vTypeXML.append("<vtype layout= \"" + getLayoutString()
 				+ "\" name=\"array\" ndims=\""
 				+ getShape().getDimensions().size() + "\">\n");
 		genScalarXML(vTypeXML);

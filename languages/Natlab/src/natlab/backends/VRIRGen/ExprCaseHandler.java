@@ -3,6 +3,7 @@ package natlab.backends.VRIRGen;
 import ast.Expr;
 import ast.FPLiteralExpr;
 import ast.IntLiteralExpr;
+import ast.MatrixExpr;
 import ast.NameExpr;
 import ast.ParameterizedExpr;
 import ast.RangeExpr;
@@ -42,22 +43,23 @@ public class ExprCaseHandler {
 						gen.getIndex(), node.getName());
 				gen.getSymTab().putSymbol(vtype, node.getName().getID());
 			}
-		}
-		if (gen.getSymbol(node.getName().getID()) != null) {
-			gen.appendToPrettyCode(toXMLHead(node.getName().getID(), gen
-					.getSymbol(node.getName().getID()).getId(), "id"));
+			if (gen.getSymbol(node.getName().getID()) != null) {
+				// gen.appendToPrettyCode(toXMLHead(node.getName().getID(), gen
+				// .getSymbol(node.getName().getID()).getId(), "id"));
+				gen.appendToPrettyCode(toXMLHead("name",
+						gen.getSymbol(node.getName().getID()).getId(), "id"));
 
+			}
 		}
-		
+
 		else {
 
-//			if (!gen.getSymTab().contains(node.getName().getID())) {
-//				VTypeFunction funcType = HelperClass
-//						.generateFuncType(gen, node);
-//				gen.addToSymTab(funcType, node.getName().getID());
-//			}
-			gen.appendToPrettyCode(toXMLHead(node.getName().getID(), gen
-					.getSymbol(node.getName().getID()).getId(), "id"));
+			// if (!gen.getSymTab().contains(node.getName().getID())) {
+			// VTypeFunction funcType = HelperClass
+			// .generateFuncType(gen, node);
+			// gen.addToSymTab(funcType, node.getName().getID());
+			// }
+			handleFunCallExpr(node, gen);
 			// gen.appendToPrettyCode(toXMLTail());
 		}
 		// gen.appendToPrettyCode(gen.getSymbol(node.getName().getID()).getVtype()
@@ -72,6 +74,31 @@ public class ExprCaseHandler {
 		} else if (node.getArgList().getNumChild() == 1) {
 			handleUnaryExpr(node, gen, name);
 
+		}
+	}
+
+	public static void handleMatrixExpr(MatrixExpr node, VrirXmlGen gen) {
+		if (node.getRows().getNumChild() > 1) {
+			System.out.println("Multiple rows now supported");
+			System.exit(1);
+		}
+		// for a single element
+		if (node.getRow(0).getElementList().getNumChild() == 1) {
+			node.getRow(0).getElement(0).analyze(gen);
+
+		} else {
+			// tuple type for multiple elements
+			
+			//gen.appendToPrettyCode(toXMLHead("tuple", "1", "ndims"));
+			 gen.appendToPrettyCode(toXMLHead("tuple"));
+			gen.appendToPrettyCode(HelperClass.toXML("elems"));
+			for (Expr expr : node.getRow(0).getElementList()) {
+
+				expr.analyze(gen);
+
+			}
+			gen.appendToPrettyCode(HelperClass.toXML("/elems"));
+			gen.appendToPrettyCode(toXMLTail());
 		}
 	}
 
@@ -135,22 +162,22 @@ public class ExprCaseHandler {
 	}
 
 	public static void handleFunCallExpr(ParameterizedExpr expr, VrirXmlGen gen) {
-		gen.appendToPrettyCode(toXMLHead("Fncall",expr.getVarName(),"fnname"));
-		//gen.appendToPrettyCode(HelperClass.toXML("name"));
-//		Symbol sym = gen.getSymbol(expr.getVarName());
-//		if (sym == null) {
-//			VType vt = HelperClass.generateFuncType(gen, expr);
-//			if (vt == null) {
-//				throw new NullPointerException("Type of function is null");
-//
-//			}
-//			gen.addToSymTab(vt, expr.getVarName());
-//		}
-//		gen.appendToPrettyCode(toXMLHead(expr.getVarName(),
-//				gen.getSymbol(expr.getVarName()).getId(), "id"));
-//		gen.appendToPrettyCode(toXMLTail());
+		gen.appendToPrettyCode(toXMLHead("fncall", expr.getVarName(), "fnname"));
+		// gen.appendToPrettyCode(HelperClass.toXML("name"));
+		// Symbol sym = gen.getSymbol(expr.getVarName());
+		// if (sym == null) {
+		// VType vt = HelperClass.generateFuncType(gen, expr);
+		// if (vt == null) {
+		// throw new NullPointerException("Type of function is null");
+		//
+		// }
+		// gen.addToSymTab(vt, expr.getVarName());
+		// }
+		// gen.appendToPrettyCode(toXMLHead(expr.getVarName(),
+		// gen.getSymbol(expr.getVarName()).getId(), "id"));
+		// gen.appendToPrettyCode(toXMLTail());
 		// expr.getChild(0).analyze(gen);
-		//gen.appendToPrettyCode(HelperClass.toXML("/name"));
+		// gen.appendToPrettyCode(HelperClass.toXML("/name"));
 		gen.appendToPrettyCode(HelperClass.toXML("args"));
 		for (Expr args : expr.getArgList()) {
 			args.analyze(gen);
@@ -159,16 +186,20 @@ public class ExprCaseHandler {
 		gen.appendToPrettyCode(toXMLTail());
 	}
 
-	public static void handleFunCallExpr(NameExpr expr, VrirXmlGen gen) {
+	public static void handleFunCallExpr(NameExpr node, VrirXmlGen gen) {
 
+		gen.appendToPrettyCode(toXMLHead(node.getName().getID(),
+				gen.getSymbol(node.getName().getID()).getId(), "id"));
 	}
-//TODO:  Revisit . Problem with indices
+
+	// TODO: Revisit . Problem with indices
 	public static void handleArrayIndexExpr(ParameterizedExpr expr,
 			VrirXmlGen gen) {
-		gen.appendToPrettyCode(toXMLHead("ArrayIndexExpr"));
+		gen.appendToPrettyCode(toXMLHead("ArrayIndex"));
 		gen.appendToPrettyCode(HelperClass.toXML("base"));
 		expr.getChild(0).analyze(gen);
 		gen.appendToPrettyCode(HelperClass.toXML("/base"));
+
 		gen.appendToPrettyCode(HelperClass.toXML("indices"));
 		// TODO : change to handle index expression after talking with Rahul
 		for (Expr args : expr.getArgList()) {

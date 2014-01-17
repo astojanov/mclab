@@ -7,6 +7,7 @@ import ast.ForStmt;
 import ast.IfBlock;
 import ast.IfStmt;
 import ast.NameExpr;
+import ast.ReturnStmt;
 import ast.Stmt;
 import ast.WhileStmt;
 
@@ -85,6 +86,13 @@ public class StmtCaseHandler {
 		gen.appendToPrettyCode(toXMLTail());
 	}
 
+	public static void handleReturnStmt(ReturnStmt node, VrirXmlGen gen) {
+		gen.appendToPrettyCode(toXMLHead("returnstmt"));
+		gen.appendToPrettyCode(HelperClass.toXML("rvars"));
+		gen.appendToPrettyCode(HelperClass.toXML("/rvars"));
+		gen.appendToPrettyCode(toXMLTail());
+	}
+
 	public static void handleIfStmt(IfStmt node, VrirXmlGen gen) {
 		for (IfBlock ifblock : node.getIfBlockList()) {
 
@@ -102,6 +110,7 @@ public class StmtCaseHandler {
 		}
 		if (node.hasElseBlock()) {
 			gen.appendToPrettyCode(HelperClass.toXML("elsebody"));
+
 			for (Stmt stmt : node.getElseBlock().getStmtList()) {
 				stmt.analyze(gen);
 			}
