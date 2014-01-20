@@ -88,9 +88,9 @@ public class ExprCaseHandler {
 
 		} else {
 			// tuple type for multiple elements
-			
-			//gen.appendToPrettyCode(toXMLHead("tuple", "1", "ndims"));
-			 gen.appendToPrettyCode(toXMLHead("tuple"));
+
+			// gen.appendToPrettyCode(toXMLHead("tuple", "1", "ndims"));
+			gen.appendToPrettyCode(toXMLHead("tuple"));
 			gen.appendToPrettyCode(HelperClass.toXML("elems"));
 			for (Expr expr : node.getRow(0).getElementList()) {
 
@@ -148,13 +148,24 @@ public class ExprCaseHandler {
 	public static void handleIntLiteralExpr(IntLiteralExpr expr, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("const", expr.getValue().getValue()
 				.intValue(), "value"));
+		VType vt = HelperClass.getExprType(expr, gen);
+		if (vt == null) {
+			throw new NullPointerException(
+					"Could not generate vtype for const expression");
+		}
+		gen.appendToPrettyCode(vt.toXML());
 		gen.appendToPrettyCode(toXMLTail());
 	}
 
 	public static void handleFpLiteralExpr(FPLiteralExpr expr, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("const", expr.getValue().getValue()
 				.toString(), "value"));
-
+		VType vt = HelperClass.getExprType(expr, gen);
+		if (vt == null) {
+			throw new NullPointerException(
+					"Could not generate vtype for const expression");
+		}
+		gen.appendToPrettyCode(vt.toXML());
 		// TODO: 2 types of complex expressions : complex and real . Make
 		// changes for that.
 
@@ -163,21 +174,7 @@ public class ExprCaseHandler {
 
 	public static void handleFunCallExpr(ParameterizedExpr expr, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("fncall", expr.getVarName(), "fnname"));
-		// gen.appendToPrettyCode(HelperClass.toXML("name"));
-		// Symbol sym = gen.getSymbol(expr.getVarName());
-		// if (sym == null) {
-		// VType vt = HelperClass.generateFuncType(gen, expr);
-		// if (vt == null) {
-		// throw new NullPointerException("Type of function is null");
-		//
-		// }
-		// gen.addToSymTab(vt, expr.getVarName());
-		// }
-		// gen.appendToPrettyCode(toXMLHead(expr.getVarName(),
-		// gen.getSymbol(expr.getVarName()).getId(), "id"));
-		// gen.appendToPrettyCode(toXMLTail());
-		// expr.getChild(0).analyze(gen);
-		// gen.appendToPrettyCode(HelperClass.toXML("/name"));
+
 		gen.appendToPrettyCode(HelperClass.toXML("args"));
 		for (Expr args : expr.getArgList()) {
 			args.analyze(gen);
