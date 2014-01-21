@@ -92,9 +92,6 @@ public class Main {
 				System.out.println("\ntamer plus analysis result: \n"
 						+ fTree.getPrettyPrinted() + "\n");
 
-				System.out
-						.println("pretty print the generated VRIR in XML format  .\n");
-
 				sb = VrirXmlGen.generateVrir((Function) fTree, remainingVars,
 						analysis, currentOutSet, i, size, analysisEngine);
 				genXML.append(sb);
@@ -105,7 +102,7 @@ public class Main {
 		genXML.append(HelperClass.toXML("/fns"));
 
 		VrirXmlGen.genModuleXMLTail(genXML);
-
+		System.out.println(" print the generated VRIR in XML format  .\n");
 		System.err.println(genXML);
 
 		try {

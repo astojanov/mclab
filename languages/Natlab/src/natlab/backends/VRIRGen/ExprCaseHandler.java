@@ -14,7 +14,7 @@ public class ExprCaseHandler {
 			VrirXmlGen gen) {
 		if (gen.getRemainingVars().contains(node.getVarName())) {
 
-			ExprCaseHandler.handleArrayIndexExpr(node, gen);
+			ExprCaseHandler.handleIndexExpr(node, gen);
 		} else {
 
 			// Operator
@@ -44,8 +44,6 @@ public class ExprCaseHandler {
 				gen.getSymTab().putSymbol(vtype, node.getName().getID());
 			}
 			if (gen.getSymbol(node.getName().getID()) != null) {
-				// gen.appendToPrettyCode(toXMLHead(node.getName().getID(), gen
-				// .getSymbol(node.getName().getID()).getId(), "id"));
 				gen.appendToPrettyCode(toXMLHead("name",
 						gen.getSymbol(node.getName().getID()).getId(), "id"));
 
@@ -53,17 +51,9 @@ public class ExprCaseHandler {
 		}
 
 		else {
-
-			// if (!gen.getSymTab().contains(node.getName().getID())) {
-			// VTypeFunction funcType = HelperClass
-			// .generateFuncType(gen, node);
-			// gen.addToSymTab(funcType, node.getName().getID());
-			// }
 			handleFunCallExpr(node, gen);
-			// gen.appendToPrettyCode(toXMLTail());
 		}
-		// gen.appendToPrettyCode(gen.getSymbol(node.getName().getID()).getVtype()
-		// .toXML());
+
 		gen.appendToPrettyCode(toXMLTail());
 	}
 
@@ -190,18 +180,41 @@ public class ExprCaseHandler {
 	}
 
 	// TODO: Revisit . Problem with indices
-	public static void handleArrayIndexExpr(ParameterizedExpr expr,
-			VrirXmlGen gen) {
-		gen.appendToPrettyCode(toXMLHead("ArrayIndex"));
-		gen.appendToPrettyCode(HelperClass.toXML("base"));
-		expr.getChild(0).analyze(gen);
-		gen.appendToPrettyCode(HelperClass.toXML("/base"));
+	public static void handleIndexExpr(ParameterizedExpr expr, VrirXmlGen gen) {
+		Symbol sym;
 
+		if ((sym = gen.getSymbol(expr.getVarName())) == null) {
+			VType vtype = HelperClass.getExprType(expr, gen);
+			if (vtype == null) {
+				throw new NullPointerException(
+						"No Vtype found for paratemerized expression "
+								+ expr.getVarName());
+			}
+			gen.addToSymTab(vtype, expr.getVarName());
+			sym = gen.getSymbol(expr.getVarName());
+		}
+		if (sym == null) {
+			throw new NullPointerException("Symbol not found in symbol table ");
+		}
+		gen.appendToPrettyCode(toXMLHead("index", "false", "flattened",
+				"false", "copyslice",
+				Integer.toString(gen.getSymbol(expr.getVarName()).getId()),
+				"arrayid"));
+		// gen.appendToPrettyCode(HelperClass.toXML("base"));
+		// expr.getChild(0).analyze(gen);
+		// gen.appendToPrettyCode(HelperClass.toXML("/base"));
+		gen.appendToPrettyCode(sym.getVtype().toXML());
 		gen.appendToPrettyCode(HelperClass.toXML("indices"));
 		// TODO : change to handle index expression after talking with Rahul
+
 		for (Expr args : expr.getArgList()) {
+			gen.appendToPrettyCode(HelperClass
+					.toXML("index boundscheck=\"1\" negative=\"0\""));
+
 			args.analyze(gen);
+			gen.appendToPrettyCode(HelperClass.toXML("/index"));
 		}
+
 		gen.appendToPrettyCode(HelperClass.toXML("/indices"));
 		gen.appendToPrettyCode(toXMLTail());
 	}
@@ -221,9 +234,25 @@ public class ExprCaseHandler {
 				+ name + "\">\n");
 	}
 
-	public static StringBuffer toXMLHead(String name, String id, String field) {
-		return new StringBuffer("<expr " + field + "=\"" + id + "\" name =\""
-				+ name + "\">\n");
+	// public static StringBuffer toXMLHead(String name, String id, String
+	// field) {
+	// return new StringBuffer("<expr " + field + "=\"" + id + "\" name =\""
+	// + name + "\">\n");
+	// }
+	public static StringBuffer toXMLHead(String name, String... fields) {
+		if ((fields.length) % 2 != 0) {
+			System.out.println("Number of arguments should be even ");
+			return null;
+		}
+
+		StringBuffer sb = new StringBuffer();
+		sb.append("expr ");
+		for (int i = 0; i < fields.length; i += 2) {
+			sb.append(fields[i + 1] + "=\"" + fields[i] + "\" ");
+		}
+		sb.append("name =\"" + name + "\"");
+		return new StringBuffer(HelperClass.toXML(sb.toString()));
+
 	}
 
 	public static StringBuffer toXMLTail() {
