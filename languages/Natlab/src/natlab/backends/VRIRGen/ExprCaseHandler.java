@@ -40,7 +40,7 @@ public class ExprCaseHandler {
 			if (!gen.getSymTab().contains(node.getName().getID())) {
 
 				VType vtype = HelperClass.generateVType(gen.getAnalysis(),
-						gen.getIndex(), node.getName());
+						gen.getIndex(), node.getName().getID());
 				gen.getSymTab().putSymbol(vtype, node.getName().getID());
 			}
 			if (gen.getSymbol(node.getName().getID()) != null) {
@@ -164,7 +164,12 @@ public class ExprCaseHandler {
 
 	public static void handleFunCallExpr(ParameterizedExpr expr, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("fncall", expr.getVarName(), "fnname"));
-
+		VType vt = HelperClass.getExprType(expr, gen);
+		if (vt == null) {
+			throw new NullPointerException(
+					"VType of function call expression could not be generated");
+		}
+		gen.appendToPrettyCode(vt.toXML());
 		gen.appendToPrettyCode(HelperClass.toXML("args"));
 		for (Expr args : expr.getArgList()) {
 			args.analyze(gen);
@@ -173,10 +178,19 @@ public class ExprCaseHandler {
 		gen.appendToPrettyCode(toXMLTail());
 	}
 
-	public static void handleFunCallExpr(NameExpr node, VrirXmlGen gen) {
+	public static void handleFunCallExpr(NameExpr expr, VrirXmlGen gen) {
+		gen.appendToPrettyCode(toXMLHead("fncall", expr.getName().getID(),
+				"fnname"));
+		VType vt = HelperClass.getExprType(expr, gen);
+		if (vt == null) {
+			throw new NullPointerException(
+					"VType of function call expression could not be generated");
+		}
+		gen.appendToPrettyCode(vt.toXML());
+		gen.appendToPrettyCode(HelperClass.toXML("args"));
+		gen.appendToPrettyCode(HelperClass.toXML("/args"));
+		gen.appendToPrettyCode(toXMLTail());
 
-		gen.appendToPrettyCode(toXMLHead(node.getName().getID(),
-				gen.getSymbol(node.getName().getID()).getId(), "id"));
 	}
 
 	// TODO: Revisit . Problem with indices
@@ -205,7 +219,6 @@ public class ExprCaseHandler {
 		// gen.appendToPrettyCode(HelperClass.toXML("/base"));
 		gen.appendToPrettyCode(sym.getVtype().toXML());
 		gen.appendToPrettyCode(HelperClass.toXML("indices"));
-		// TODO : change to handle index expression after talking with Rahul
 
 		for (Expr args : expr.getArgList()) {
 			gen.appendToPrettyCode(HelperClass
@@ -221,7 +234,9 @@ public class ExprCaseHandler {
 
 	public static void handleStringLiteralExpr(StringLiteralExpr expr,
 			VrirXmlGen gen) {
+
 		gen.appendToPrettyCode(toXMLHead("const", expr.getValue(), "value"));
+		gen.appendToPrettyCode(HelperClass.getExprType(expr, gen).toXML());
 		gen.appendToPrettyCode(toXMLTail());
 	}
 

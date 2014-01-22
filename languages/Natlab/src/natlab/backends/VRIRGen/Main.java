@@ -36,12 +36,12 @@ public class Main {
 		 * pass the type info of the input argument to the program, currently,
 		 * the type info is composed like double&3*3&REAL.
 		 */
-		String fileDir = "/home/2012/sjagda/mclab/capr/";
+		String fileDir = "/home/2012/sjagda/mclab/adpt/";
 		// String fileName = "drv_mbrt.m";
 		// String fileDir = File.separator + "home" + File.separator
 		// + "2012" + "sjagda" + File.separator + "mclab"
 		// + File.separator + "mbrt" + File.separator;
-		String fileName = "drv_capr.m";
+		String fileName = "drv_adpt.m";
 		String fileIn = fileDir + fileName;
 		GenericFile gFile = GenericFile.create(fileIn);
 		FileEnvironment env = new FileEnvironment(gFile); // get path

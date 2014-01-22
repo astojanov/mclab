@@ -63,7 +63,7 @@ public class StmtCaseHandler {
 			if (sym == null) {
 				VType vtype = HelperClass.generateVType(gen.getAnalysis(), gen
 						.getIndex(), ((NameExpr) ((Object) node.getAssignStmt()
-						.getLHS())).getName());
+						.getLHS())).getName().getID());
 				gen.addToSymTab(vtype, ((NameExpr) ((Object) node
 						.getAssignStmt().getLHS())).getName().getVarName());
 			}

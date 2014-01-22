@@ -43,7 +43,7 @@ public class FunctionCaseHandler {
 			Name param = node.getOutputParam(i);
 
 			VType vtype = HelperClass.generateVType(gen.getAnalysis(),
-					gen.getIndex(), param);
+					gen.getIndex(), param.getID());
 
 			/*
 			 * if (vtype == null) { System.out.println("vtype null for param  "

@@ -38,11 +38,10 @@ public class HelperClass {
 
 	public static VType generateVType(
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
-			int graphIndex, Name node) {
+			int graphIndex, String name) {
 
 		AggrValue<?> temp = analysis.getNodeList().get(graphIndex)
-				.getAnalysis().getCurrentOutSet().get(node.getID())
-				.getSingleton();
+				.getAnalysis().getCurrentOutSet().get(name).getSingleton();
 
 		return generateVType(temp);
 
@@ -196,7 +195,12 @@ public class HelperClass {
 				&& isVar(gen, ((NameExpr) expr).getName().getID())) {
 
 			return generateVType(gen.getAnalysis(), gen.getIndex(),
-					((NameExpr) expr).getName());
+					((NameExpr) expr).getName().getID());
+		}
+		if (expr instanceof ParameterizedExpr
+				&& isVar(gen, ((ParameterizedExpr) expr).getVarName())) {
+			return generateVType(gen.getAnalysis(), gen.getIndex(),
+					((ParameterizedExpr) expr).getVarName());
 		}
 		if (expr.getParent() instanceof AssignStmt) {
 			Expr lhsExpr = ((AssignStmt) expr.getParent()).getLHS();
@@ -295,7 +299,7 @@ public class HelperClass {
 			Symbol sym = gen.getSymbol(nm.getID());
 			if (sym == null) {
 				VType vtype = HelperClass.generateVType(gen.getAnalysis(), i,
-						nm);
+						nm.getID());
 				gen.addToSymTab(vtype, nm.getID());
 				sym = gen.getSymbol(nm.getID());
 			}
@@ -309,7 +313,7 @@ public class HelperClass {
 			Symbol sym = gen.getSymbol(nm.getID());
 			if (sym == null) {
 				VType vtype = HelperClass.generateVType(gen.getAnalysis(), i,
-						nm);
+						nm.getID());
 				gen.addToSymTab(vtype, nm.getID());
 				sym = gen.getSymbol(nm.getID());
 			}
@@ -360,7 +364,7 @@ public class HelperClass {
 			Symbol sym = gen.getSymbol(nm.getID());
 			if (sym == null) {
 				VType vtype = HelperClass.generateVType(gen.getAnalysis(), i,
-						nm);
+						nm.getID());
 				gen.addToSymTab(vtype, nm.getID());
 				sym = gen.getSymbol(nm.getID());
 			}
@@ -374,7 +378,7 @@ public class HelperClass {
 			Symbol sym = gen.getSymbol(nm.getID());
 			if (sym == null) {
 				VType vtype = HelperClass.generateVType(gen.getAnalysis(), i,
-						nm);
+						nm.getID());
 				gen.addToSymTab(vtype, nm.getID());
 				sym = gen.getSymbol(nm.getID());
 			}

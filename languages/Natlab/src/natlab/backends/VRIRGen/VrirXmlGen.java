@@ -113,24 +113,9 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	private int size;
 	private int index;
 	final static public boolean onGPU = false;
-	// private int indent = 1;
 	private AnalysisEngine analysisEngine;
 
-	// public int getIndent() {
-	// return indent;
-	// }
-	//
-	// public void setIndent(int indent) {
-	// this.indent = indent;
-	// }
-	//
-	// public void incIndent() {
-	// indent++;
-	// }
-	//
-	// public void decIndent() {
-	// indent--;
-	// }
+	
 
 	VrirXmlGen(Function functionNode, Set<String> remainVars,
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
