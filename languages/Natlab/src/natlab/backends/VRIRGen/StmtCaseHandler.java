@@ -97,7 +97,9 @@ public class StmtCaseHandler {
 		for (IfBlock ifblock : node.getIfBlockList()) {
 
 			gen.appendToPrettyCode(toXMLHead("ifstmt"));
+			gen.appendToPrettyCode("test");
 			ifblock.getCondition().analyze(gen);
+			gen.appendToPrettyCode("/test");
 			gen.appendToPrettyCode(HelperClass.toXML("ifbody"));
 			gen.appendToPrettyCode(toXMLHead("stmtlist"));
 			for (Stmt stmt : ifblock.getStmtList()) {
