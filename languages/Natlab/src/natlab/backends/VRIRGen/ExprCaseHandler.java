@@ -1,5 +1,6 @@
 package natlab.backends.VRIRGen;
 
+import natlab.tame.classes.reference.PrimitiveClassReference;
 import ast.Expr;
 import ast.FPLiteralExpr;
 import ast.IntLiteralExpr;
@@ -136,28 +137,49 @@ public class ExprCaseHandler {
 	}
 
 	public static void handleIntLiteralExpr(IntLiteralExpr expr, VrirXmlGen gen) {
-		gen.appendToPrettyCode(toXMLHead("const", expr.getValue().getValue()
-				.intValue(), "value"));
 		VType vt = HelperClass.getExprType(expr, gen);
 		if (vt == null) {
 			throw new NullPointerException(
 					"Could not generate vtype for const expression");
+		}
+		if (expr.getValue().isImaginary()) {
+			// TODO : Handle complex integers
+		} else {
+			gen.appendToPrettyCode(toXMLHead("realconst", expr.getValue()
+					.getValue().intValue(), "ival"));
 		}
 		gen.appendToPrettyCode(vt.toXML());
 		gen.appendToPrettyCode(toXMLTail());
 	}
 
 	public static void handleFpLiteralExpr(FPLiteralExpr expr, VrirXmlGen gen) {
-		gen.appendToPrettyCode(toXMLHead("const", expr.getValue().getValue()
-				.toString(), "value"));
 		VType vt = HelperClass.getExprType(expr, gen);
 		if (vt == null) {
 			throw new NullPointerException(
 					"Could not generate vtype for const expression");
 		}
+		if (expr.getValue().isImaginary()) {
+			//TODO:  Handle complex floats
+		} else {
+			String field = "";
+			if (vt instanceof VTypeMatrix) {
+				if (((VTypeMatrix) vt).getType() == PrimitiveClassReference.DOUBLE) {
+					field = "dval";
+				} else if (((VTypeMatrix) vt).getType() == PrimitiveClassReference.SINGLE) {
+					field = "fval";
+				} else {
+					throw new UnsupportedOperationException(
+							"cant identify type" + ((VTypeMatrix) vt).getType());
+				}
+			} else {
+				throw new UnsupportedOperationException("Cannot identify VType"
+						+ vt.getClass());
+			}
+			gen.appendToPrettyCode(toXMLHead("realconst", expr.getValue()
+					.getValue().toString(), field));
+		}
 		gen.appendToPrettyCode(vt.toXML());
-		// TODO: 2 types of complex expressions : complex and real . Make
-		// changes for that.
+		
 
 		gen.appendToPrettyCode(toXMLTail());
 	}
