@@ -40,17 +40,18 @@ public class StmtCaseHandler {
 	}
 
 	public static void handleBreakStmt(BreakStmt node, VrirXmlGen gen) {
-		gen.appendToPrettyCode(toXMLHead("BreakStmt"));
+		gen.appendToPrettyCode(toXMLHead("breakstmt"));
 		gen.appendToPrettyCode(toXMLTail());
 	}
 
 	public static void handleContinueStmt(ContinueStmt node, VrirXmlGen gen) {
-		gen.appendToPrettyCode(toXMLHead("ContStmt"));
+		gen.appendToPrettyCode(toXMLHead("contstmt"));
 		gen.appendToPrettyCode(toXMLTail());
 	}
 
 	public static void handleForStmt(ForStmt node, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("forstmt"));
+		//TODO:  Currently on range expressions are handled. Need to also handle DomainExpr and ArrayIterator.
 		gen.appendToPrettyCode(HelperClass.toXML("domain"));
 
 		node.getAssignStmt().getRHS().analyze(gen);
