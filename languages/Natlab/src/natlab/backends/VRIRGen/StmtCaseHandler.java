@@ -102,30 +102,30 @@ public class StmtCaseHandler {
 			gen.appendToPrettyCode(HelperClass.toXML("test"));
 			ifblock.getCondition().analyze(gen);
 			gen.appendToPrettyCode(HelperClass.toXML("/test"));
-			gen.appendToPrettyCode(HelperClass.toXML("ifbody"));
+			gen.appendToPrettyCode(HelperClass.toXML("if"));
 			gen.appendToPrettyCode(toXMLHead("stmtlist"));
 			for (Stmt stmt : ifblock.getStmtList()) {
 
 				stmt.analyze(gen);
 			}
 			gen.appendToPrettyCode(toXMLTail());
-			gen.appendToPrettyCode(HelperClass.toXML("/ifbody"));
+			gen.appendToPrettyCode(HelperClass.toXML("/if"));
 
 		}
 		if (node.hasElseBlock()) {
-			gen.appendToPrettyCode(HelperClass.toXML("elsebody"));
+			gen.appendToPrettyCode(HelperClass.toXML("else"));
 
 			for (Stmt stmt : node.getElseBlock().getStmtList()) {
 				stmt.analyze(gen);
 			}
-			gen.appendToPrettyCode(HelperClass.toXML("/elsebody"));
+			gen.appendToPrettyCode(HelperClass.toXML("/else"));
 		}
 		gen.appendToPrettyCode(toXMLTail());
 	}
 
 	public static StringBuffer toListXMLHead(boolean onGpu) {
 		StringBuffer buff = new StringBuffer();
-		buff.append(HelperClass.toXML("stmt name=\"StmtList\" onGpu=\""
+		buff.append(HelperClass.toXML("stmt name=\"stmtlist\" onGpu=\""
 				+ Boolean.toString(onGpu) + "\""));
 		buff.append(HelperClass.toXML("stmts"));
 		return buff;
