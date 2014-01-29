@@ -115,8 +115,6 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	final static public boolean onGPU = false;
 	private AnalysisEngine analysisEngine;
 
-	
-
 	VrirXmlGen(Function functionNode, Set<String> remainVars,
 			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
 			ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet,
@@ -244,13 +242,16 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 		// caseFunctionOrSignatureOrPropertyAccessOrStmt(node);
 		FunctionCaseHandler.handleHeader(node, this);
 		this.appendToPrettyCode(HelperClass.toXML("body"));
+		this.appendToPrettyCode(StmtCaseHandler.toListXMLHead(false));
 		for (Stmt stmt : node.getStmts()) {
 
 			stmt.analyze(this);
 		}
+		this.appendToPrettyCode(StmtCaseHandler.toListXMLTail());
 		this.appendToPrettyCode(HelperClass.toXML("/body"));
+
 		this.appendToPrettyCode(symTab.toXML());
-		HelperClass.toXML("/body");
+
 		FunctionCaseHandler.handleTail(node, this);
 
 	}

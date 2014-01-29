@@ -145,8 +145,27 @@ public class ExprCaseHandler {
 		if (expr.getValue().isImaginary()) {
 			// TODO : Handle complex integers
 		} else {
+			String field = "";
+			if (vt instanceof VTypeMatrix) {
+				if (((VTypeMatrix) vt).getType() == PrimitiveClassReference.DOUBLE) {
+					field = "dval";
+				} else if (((VTypeMatrix) vt).getType() == PrimitiveClassReference.SINGLE) {
+					field = "fval";
+				} else if (((VTypeMatrix) vt).getType() == PrimitiveClassReference.INT32
+						|| ((VTypeMatrix) vt).getType() == PrimitiveClassReference.INT64
+						|| ((VTypeMatrix) vt).getType() == PrimitiveClassReference.INT16
+						|| ((VTypeMatrix) vt).getType() == PrimitiveClassReference.INT8) {
+
+				} else {
+					throw new UnsupportedOperationException(
+							"cant identify type" + ((VTypeMatrix) vt).getType());
+				}
+			} else {
+				throw new UnsupportedOperationException("Cannot identify VType"
+						+ vt.getClass());
+			}
 			gen.appendToPrettyCode(toXMLHead("realconst", expr.getValue()
-					.getValue().intValue(), "ival"));
+					.getValue().toString(), field));
 		}
 		gen.appendToPrettyCode(vt.toXML());
 		gen.appendToPrettyCode(toXMLTail());
@@ -159,7 +178,7 @@ public class ExprCaseHandler {
 					"Could not generate vtype for const expression");
 		}
 		if (expr.getValue().isImaginary()) {
-			//TODO:  Handle complex floats
+			// TODO: Handle complex floats
 		} else {
 			String field = "";
 			if (vt instanceof VTypeMatrix) {
@@ -179,7 +198,6 @@ public class ExprCaseHandler {
 					.getValue().toString(), field));
 		}
 		gen.appendToPrettyCode(vt.toXML());
-		
 
 		gen.appendToPrettyCode(toXMLTail());
 	}

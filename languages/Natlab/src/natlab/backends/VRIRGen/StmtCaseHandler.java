@@ -14,9 +14,9 @@ import ast.WhileStmt;
 public class StmtCaseHandler {
 	public static void handleAssignStmt(AssignStmt node, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("assignstmt"));
-		gen.appendToPrettyCode(HelperClass.toXML("targets"));
+		gen.appendToPrettyCode(HelperClass.toXML("lhs"));
 		node.getLHS().analyze(gen);
-		gen.appendToPrettyCode(HelperClass.toXML("/targets"));
+		gen.appendToPrettyCode(HelperClass.toXML("/lhs"));
 		gen.appendToPrettyCode(HelperClass.toXML("rhs"));
 		node.getRHS().analyze(gen);
 		gen.appendToPrettyCode(HelperClass.toXML("/rhs"));
@@ -51,7 +51,8 @@ public class StmtCaseHandler {
 
 	public static void handleForStmt(ForStmt node, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("forstmt"));
-		//TODO:  Currently on range expressions are handled. Need to also handle DomainExpr and ArrayIterator.
+		// TODO: Currently on range expressions are handled. Need to also handle
+		// DomainExpr and ArrayIterator.
 		gen.appendToPrettyCode(HelperClass.toXML("domain"));
 
 		node.getAssignStmt().getRHS().analyze(gen);
@@ -98,9 +99,9 @@ public class StmtCaseHandler {
 		for (IfBlock ifblock : node.getIfBlockList()) {
 
 			gen.appendToPrettyCode(toXMLHead("ifstmt"));
-			gen.appendToPrettyCode("test");
+			gen.appendToPrettyCode(HelperClass.toXML("test"));
 			ifblock.getCondition().analyze(gen);
-			gen.appendToPrettyCode("/test");
+			gen.appendToPrettyCode(HelperClass.toXML("/test"));
 			gen.appendToPrettyCode(HelperClass.toXML("ifbody"));
 			gen.appendToPrettyCode(toXMLHead("stmtlist"));
 			for (Stmt stmt : ifblock.getStmtList()) {
