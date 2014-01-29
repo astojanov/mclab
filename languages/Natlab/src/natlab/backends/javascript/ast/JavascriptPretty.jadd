@@ -1,0 +1,32 @@
+import natlab.backends.javascript.pretty.*;
+
+aspect PrettyPrinter {
+
+    public PrettyBase Program.pp() {
+        PrettyBase[] ppFunctions = new PrettyBase[this.getNumFunction()];
+        int i = 0;
+        for (NamedFunction f: this.getFunctionList()) {
+            ppFunctions[i] = f.pp();
+            i++;
+        }
+        return new PrettySeparatedBy("\n\n", ppFunctions);
+    }
+
+    public PrettyBase NamedFunction.pp() {
+
+
+        return new PrettyConcat(
+            new PrettyText(String.format("function %s", this.getFuncName())),
+            new PrettyParenthesized(new PrettyText("X")),
+            new PrettyText(" {"),
+            PrettyLine.getInstance(),
+            new PrettyText("}")
+            );
+    }
+
+    public PrettyBase Stmt.pp() {
+        return new PrettyText("// Generic statement");
+    }
+
+
+}
