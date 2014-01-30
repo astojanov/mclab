@@ -317,11 +317,8 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseColonExpr(ColonExpr node) {
-		System.out.println("in colon expression : Parent " + node.getParent());
-		for (int i = 0; i < node.getNumChild(); i++) {
-			System.out.println("in colon expression : child : "
-					+ node.getChild(i).getClass());
-		}
+		System.out.println("in colon expression : Parent " + node.getParent().getParent());
+		
 		caseExpr(node);
 	}
 

@@ -100,15 +100,16 @@ public class StmtCaseHandler {
 
 			gen.appendToPrettyCode(toXMLHead("ifstmt"));
 			gen.appendToPrettyCode(HelperClass.toXML("test"));
+
 			ifblock.getCondition().analyze(gen);
 			gen.appendToPrettyCode(HelperClass.toXML("/test"));
 			gen.appendToPrettyCode(HelperClass.toXML("if"));
-			gen.appendToPrettyCode(toXMLHead("stmtlist"));
+			gen.appendToPrettyCode(toListXMLHead(false));
 			for (Stmt stmt : ifblock.getStmtList()) {
 
 				stmt.analyze(gen);
 			}
-			gen.appendToPrettyCode(toXMLTail());
+			gen.appendToPrettyCode(toListXMLTail());
 			gen.appendToPrettyCode(HelperClass.toXML("/if"));
 
 		}

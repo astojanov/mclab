@@ -28,6 +28,7 @@ public class ExprCaseHandler {
 			}
 			// Function Call
 			else {
+				
 				ExprCaseHandler.handleFunCallExpr(node, gen);
 
 			}
@@ -106,7 +107,7 @@ public class ExprCaseHandler {
 
 	public static void handleBinExpr(ParameterizedExpr node, VrirXmlGen gen,
 			String name) {
-
+		
 		gen.appendToPrettyCode(toXMLHead(name));
 
 		gen.appendToPrettyCode(HelperClass.getExprType(node, gen).toXML());
