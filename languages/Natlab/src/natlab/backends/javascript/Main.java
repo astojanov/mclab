@@ -12,17 +12,18 @@ public class Main {
         nullStmt.add(new StmtNull());
         p.addFunction(new Function(
                 new Opt<FunctionName>(),
-                new List<FormalParam>(),
+                new List<Variable>(),
                 new FunctionBody(nullStmt)));
         
-        List<FormalParam> params = new List<>();
-        params.add(new FormalParam("x"));
-        params.add(new FormalParam("y"));
+        List<Variable> params = new List<>();
+        params.add(new Variable("x"));
+        params.add(new Variable("y"));
         List<Stmt> stmts = new List<>();
         List<Expr> funArgs = new List<>();
-        funArgs.add(new ExprInt(42));
+        funArgs.add(new ExprVar(new Variable("x")));
         funArgs.add(new ExprString("hello"));
         stmts.add(new StmtExpr(new ExprString("use asm.js")));
+        stmts.add(new StmtExpr(new ExprAssign(new Variable("x"), new ExprInt(42))));
         stmts.add(
                 new StmtReturn(
                         new Opt<Expr>(
