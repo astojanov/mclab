@@ -410,4 +410,11 @@ public class HelperClass {
 		return "<" + str + ">\n";
 	}
 
+	public static boolean isAllocFunc(String name) {
+		if (name.equalsIgnoreCase("zeros") || name.equalsIgnoreCase("ones")) {
+			return true;
+		}
+		return false;
+	}
+
 }

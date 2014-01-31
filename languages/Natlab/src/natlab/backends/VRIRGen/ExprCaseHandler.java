@@ -28,7 +28,7 @@ public class ExprCaseHandler {
 			}
 			// Function Call
 			else {
-				
+
 				ExprCaseHandler.handleFunCallExpr(node, gen);
 
 			}
@@ -107,7 +107,21 @@ public class ExprCaseHandler {
 
 	public static void handleBinExpr(ParameterizedExpr node, VrirXmlGen gen,
 			String name) {
-		
+
+		if (name.trim().equalsIgnoreCase("mmult")) {
+			VType vt = HelperClass.getExprType(node.getArg(0), gen);
+			if (vt instanceof VTypeMatrix) {
+
+				if (((VTypeMatrix) vt).getShape().getDimensions().get(0)
+						.equalsOne()
+						&& ((VTypeMatrix) vt).getShape().getDimensions().get(1)
+								.equalsOne()
+						&& (((VTypeMatrix) vt).getShape().getDimensions()
+								.size() == 2)) {
+					name = "mult";
+				}
+			}
+		}
 		gen.appendToPrettyCode(toXMLHead(name));
 
 		gen.appendToPrettyCode(HelperClass.getExprType(node, gen).toXML());
@@ -204,6 +218,12 @@ public class ExprCaseHandler {
 	}
 
 	public static void handleFunCallExpr(ParameterizedExpr expr, VrirXmlGen gen) {
+		if (HelperClass.isAllocFunc(expr.getVarName())) {
+			// TODO: Alloc Expression
+			handleAllocExpr(expr, gen);
+			return;
+
+		}
 		gen.appendToPrettyCode(toXMLHead("fncall", expr.getVarName(), "fnname"));
 		VType vt = HelperClass.getExprType(expr, gen);
 		if (vt == null) {
@@ -232,6 +252,22 @@ public class ExprCaseHandler {
 		gen.appendToPrettyCode(HelperClass.toXML("/args"));
 		gen.appendToPrettyCode(toXMLTail());
 
+	}
+
+	public static void handleAllocExpr(ParameterizedExpr expr, VrirXmlGen gen) {
+		gen.appendToPrettyCode(toXMLHead("alloc", expr.getVarName(), "func"));
+		VType vt = HelperClass.getExprType(expr, gen);
+		if (vt == null) {
+			throw new NullPointerException(
+					"VType of function call expression could not be generated");
+		}
+		gen.appendToPrettyCode(vt.toXML());
+		gen.appendToPrettyCode(HelperClass.toXML("args"));
+		for (Expr node : expr.getArgList()) {
+			node.analyze(gen);
+		}
+		gen.appendToPrettyCode(HelperClass.toXML("/args"));
+		gen.appendToPrettyCode(toXMLTail());
 	}
 
 	// TODO: Revisit . Problem with indices

@@ -32,12 +32,12 @@ public class Main {
 		 * pass the type info of the input argument to the program, currently,
 		 * the type info is composed like double&3*3&REAL.
 		 */
-		String fileDir = "/home/2012/sjagda/mclab/mbrt/";
+		String fileDir = "/home/2012/sjagda/mclab/capr/";
 		// String fileName = "drv_mbrt.m";
 		// String fileDir = File.separator + "home" + File.separator
 		// + "2012" + "sjagda" + File.separator + "mclab"
 		// + File.separator + "mbrt" + File.separator;
-		String fileName = "drv_mbrt.m";
+		String fileName = "drv_capr.m";
 		String fileIn = fileDir + fileName;
 		GenericFile gFile = GenericFile.create(fileIn);
 		FileEnvironment env = new FileEnvironment(gFile); // get path
@@ -99,7 +99,7 @@ public class Main {
 
 		VrirXmlGen.genModuleXMLTail(genXML);
 		System.out.println(" print the generated VRIR in XML format  .\n");
-		//System.err.println(genXML);
+		System.err.println(genXML);
 
 		try {
 			BufferedWriter buffer = Files.newBufferedWriter(
