@@ -21,7 +21,8 @@ public class Main {
         List<Stmt> stmts = new List<>();
         List<Expr> funArgs = new List<>();
         funArgs.add(new ExprInt(42));
-        funArgs.add(new ExprInt(43));
+        funArgs.add(new ExprString("hello"));
+        stmts.add(new StmtExpr(new ExprString("use asm.js")));
         stmts.add(
                 new StmtReturn(
                         new Opt<Expr>(

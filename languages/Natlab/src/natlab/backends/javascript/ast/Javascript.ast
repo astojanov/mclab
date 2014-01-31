@@ -20,4 +20,6 @@ abstract Expr;
 
 ExprInt:Expr ::= <Value:Integer>;
 
+ExprString:Expr ::= <Value:String>;
+
 ExprCall:Expr ::= FunctionName:FunctionName Argument:Expr*;
