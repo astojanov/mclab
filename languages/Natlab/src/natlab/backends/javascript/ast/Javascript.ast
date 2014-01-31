@@ -1,11 +1,11 @@
-Program ::= Function:NamedFunction*;
+Program ::= Function:Function*;
 
-NamedFunction ::= <FuncName:String> Params:FormalParam* FuncBody:FunctionBody;
-AnonymousFunction ::= Params:FormalParam* FuncBody:FunctionBody;
+Function ::= [FuncName:FuncName] Param:FormalParam* FuncBody:FunctionBody;
 
-FunctionBody ::= Stmts: Stmt*;
+FuncName ::= <Name:String>;
+
+FunctionBody ::= Stmt:Stmt*;
 
 FormalParam ::= <Name:String>;
 
 abstract Stmt;
-

@@ -5,27 +5,53 @@ aspect PrettyPrinter {
     public PrettyBase Program.pp() {
         PrettyBase[] ppFunctions = new PrettyBase[this.getNumFunction()];
         int i = 0;
-        for (NamedFunction f: this.getFunctionList()) {
+        for (Function f: this.getFunctionList()) {
             ppFunctions[i] = f.pp();
             i++;
         }
         return new PrettySeparatedBy("\n\n", ppFunctions);
     }
 
-    public PrettyBase NamedFunction.pp() {
-
+    public PrettyBase Function.pp() {
+        // Formal parameters
+        PrettyBase[] ppParams = new PrettyBase[this.getNumParam()];
+        int i = 0;
+        for (FormalParam param: this.getParamList()) {
+            ppParams[i] = param.pp();
+            ++i;
+        }
 
         return new PrettyConcat(
-            new PrettyText(String.format("function %s", this.getFuncName())),
-            new PrettyParenthesized(new PrettyText("X")),
+            new PrettyText("function "),
+            this.hasFuncName() ? this.getFuncName().pp() : new PrettyText(""),
+            new PrettyParenthesized(new PrettySeparatedBy(", ", ppParams)),
             new PrettyText(" {"),
             PrettyLine.getInstance(),
+
             new PrettyText("}")
             );
     }
 
+    public PrettyBase FuncName.pp() {
+        return new PrettyText(this.getName());
+    }
+
     public PrettyBase Stmt.pp() {
         return new PrettyText("// Generic statement");
+    }
+
+    public PrettyBase FunctionBody.pp() {
+        PrettyBase[] prettyStmts = new PrettyBase[this.getNumStmt()];
+        int i = 0;
+        for (Stmt stmt: this.getStmtList()) {
+            prettyStmts[i] = stmt.pp();
+            ++i;
+        }
+        return new PrettyConcat(prettyStmts);
+    }
+
+    public PrettyBase FormalParam.pp() {
+        return new PrettyText(this.getName());
     }
 
 

@@ -1,5 +1,5 @@
 package natlab.backends.javascript.pretty;
 
 public abstract class PrettyBase {
-	public abstract String show();
+    public abstract String show();
 }
