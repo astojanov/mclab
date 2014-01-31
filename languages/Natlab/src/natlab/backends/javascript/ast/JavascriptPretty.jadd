@@ -25,10 +25,8 @@ aspect PrettyPrinter {
             new PrettyText("function "),
             this.hasFunctionName() ? this.getFunctionName().pp() : new PrettyText(""),
             new PrettyParenthesized(new PrettySeparatedBy(", ", ppParams)),
-            new PrettyText(" {"),
-            PrettyLine.getInstance(),
-            new PrettyIndent(this.getFunctionBody().pp()),
-            new PrettyText("}")
+            new PrettyText(" "),
+            new PrettyBracketed(new PrettyIndent(this.getFunctionBody().pp()))
             );
     }
 
@@ -40,10 +38,11 @@ aspect PrettyPrinter {
         PrettyBase[] prettyStmts = new PrettyBase[this.getNumStmt()];
         int i = 0;
         for (Stmt stmt: this.getStmtList()) {
-            prettyStmts[i] = new PrettyConcat(stmt.pp(), PrettyLine.getInstance());
+            prettyStmts[i] = stmt.pp();
             ++i;
         }
-        return new PrettyConcat(prettyStmts);
+        return new PrettySeparatedBy(PrettyLine.getInstance(), prettyStmts);
+
     }
 
     public PrettyBase FormalParam.pp() {
@@ -76,6 +75,10 @@ aspect PrettyPrinter {
 
     public PrettyBase ExprInt.pp() {
         return new PrettyText(this.getValue().toString());
+    }
+
+    public PrettyBase ExprString.pp() {
+        return new PrettyText('"' + this.getValue().toString() + '"');
     }
 
     public PrettyBase ExprCall.pp() {
