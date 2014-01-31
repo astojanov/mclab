@@ -1,12 +1,12 @@
 Program ::= Function:Function*;
 
-Function ::= [FunctionName:FunctionName] Param:FormalParam* FunctionBody:FunctionBody;
+Function ::= [FunctionName:FunctionName] Param:Variable* FunctionBody:FunctionBody;
 
 FunctionName ::= <Name:String>;
 
 FunctionBody ::= Stmt:Stmt*;
 
-FormalParam ::= <Name:String>;
+Variable ::= <Name:String>;
 
 abstract Stmt;
 
@@ -18,8 +18,12 @@ StmtReturn:Stmt ::= [Expr:Expr];
 
 abstract Expr;
 
-ExprInt:Expr ::= <Value:Integer>;
+ExprInt:Expr ::= <Value:int>;
 
 ExprString:Expr ::= <Value:String>;
 
 ExprCall:Expr ::= FunctionName:FunctionName Argument:Expr*;
+
+ExprAssign:Expr ::= LValue:Variable Expr:Expr;
+
+ExprVar:Expr ::= Variable:Variable;

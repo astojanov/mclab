@@ -1,0 +1,29 @@
+* Design Notes of the pretty printing library
+
+The pretty printing library is a Java translation of how pretty
+printers are usually represented in a functional language.  The pretty
+printer representation is a tree, and we perform a depth-first
+traversal through this tree to convert it to a string.  We have a
+bunch of classes, so here is their hierarchy along with a quick
+comment.
+
+- *PrettyBase*: the abstract node type from which all concrete nodes inherit.
+  - *PrettyLine*: a newline; we distinguish this node for indentation purposes.
+  - *PrettyText*: a string of text; this text should not contain
+    newline characters.
+  - *PrettyIndent*: a node used to indicate that its descendents
+    should be indented by one extra level.
+  - *PrettyConcat*: a node with multiple children, represents the
+    concatenation of all the children.
+    - *PrettySeparatedBy*: concatenate nodes, separating them with a
+      given string.
+    - *PrettyWrapped*: a helper node, used to wrap a node between an
+      opener and a closer.
+      - *PrettyParenthesized*: wraps a node between parentheses.
+      - *PrettyBracketed*: wraps a node between braces, separating
+        inner elements with new lines.
+- *Pair*: a combination of a node and an integer representing a level
+  of indentation; used only with =PrettyUtils.display=.
+- *PrettyUtils*: a collection of useful methods for nodes, including
+  =display=, the library to convert from the pretty printer tree to a
+  string representation.
