@@ -10,7 +10,7 @@ public class PrettyText extends PrettyBase {
 
 
     @Override
-    public String show() {
+    public String toString() {
         return text;
     }
 

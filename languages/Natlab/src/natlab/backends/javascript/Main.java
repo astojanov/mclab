@@ -1,6 +1,7 @@
 package natlab.backends.javascript;
 
 import natlab.backends.javascript.ast.*;
+import natlab.backends.javascript.pretty.*;
 
 public class Main {
 
@@ -31,7 +32,6 @@ public class Main {
                 params,
                 new FunctionBody(stmts)));
         
-        System.out.println(p.pp().show());
+        System.out.println(PrettyUtils.display(p.pp()));
     }
-
 }
