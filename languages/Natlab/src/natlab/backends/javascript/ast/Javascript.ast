@@ -1,11 +1,23 @@
 Program ::= Function:Function*;
 
-Function ::= [FuncName:FuncName] Param:FormalParam* FuncBody:FunctionBody;
+Function ::= [FunctionName:FunctionName] Param:FormalParam* FunctionBody:FunctionBody;
 
-FuncName ::= <Name:String>;
+FunctionName ::= <Name:String>;
 
 FunctionBody ::= Stmt:Stmt*;
 
 FormalParam ::= <Name:String>;
 
 abstract Stmt;
+
+StmtExpr:Stmt ::= Expr:Expr;
+
+StmtNull:Stmt ::= ;
+
+StmtReturn:Stmt ::= [Expr:Expr];
+
+abstract Expr;
+
+ExprInt:Expr ::= <Value:Integer>;
+
+ExprCall:Expr ::= FunctionName:FunctionName Argument:Expr*;

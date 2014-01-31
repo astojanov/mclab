@@ -23,28 +23,24 @@ aspect PrettyPrinter {
 
         return new PrettyConcat(
             new PrettyText("function "),
-            this.hasFuncName() ? this.getFuncName().pp() : new PrettyText(""),
+            this.hasFunctionName() ? this.getFunctionName().pp() : new PrettyText(""),
             new PrettyParenthesized(new PrettySeparatedBy(", ", ppParams)),
             new PrettyText(" {"),
             PrettyLine.getInstance(),
-
+            this.getFunctionBody().pp(),
             new PrettyText("}")
             );
     }
 
-    public PrettyBase FuncName.pp() {
+    public PrettyBase FunctionName.pp() {
         return new PrettyText(this.getName());
-    }
-
-    public PrettyBase Stmt.pp() {
-        return new PrettyText("// Generic statement");
     }
 
     public PrettyBase FunctionBody.pp() {
         PrettyBase[] prettyStmts = new PrettyBase[this.getNumStmt()];
         int i = 0;
         for (Stmt stmt: this.getStmtList()) {
-            prettyStmts[i] = stmt.pp();
+            prettyStmts[i] = new PrettyConcat(stmt.pp(), PrettyLine.getInstance());
             ++i;
         }
         return new PrettyConcat(prettyStmts);
@@ -54,5 +50,44 @@ aspect PrettyPrinter {
         return new PrettyText(this.getName());
     }
 
+    public PrettyBase Stmt.pp() {
+        return new PrettyText("STMT SHOULD NOT BE GENERATED");
+    }
+
+    public PrettyBase StmtNull.pp() {
+        return new PrettyText(";");
+    }
+
+    public PrettyBase StmtExpr.pp() {
+        return new PrettyConcat(this.getExpr().pp(),
+                                new PrettyText(";"));
+    }
+
+    public PrettyBase StmtReturn.pp() {
+        return new PrettyConcat(new PrettyText("return "),
+                                this.hasExpr() ? this.getExpr().pp() : new PrettyText(""),
+                                new PrettyText(";"));
+    }
+
+
+    public PrettyBase Expr.pp() {
+        return new PrettyText("EXPR SHOULD NOT BE GENERATED");
+    }
+
+    public PrettyBase ExprInt.pp() {
+        return new PrettyText(this.getValue().toString());
+    }
+
+    public PrettyBase ExprCall.pp() {
+        PrettyBase[] args = new PrettyBase[this.getNumArgument()];
+        int i = 0;
+        for (Expr arg : this.getArgumentList()) {
+            args[i] = arg.pp();
+            ++i;
+        }
+        return new PrettyConcat(this.getFunctionName().pp(),
+                                new PrettyParenthesized(
+                                    new PrettySeparatedBy(", ", args)));
+    }
 
 }
