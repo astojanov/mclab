@@ -6,14 +6,31 @@ public class Main {
 
     public static void main(String[] args) {
         Program p = new Program();
-        p.addFunction(new Function(new Opt<FuncName>(), new List<FormalParam>(), null));
+        
+        List<Stmt> nullStmt = new List<>();
+        nullStmt.add(new StmtNull());
+        p.addFunction(new Function(
+                new Opt<FunctionName>(),
+                new List<FormalParam>(),
+                new FunctionBody(nullStmt)));
+        
         List<FormalParam> params = new List<>();
         params.add(new FormalParam("x"));
         params.add(new FormalParam("y"));
+        List<Stmt> stmts = new List<>();
+        List<Expr> funArgs = new List<>();
+        funArgs.add(new ExprInt(42));
+        funArgs.add(new ExprInt(43));
+        stmts.add(
+                new StmtReturn(
+                        new Opt<Expr>(
+                                new ExprCall( new FunctionName("add"), funArgs))));
+        
         p.addFunction(new Function(
-                new Opt<FuncName>(new FuncName("function2")), 
+                new Opt<FunctionName>(new FunctionName("function2")), 
                 params,
-                null));
+                new FunctionBody(stmts)));
+        
         System.out.println(p.pp().show());
     }
 
