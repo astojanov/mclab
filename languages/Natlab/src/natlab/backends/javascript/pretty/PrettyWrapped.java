@@ -1,17 +1,13 @@
 package natlab.backends.javascript.pretty;
 
-public class PrettyWrapped extends PrettyBase {
-    private PrettyConcat container;
-
-
+public class PrettyWrapped extends PrettyConcat {
     public PrettyWrapped(String opener, String closer, PrettyBase p) {
-        container = new PrettyConcat(new PrettyText(opener), p, new PrettyText(
-                closer));
+        super(new PrettyText(opener), p, new PrettyText(closer));
     }
 
 
-    public String show() {
-        return container.show();
+    public String toString() {
+        return super.toString();
     }
 
 }

@@ -1,7 +1,7 @@
 package natlab.backends.javascript.pretty;
 
 public class PrettyConcat extends PrettyBase {
-    private PrettyBase[] parts;
+    public PrettyBase[] parts;
 
 
     public PrettyConcat(PrettyBase... parts) {
@@ -10,11 +10,11 @@ public class PrettyConcat extends PrettyBase {
 
 
     @Override
-    public String show() {
+    public String toString() {
         StringBuffer s = new StringBuffer();
         boolean first = true;
         for (PrettyBase part : parts) {
-            s.append(part.show());
+            s.append(part.toString());
         }
         return s.toString();
     }

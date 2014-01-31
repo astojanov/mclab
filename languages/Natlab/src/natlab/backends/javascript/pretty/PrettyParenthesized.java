@@ -1,17 +1,14 @@
 package natlab.backends.javascript.pretty;
 
-public class PrettyParenthesized extends PrettyBase {
-    private PrettyWrapped container;
-
-
+public class PrettyParenthesized extends PrettyWrapped {
     public PrettyParenthesized(PrettyBase p) {
-        container = new PrettyWrapped("(", ")", p);
+        super("(", ")", p);
     }
 
 
     @Override
-    public String show() {
-        return container.show();
+    public String toString() {
+        return super.toString();
     }
 
 }

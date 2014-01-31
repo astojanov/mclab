@@ -27,7 +27,7 @@ aspect PrettyPrinter {
             new PrettyParenthesized(new PrettySeparatedBy(", ", ppParams)),
             new PrettyText(" {"),
             PrettyLine.getInstance(),
-            this.getFunctionBody().pp(),
+            new PrettyIndent(this.getFunctionBody().pp()),
             new PrettyText("}")
             );
     }

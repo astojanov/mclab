@@ -17,7 +17,7 @@ public class PrettyLine extends PrettyBase {
     }
 
 
-    public String show() {
+    public String toString() {
         return String.format("%n");
     }
 }

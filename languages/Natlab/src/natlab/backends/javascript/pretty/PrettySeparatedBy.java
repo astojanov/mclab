@@ -1,33 +1,23 @@
 package natlab.backends.javascript.pretty;
 
-public class PrettySeparatedBy extends PrettyBase {
-    private PrettyConcat container;
-
-
+public class PrettySeparatedBy extends PrettyConcat {
     public PrettySeparatedBy(String sep, PrettyBase... parts) {
-        if (parts.length <= 1) {
-            container = new PrettyConcat(parts);
-        }
-        else {
-            PrettyBase[] separatedParts = new PrettyBase[2 * parts.length - 1];
-            PrettyText prettySep = new PrettyText(sep);
-            boolean first = true;
-            int i = 0;
+        this.parts = new PrettyBase[Math.max(0, 2 * parts.length - 1)];
+        int i = 0;
+        boolean first = true;
 
-            for (PrettyBase part : parts) {
-                if (!first)
-                    separatedParts[i++] = prettySep;
-                first = false;
-                separatedParts[i++] = part;
-            }
-            container = new PrettyConcat(separatedParts);
+        for (PrettyBase part : parts) {
+            if (!first)
+                this.parts[i++] = new PrettyText(sep);
+            first = false;
+            this.parts[i++] = part;
         }
     }
 
 
     @Override
-    public String show() {
-        return container.show();
+    public String toString() {
+        return super.toString();
     }
 
 }
