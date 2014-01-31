@@ -417,4 +417,7 @@ public class HelperClass {
 		return false;
 	}
 
+	public static boolean isLibFunc(String name) {
+		return LibraryExprContainer.isLibExpr(name);
+	}
 }

@@ -53,6 +53,7 @@ public class Main {
 		genXML.append(HelperClass.toXML("fns"));
 		OperatorMapper.initMap();
 		VrirTypeMapper.initTypeMap();
+		LibraryExprContainer.init();
 		HashSet<StaticFunction> funcSet = new HashSet<StaticFunction>();
 		for (int i = 0; i < size; i++) {
 			StringBuffer sb;

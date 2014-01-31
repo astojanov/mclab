@@ -219,10 +219,13 @@ public class ExprCaseHandler {
 
 	public static void handleFunCallExpr(ParameterizedExpr expr, VrirXmlGen gen) {
 		if (HelperClass.isAllocFunc(expr.getVarName())) {
-			// TODO: Alloc Expression
+
 			handleAllocExpr(expr, gen);
 			return;
 
+		}
+		if (HelperClass.isLibFunc(expr.getVarName())) {
+			handleLibCallExpr(expr, gen);
 		}
 		gen.appendToPrettyCode(toXMLHead("fncall", expr.getVarName(), "fnname"));
 		VType vt = HelperClass.getExprType(expr, gen);
@@ -252,6 +255,22 @@ public class ExprCaseHandler {
 		gen.appendToPrettyCode(HelperClass.toXML("/args"));
 		gen.appendToPrettyCode(toXMLTail());
 
+	}
+
+	public static void handleLibCallExpr(ParameterizedExpr expr, VrirXmlGen gen) {
+		gen.appendToPrettyCode(toXMLHead("fncall", expr.getVarName(), "libfunc"));
+		VType vt = HelperClass.getExprType(expr, gen);
+		if (vt == null) {
+			throw new NullPointerException(
+					"VType of function call expression could not be generated");
+		}
+		gen.appendToPrettyCode(vt.toXML());
+		gen.appendToPrettyCode(HelperClass.toXML("args"));
+		for (Expr args : expr.getArgList()) {
+			args.analyze(gen);
+		}
+		gen.appendToPrettyCode(HelperClass.toXML("/args"));
+		gen.appendToPrettyCode(toXMLTail());
 	}
 
 	public static void handleAllocExpr(ParameterizedExpr expr, VrirXmlGen gen) {
