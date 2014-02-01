@@ -135,7 +135,7 @@ public class ExprCaseHandler {
 	}
 
 	public static void handleRangeExpr(RangeExpr node, VrirXmlGen gen) {
-
+		gen.appendToPrettyCode(toXMLHead("range"));
 		gen.appendToPrettyCode(HelperClass.toXML("start"));
 		node.getLower().analyze(gen);
 		gen.appendToPrettyCode(HelperClass.toXML("/start"));
@@ -149,6 +149,7 @@ public class ExprCaseHandler {
 		gen.appendToPrettyCode(HelperClass.toXML("stop"));
 		node.getUpper().analyze(gen);
 		gen.appendToPrettyCode(HelperClass.toXML("/stop"));
+		gen.appendToPrettyCode(toXMLHead("range"));
 	}
 
 	public static void handleIntLiteralExpr(IntLiteralExpr expr, VrirXmlGen gen) {
@@ -226,6 +227,11 @@ public class ExprCaseHandler {
 		}
 		if (HelperClass.isLibFunc(expr.getVarName())) {
 			handleLibCallExpr(expr, gen);
+			return;
+		}
+		if (expr.getVarName().equals("colon")) {
+			handleColonCall(expr, gen);
+			return;
 		}
 		gen.appendToPrettyCode(toXMLHead("fncall", expr.getVarName(), "fnname"));
 		VType vt = HelperClass.getExprType(expr, gen);
@@ -255,6 +261,26 @@ public class ExprCaseHandler {
 		gen.appendToPrettyCode(HelperClass.toXML("/args"));
 		gen.appendToPrettyCode(toXMLTail());
 
+	}
+
+	public static void handleColonCall(ParameterizedExpr expr, VrirXmlGen gen) {
+		gen.appendToPrettyCode(toXMLHead("range"));
+		int indx = 0;
+		gen.appendToPrettyCode(HelperClass.toXML("start"));
+		expr.getArg(indx).analyze(gen);
+		gen.appendToPrettyCode(HelperClass.toXML("/start"));
+		indx++;
+		if (expr.getArgList().getNumChild() > 2) {
+			gen.appendToPrettyCode(HelperClass.toXML("step"));
+			expr.getArg(indx).analyze(gen);
+			gen.appendToPrettyCode(HelperClass.toXML("/step"));
+			indx++;
+		}
+		gen.appendToPrettyCode(HelperClass.toXML("stop"));
+		expr.getArg(indx).analyze(gen);
+		gen.appendToPrettyCode(HelperClass.toXML("/stop"));
+		indx++;
+		gen.appendToPrettyCode(toXMLTail());
 	}
 
 	public static void handleLibCallExpr(ParameterizedExpr expr, VrirXmlGen gen) {
