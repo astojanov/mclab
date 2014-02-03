@@ -126,12 +126,12 @@
 	<zipgroupfileset dir="${lib.dir}"
 			 includes="${beaver.rt.jar.path.prop},${antlr3.rt.jar.path.prop},${string.template.jar.path.prop},${antlr2.jar.path.prop},${guava.jar.path.prop}" />
 	<fileset dir="${matlab.bin.dir}/" includes="**/*.class" />
-	<fileset dir="${basedir}/resources" />  
+	<fileset dir="${basedir}/resources" />
 	<fileset dir="${basedir}/${bin.dir}" includes="**/*.class" excludes="@{excludes}" />
       </jar>
       <echo file="@{basename}.sh">${entrypoint.script.header}
       java -jar "${basedir}/@{basename}.jar" "$$@"</echo>
-      <chmod file="@{basename}.sh" perm="755" />  
+      <chmod file="@{basename}.sh" perm="755" />
     </sequential>
   </macrodef>
 
@@ -142,27 +142,27 @@
   <target name="test" depends="build, CommandLineInterface.test" description="runs all JUnit tests" />
 
   <target name="jar" depends="matlab.build, clean, jar_noclean" description="creates an executable release jar" />
-  <target name="jar_noclean" depends="gen, compile" 
+  <target name="jar_noclean" depends="gen, compile"
           description="creates an executable release jar without cleaning first">
     <natlab-jar basename="${entrypoint.name}" />
   </target>
 
   <!-- jar build without tame and backend-->
-  <target name="jar-frontend" depends="matlab.build, clean, jar_noclean_frontend" 
+  <target name="jar-frontend" depends="matlab.build, clean, jar_noclean_frontend"
           description="creates an executable release jar" />
-  <target name="jar_noclean_frontend" depends="gen, compile" 
+  <target name="jar_noclean_frontend" depends="gen, compile"
           description="creates an executable release jar without cleaning first">
     <natlab-jar basename="${entrypoint.frontend.name}" excludes="**/tame/**,**/backends/**" />
   </target>
 
   <!-- jar build without backend-->
-  <target name="jar-with-tamer" depends="matlab.build, clean, jar_noclean_tame" 
+  <target name="jar-with-tamer" depends="matlab.build, clean, jar_noclean_tame"
           description="creates an executable release jar" />
-  <target name="jar_noclean_tame" depends="gen, compile" 
+  <target name="jar_noclean_tame" depends="gen, compile"
           description="creates an executable release jar without cleaning first">
     <natlab-jar basename="${entrypoint.mcsaf_with_tamer.name}" excludes="**/backends/**" />
   </target>
-  
+
   <!-- jar build with x10 backend-->
   <target name="jar-mix10" depends="matlab.build, clean, jar_noclean_mix10"
           description="creates an executable release jar" />
@@ -171,17 +171,17 @@
   </target>
 
   <!-- jar build with JavaScript backend. -->
-  <target name="jar-javascript" depends="matlab.build, clean, jar_noclean_javascript"
+  <target name="jar-javascript" depends="matlab.build, clean, jar-javascript-noclean"
           description="creates an executable release jar" />
-  <target name="jar_noclean_javascript" depends="gen, compile" description="creates an executable release jar without cleaning first">
+  <target name="jar-javascript-noclean" depends="gen, compile" description="creates an executable release jar without cleaning first">
     <natlab-jar basename="${entrypoint.javascript_backend.name}" excludes="**/x10/**, **/Fortran/**, **/VRIRGen/**" />
   </target>
 
-  
+
   <!-- jar build with fortran  backend-->
   <target name="jar-mc2for" depends="matlab.build, clean, jar_noclean_mc2for"
           description="creates an executable release jar" />
-  <target name="jar_noclean_mc2for" depends="gen, compile" 
+  <target name="jar_noclean_mc2for" depends="gen, compile"
           description="creates an executable release jar without cleaning first">
     <natlab-jar basename="${entrypoint.fortran_backend.name}" excludes="**/x10/**,**/VRIRGen/**" />
   </target>
