@@ -7,14 +7,14 @@ public class Main {
 
     public static void main(String[] args) {
         Program p = new Program();
-        
+
         List<Stmt> nullStmt = new List<>();
         nullStmt.add(new StmtNull());
         p.addFunction(new Function(
                 new Opt<FunctionName>(),
                 new List<Variable>(),
                 new FunctionBody(nullStmt)));
-        
+
         List<Variable> params = new List<>();
         params.add(new Variable("x"));
         params.add(new Variable("y"));
@@ -28,12 +28,12 @@ public class Main {
                 new StmtReturn(
                         new Opt<Expr>(
                                 new ExprCall( new FunctionName("add"), funArgs))));
-        
+
         p.addFunction(new Function(
-                new Opt<FunctionName>(new FunctionName("function2")), 
+                new Opt<FunctionName>(new FunctionName("function2")),
                 params,
                 new FunctionBody(stmts)));
-        
-        System.out.println(PrettyUtils.display(p.pp()));
+
+        System.out.println(Pretty.display(p.pp()));
     }
 }

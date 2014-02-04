@@ -21,10 +21,8 @@ comment.
   - *PrettyConcat*: a node with multiple children, represents the
     concatenation of all the children.
 - *Pair*: a combination of a node and an integer representing a level
-  of indentation; used only with =PrettyUtils.display=.
-- *PrettyUtils*: a collection of useful methods for nodes, including
-  =display=, the library to convert from the pretty printer tree to a
-  string representation.
+  of indentation; used only with =Pretty.display=.
+- *PrettyUtils*: a collection of useful methods for nodes.
 
 ** API
 
@@ -42,9 +40,10 @@ comment.
 - *Pretty.block()*: /Pretty.wrapped()/ specialized to curly braces.
 - *Pretty.separatedBy*: concatenate multiple /PrettyBase/ nodes
   together, separating them with a given node.
+- *Pretty.display*: converts a /PrettyBase/ tree into a string.
 
 
-** PrettyUtils.display
+** Pretty.display
 
 This method deserves its own, separate explanation.  We expose a
 public =display= method that takes the root of the =PrettyBase= tree
