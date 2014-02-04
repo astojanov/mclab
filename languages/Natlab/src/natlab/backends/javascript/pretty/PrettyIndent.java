@@ -6,10 +6,4 @@ public class PrettyIndent extends PrettyBase {
     public PrettyIndent(PrettyBase child) {
         this.child = child;
     }
-    
-    @Override
-    public String toString() {
-        return child.toString();
-    }
-
 }
