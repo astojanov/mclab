@@ -317,8 +317,49 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseColonExpr(ColonExpr node) {
-		System.out.println("in colon expression : Parent " + node.getParent().getParent());
-		
+		System.out.println("in colon expression : Parent "
+				+ node.getParent().getParent());
+		if (node.getParent().getParent() instanceof ParameterizedExpr) {
+			ParameterizedExpr arrayExpr = (ParameterizedExpr) node.getParent()
+					.getParent();
+			int colonPos = Integer.MIN_VALUE;
+			for (int i = 0; i < arrayExpr.getArgList().getNumChild(); i++) {
+				if (arrayExpr.getArg(i) instanceof ColonExpr) {
+					colonPos = i;
+					break;
+				}
+			}
+			if (colonPos == Integer.MIN_VALUE) {
+				throw new RuntimeException(
+						"Colon Expression not found in array");
+			}
+			VType vt = this.getSymbol(arrayExpr.getVarName()).getVtype();
+			if (vt == null) {
+				throw new NullPointerException(
+						"no entry of array in symbol table");
+			}
+			int end;
+
+			if (vt instanceof VTypeMatrix) {
+				int ndims = ((VTypeMatrix) vt).getShape().getDimensions()
+						.size();
+				end = ((VTypeMatrix) vt).getShape().getDimensions()
+						.get(colonPos).getIntValue();
+				if (ndims > arrayExpr.getArgList().getNumChild()
+						&& (colonPos == arrayExpr.getNumChild() - 1)) {
+					for (int i = colonPos + 1; i < ndims; i++) {
+						end *= ((VTypeMatrix) vt).getShape().getDimensions()
+								.get(i).getIntValue();
+					}
+				}
+			} else {
+				throw new UnsupportedOperationException(
+						"VType class is not VTypeMatrix but intead is "
+								+ vt.getClass());
+			}
+			//TODO: Generating xml code left. Range expression requires a VType ? Should we replace it by a colon function call instead? 
+
+		}
 		caseExpr(node);
 	}
 

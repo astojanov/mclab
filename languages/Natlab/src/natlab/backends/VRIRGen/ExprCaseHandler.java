@@ -120,7 +120,26 @@ public class ExprCaseHandler {
 								.size() == 2)) {
 					name = "mult";
 				}
+			} else {
+				throw new UnsupportedOperationException(
+						"operations on cell arrays not supported");
 			}
+			vt = HelperClass.getExprType(node.getArg(1), gen);
+			if (vt instanceof VTypeMatrix) {
+
+				if (((VTypeMatrix) vt).getShape().getDimensions().get(0)
+						.equalsOne()
+						&& ((VTypeMatrix) vt).getShape().getDimensions().get(1)
+								.equalsOne()
+						&& (((VTypeMatrix) vt).getShape().getDimensions()
+								.size() == 2)) {
+					name = "mult";
+				}
+			} else {
+				throw new UnsupportedOperationException(
+						"operations on cell arrays not supported");
+			}
+
 		}
 		gen.appendToPrettyCode(toXMLHead(name));
 
@@ -149,7 +168,7 @@ public class ExprCaseHandler {
 		gen.appendToPrettyCode(HelperClass.toXML("stop"));
 		node.getUpper().analyze(gen);
 		gen.appendToPrettyCode(HelperClass.toXML("/stop"));
-		gen.appendToPrettyCode(toXMLHead("range"));
+		gen.appendToPrettyCode(toXMLTail());
 	}
 
 	public static void handleIntLiteralExpr(IntLiteralExpr expr, VrirXmlGen gen) {
