@@ -18,6 +18,7 @@ public class PrettyLine extends PrettyBase {
 
 
     public String toString() {
+        // Gives a platform-independent newline.
         return String.format("%n");
     }
 }
