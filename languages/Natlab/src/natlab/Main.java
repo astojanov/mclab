@@ -56,7 +56,7 @@ public class Main {
    * Main method deals with command line options and execution of
    * desired functions.
    */
-  public static void main(String[] args) throws Exception {	
+  public static void main(String[] args) throws Exception {
     if (args.length == 0) {
       System.err.println("No options given\nTry -help for usage");
       return;
@@ -94,7 +94,7 @@ public class Main {
     if (options.tamerplus()) {
     	TamerPlusMain.main(options);
     }
-    
+
     if (options.mclint()) {
       McLint.main(options);
       return;
@@ -108,12 +108,12 @@ public class Main {
     if (options.mix10c()){
     	Mix10.compile(options);
     }
-    
+
     // Mc2For options
     if (options.codegen() || options.nocheck()) {
     	Main_readable.compile(options);
     }
-    
+
     if (options.getFiles().isEmpty()) {
       System.err.println("No files provided, must have at least one file.");
       return;
