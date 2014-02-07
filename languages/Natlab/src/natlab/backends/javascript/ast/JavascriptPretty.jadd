@@ -25,7 +25,7 @@ aspect PrettyPrinter {
 
         return Pretty.concat(Pretty.text("function "),
                              this.hasFunctionName() ? this.getFunctionName().pp() : Pretty.EMPTY,
-                             Pretty.parenthesized(Pretty.separateBy(Pretty.text(", "), ppParams)),
+                             Pretty.argList(ppParams),
                              Pretty.text(" "),
                              Pretty.block(Pretty.indent(this.getFunctionBody().pp())));
     }
@@ -93,7 +93,7 @@ aspect PrettyPrinter {
             ++i;
         }
         return Pretty.concat(this.getFunctionName().pp(),
-                             Pretty.parenthesized(Pretty.separateBy(Pretty.text(", "), args)));
+                             Pretty.argList(args));
     }
 
     public PrettyBase ExprAssign.pp() {

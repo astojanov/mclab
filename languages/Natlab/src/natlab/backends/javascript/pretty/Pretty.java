@@ -58,6 +58,11 @@ public class Pretty {
     }
 
 
+    public static PrettyBase argList(PrettyBase... parts) {
+        return parenthesized(separateBy(text(", "), parts));
+    }
+
+
     public static String display(PrettyBase root) {
         int currCol = 0;
         StringBuffer sb = new StringBuffer();
