@@ -76,7 +76,7 @@ public class Pretty {
 
             if (node instanceof PrettyLine) {
                 currCol = 0;
-                sb.append('\n');
+                sb.append(node.toString());
             }
             else if (node instanceof PrettyText) {
                 String s = PrettyUtils.pad(currLevel*INDENT_WIDTH - currCol) + node.toString();
