@@ -354,7 +354,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 				}
 			} else {
 				throw new UnsupportedOperationException(
-						"VType class is not VTypeMatrix but intead is "
+						"VType class is not VTypeMatrix but instead is "
 								+ vt.getClass());
 			}
 			//TODO: Generating xml code left. Range expression requires a VType ? Should we replace it by a colon function call instead? 

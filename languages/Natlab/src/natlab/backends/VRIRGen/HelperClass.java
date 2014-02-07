@@ -389,11 +389,18 @@ public class HelperClass {
 		return funcType;
 	}
 
-	public static ArrayList<Arg> generateArgList(List<Name> paramList,
-			VrirXmlGen gen) {
+	public static ArrayList<Arg> generateArgList(List<Name> inParamList,
+			List<Name> outParamList, VrirXmlGen gen) {
 		ArrayList<Arg> argList = new ArrayList<Arg>();
-		for (int i = 0; i < paramList.getNumChild(); i++) {
-			Symbol sym = gen.getSymbol(paramList.getChild(i).getID());
+		for (int i = 0; i < inParamList.getNumChild(); i++) {
+			Symbol sym = gen.getSymbol(inParamList.getChild(i).getID());
+			if (sym == null) {
+				throw new NullPointerException("Symbol not found");
+			}
+			argList.add(new Arg(sym.getId(), false));
+		}
+		for (int i = 0; i < outParamList.getNumChild(); i++) {
+			Symbol sym = gen.getSymbol(outParamList.getChild(i).getID());
 			if (sym == null) {
 				throw new NullPointerException("Symbol not found");
 			}

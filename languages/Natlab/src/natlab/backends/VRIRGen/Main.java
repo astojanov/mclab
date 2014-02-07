@@ -100,7 +100,7 @@ public class Main {
 
 		VrirXmlGen.genModuleXMLTail(genXML);
 		System.out.println(" print the generated VRIR in XML format  .\n");
-		// System.err.println(genXML);
+		 System.err.println(genXML);
 
 		try {
 			BufferedWriter buffer = Files.newBufferedWriter(
