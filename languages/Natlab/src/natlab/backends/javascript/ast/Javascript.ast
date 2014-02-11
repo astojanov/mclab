@@ -1,14 +1,14 @@
 Program ::= Function:Function*;
 
-Function ::= [FunctionName:FunctionName] Param:Variable* FunctionBody:FunctionBody;
+Function ::= [FunctionName:FunctionName] Param:Variable* Stmt:Stmt*;
 
 FunctionName ::= <Name:String>;
-
-FunctionBody ::= Stmt:Stmt*;
 
 Variable ::= <Name:String>;
 
 abstract Stmt;
+
+StmtBlock:Stmt ::= Stmt:Stmt*;
 
 StmtExpr:Stmt ::= Expr:Expr;
 
@@ -16,11 +16,15 @@ StmtNull:Stmt ::= ;
 
 StmtReturn:Stmt ::= [Expr:Expr];
 
+StmtIfThenElse:Stmt ::= Cond:Expr Then:Stmt [Else:Stmt];
+
 abstract Expr;
 
 ExprInt:Expr ::= <Value:int>;
 
 ExprString:Expr ::= <Value:String>;
+
+ExprBoolean:Expr ::= <Value:Boolean>;
 
 ExprCall:Expr ::= FunctionName:FunctionName Argument:Expr*;
 

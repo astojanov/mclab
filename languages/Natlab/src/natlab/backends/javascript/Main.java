@@ -13,7 +13,7 @@ public class Main {
         p.addFunction(new Function(
                 new Opt<FunctionName>(),
                 new List<Variable>(),
-                new FunctionBody(nullStmt)));
+                nullStmt));
 
         List<Variable> params = new List<>();
         params.add(new Variable("x"));
@@ -24,6 +24,16 @@ public class Main {
         funArgs.add(new ExprString("hello"));
         stmts.add(new StmtExpr(new ExprString("use asm.js")));
         stmts.add(new StmtExpr(new ExprAssign(new Variable("x"), new ExprInt(42))));
+
+        StmtBlock thenPart = new StmtBlock();
+        thenPart.addStmt(new StmtExpr(new ExprInt(1)));
+        thenPart.addStmt(new StmtExpr(new ExprString("two")));
+        StmtExpr elsePart = new StmtExpr(new ExprBoolean(false));
+        stmts.add(new StmtIfThenElse(
+                      new ExprBoolean(true),
+                      thenPart,
+                      new Opt<Stmt>(elsePart)
+                      ));
         stmts.add(
                 new StmtReturn(
                         new Opt<Expr>(
@@ -32,7 +42,7 @@ public class Main {
         p.addFunction(new Function(
                 new Opt<FunctionName>(new FunctionName("function2")),
                 params,
-                new FunctionBody(stmts)));
+                stmts));
 
         System.out.println(Pretty.display(p.pp()));
     }

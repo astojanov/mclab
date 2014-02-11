@@ -34,11 +34,11 @@ public class Pretty {
     }
 
 
-    public static PrettyBase block(PrettyBase node) {
+    public static PrettyBase block(PrettyBase... nodes) {
         return wrapped(
                 concat(text("{"), NEWLINE),
                 concat(NEWLINE, text("}")),
-                separateBy(NEWLINE, node));
+                indent(separateBy(NEWLINE, nodes)));
     }
 
 
