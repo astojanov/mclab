@@ -1,4 +1,4 @@
-package natlab.backends.VRIRGen;
+package natlab.backends.vrirGen;
 
 import natlab.tame.classes.reference.PrimitiveClassReference;
 import ast.Expr;
