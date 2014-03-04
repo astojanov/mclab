@@ -6,6 +6,8 @@ import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
 import natlab.tame.valueanalysis.components.constant.Constant;
 import natlab.tame.valueanalysis.components.isComplex.*;
 import natlab.tame.valueanalysis.components.mclass.ClassPropagator;
+import natlab.tame.valueanalysis.components.rangeValue.RangeValue;
+import natlab.tame.valueanalysis.components.rangeValue.RangeValuePropagator;
 import natlab.tame.valueanalysis.components.shape.*;
 import natlab.tame.valueanalysis.value.*;
 
@@ -15,6 +17,15 @@ public class AdvancedMatrixValueFactory extends AggrValueFactory<AdvancedMatrixV
     public AdvancedMatrixValue newMatrixValue(String symbolic, Constant constant) {
         return new AdvancedMatrixValue(symbolic, constant);
     }
+	
+	public AdvancedMatrixValue newMatrixValueFromClassShapeRange(
+			String symbolic,
+			PrimitiveClassReference aClass,
+			Shape<AggrValue<AdvancedMatrixValue>> shape,
+			RangeValue<AggrValue<AdvancedMatrixValue>> rangeValue, 
+			isComplexInfo<AggrValue<AdvancedMatrixValue>> complex) {
+		return new AdvancedMatrixValue(symbolic, aClass, shape, rangeValue, complex);
+	}
     
     static AggrValuePropagator<AdvancedMatrixValue> propagator = 
     		new AggrValuePropagator<AdvancedMatrixValue>(new AdvancedMatrixValuePropagator());
@@ -26,6 +37,7 @@ public class AdvancedMatrixValueFactory extends AggrValueFactory<AdvancedMatrixV
 	@SuppressWarnings("unchecked")
 	static ClassPropagator<AggrValue<AdvancedMatrixValue>> classPropagator = ClassPropagator.getInstance();
 	static ShapePropagator<AggrValue<AdvancedMatrixValue>> shapePropagator = ShapePropagator.getInstance();
+	static RangeValuePropagator<AggrValue<AdvancedMatrixValue>> rangeValuePropagator = RangeValuePropagator.getInstance();
 	static isComplexInfoPropagator<AggrValue<AdvancedMatrixValue>> iscomplexinfoPropagator=
 			isComplexInfoPropagator.getInstance();
 	
@@ -34,7 +46,9 @@ public class AdvancedMatrixValueFactory extends AggrValueFactory<AdvancedMatrixV
 			AggrValue<AdvancedMatrixValue> lower,
 			AggrValue<AdvancedMatrixValue> upper, AggrValue<AdvancedMatrixValue> inc) { 
 		return new AdvancedMatrixValue(null,
-				classPropagator.forRange(lower, upper, inc),shapePropagator.forRange(lower, upper, inc),null,
+				classPropagator.forRange(lower, upper, inc),
+				shapePropagator.forRange(lower, upper, inc),
+				rangeValuePropagator.forRange(lower, upper, inc),
 				iscomplexinfoPropagator.forRange(lower, upper, inc));
 	}
 	

@@ -1,4 +1,4 @@
-package natlab.backends.VRIRGen;
+package natlab.backends.vrirGen;
 
 import java.util.ArrayList;
 
@@ -58,7 +58,7 @@ public class VTypeFunction extends VType {
 				sb.append(vtype.toXML());
 			}
 		} else {
-			sb.append(HelperClass.toXML("vtype name=\"void\""));
+			sb.append(HelperClass.toXML("vtype name=\"void\" /"));
 		}
 		sb.append(HelperClass.toXML("/outtypes"));
 		sb.append(HelperClass.toXML("/vtype"));

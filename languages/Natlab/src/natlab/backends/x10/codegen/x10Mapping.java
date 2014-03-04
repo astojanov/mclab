@@ -34,7 +34,7 @@ public class x10Mapping {
 		x10BuiltinList.add("length");
 		x10BuiltinList.add("sqrt");
 		//x10BuiltinList.add("rand");
-	//	x10BuiltinList.add("horzcat");
+		x10BuiltinList.add("horzcat");
 	//	x10BuiltinList.add("mtimes");
 	//	x10BuiltinList.add("times");
 	//	x10BuiltinList.add("rdivide");
@@ -59,7 +59,7 @@ public class x10Mapping {
 	}
 
 	private void makex10TypeMap() {
-		x10TypeMap.put("char", new Type("String"));
+		x10TypeMap.put("char", new Type("Char"));
 		x10TypeMap.put("double", new Type("Double"));
 		x10TypeMap.put("single", new Type("Float"));
 		x10TypeMap.put("int8", new Type("Byte"));

@@ -1,4 +1,4 @@
-package natlab.backends.VRIRGen;
+package natlab.backends.vrirGen;
 
 import java.util.ArrayList;
 
@@ -23,6 +23,7 @@ public class VTypeTuple extends VType {
 	}
 
 	public StringBuffer toXML() {
+
 		StringBuffer sb = new StringBuffer();
 		sb.append(HelperClass.toXML("vtype name=\"tuple\" ndims=\"1\""));
 		sb.append(HelperClass.toXML("elems"));
@@ -31,6 +32,7 @@ public class VTypeTuple extends VType {
 		}
 		sb.append(HelperClass.toXML("/elems"));
 		sb.append(HelperClass.toXML("/vtype"));
+		
 		return sb;
 	}
 }

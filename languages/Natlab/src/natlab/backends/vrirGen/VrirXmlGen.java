@@ -1,9 +1,8 @@
-package natlab.backends.VRIRGen;
+package natlab.backends.vrirGen;
 
 import java.util.Set;
 
 import ast.ASTNode;
-import ast.AndExpr;
 import ast.ArrayTransposeExpr;
 import ast.AssignStmt;
 import ast.Attribute;
@@ -98,8 +97,9 @@ import ast.WhileStmt;
 import natlab.tame.tamerplus.analysis.AnalysisEngine;
 import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.ValueFlowMap;
-import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
+
 import natlab.tame.valueanalysis.aggrvalue.AggrValue;
+import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
 import nodecases.natlab.NatlabAbstractNodeCaseHandler;
 
 public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
@@ -108,18 +108,16 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	// private StringBuffer bodyCode;
 	private SymbolTable symTab;
 	private Set<String> remainingVars;
-	private ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis;
-	private ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet;
+	private ValueAnalysis<AggrValue<BasicMatrixValue>> analysis;
+	private ValueFlowMap<AggrValue<BasicMatrixValue>> currentOutSet;
 	private int size;
 	private int index;
 	final static public boolean onGPU = false;
 	private AnalysisEngine analysisEngine;
 
-	
-
 	VrirXmlGen(Function functionNode, Set<String> remainVars,
-			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
-			ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet,
+			ValueAnalysis<AggrValue<BasicMatrixValue>> analysis,
+			ValueFlowMap<AggrValue<BasicMatrixValue>> currentOutSet,
 			int size, int index, AnalysisEngine analysisEngine) {
 		prettyPrintedCode = new StringBuffer();
 		remainingVars = remainVars;
@@ -168,21 +166,21 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 		this.remainingVars = remainingVars;
 	}
 
-	public ValueAnalysis<AggrValue<AdvancedMatrixValue>> getAnalysis() {
+	public ValueAnalysis<AggrValue<BasicMatrixValue>> getAnalysis() {
 		return analysis;
 	}
 
 	public void setAnalysis(
-			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis) {
+			ValueAnalysis<AggrValue<BasicMatrixValue>> analysis) {
 		this.analysis = analysis;
 	}
 
-	public ValueFlowMap<AggrValue<AdvancedMatrixValue>> getCurrentOutSet() {
+	public ValueFlowMap<AggrValue<BasicMatrixValue>> getCurrentOutSet() {
 		return currentOutSet;
 	}
 
 	public void setCurrentOutSet(
-			ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet) {
+			ValueFlowMap<AggrValue<BasicMatrixValue>> currentOutSet) {
 		this.currentOutSet = currentOutSet;
 	}
 
@@ -244,13 +242,16 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 		// caseFunctionOrSignatureOrPropertyAccessOrStmt(node);
 		FunctionCaseHandler.handleHeader(node, this);
 		this.appendToPrettyCode(HelperClass.toXML("body"));
+		this.appendToPrettyCode(StmtCaseHandler.toListXMLHead(false));
 		for (Stmt stmt : node.getStmts()) {
 
 			stmt.analyze(this);
 		}
+		this.appendToPrettyCode(StmtCaseHandler.toListXMLTail());
 		this.appendToPrettyCode(HelperClass.toXML("/body"));
+
 		this.appendToPrettyCode(symTab.toXML());
-		HelperClass.toXML("/body");
+
 		FunctionCaseHandler.handleTail(node, this);
 
 	}
@@ -316,15 +317,67 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	}
 
 	public void caseColonExpr(ColonExpr node) {
-		System.out.println("in colon expression : Parent " + node.getParent());
-		for (int i = 0; i < node.getNumChild(); i++) {
-			System.out.println("in colon expression : child : "
-					+ node.getChild(i).getClass());
-		}
-		caseExpr(node);
-	}
-
-	public void caseEndExpr(EndExpr node) {
+		// System.out.println("in colon expression : Parent "
+		// + node.getParent().getParent());
+		// if (node.getParent().getParent() instanceof ParameterizedExpr) {
+		// ParameterizedExpr arrayExpr = (ParameterizedExpr) node.getParent()
+		// .getParent();
+		// int colonPos = Integer.MIN_VALUE;
+		// for (int i = 0; i < arrayExpr.getArgList().getNumChild(); i++) {
+		// if (arrayExpr.getArg(i) instanceof ColonExpr) {
+		// colonPos = i;
+		// break;
+		// }
+		// }
+		// if (colonPos == Integer.MIN_VALUE) {
+		// throw new RuntimeException(
+		// "Colon Expression not found in array");
+		// }
+		// VType vt = this.getSymbol(arrayExpr.getVarName()).getVtype();
+		// if (vt == null) {
+		// throw new NullPointerException(
+		// "no entry of array in symbol table");
+		// }
+		// int end;
+		//
+		// if (vt instanceof VTypeMatrix) {
+		// int ndims = ((VTypeMatrix) vt).getShape().getDimensions()
+		// .size();
+		// end = ((VTypeMatrix) vt).getShape().getDimensions()
+		// .get(colonPos).getIntValue();
+		// if (ndims > arrayExpr.getArgList().getNumChild()
+		// && (colonPos == arrayExpr.getNumChild() - 1)) {
+		// for (int i = colonPos + 1; i < ndims; i++) {
+		// end *= ((VTypeMatrix) vt).getShape().getDimensions()
+		// .get(i).getIntValue();
+		// }
+		// }
+		// } else {
+		// throw new UnsupportedOperationException(
+		// "VType class is not VTypeMatrix but instead is "
+		// + vt.getClass());
+		// }
+		// TODO: Generating xml code left. Range expression requires a VType ?
+		// Should we replace it by a colon function call instead?
+		// gen.appendToPrettyCode(HelperClass.toXML("range"));
+		// int indx = 0;
+		// gen.appendToPrettyCode(HelperClass.toXML("start"));
+		//
+		// gen.appendToPrettyCode(HelperClass.toXML("/start"));
+		// indx++;
+		// if (expr.getArgList().getNumChild() > 2) {
+		// gen.appendToPrettyCode(HelperClass.toXML("step"));
+		// expr.getArg(indx).analyze(gen);
+		// gen.appendToPrettyCode(HelperClass.toXML("/step"));
+		// indx++;
+		// }
+		// gen.appendToPrettyCode(HelperClass.toXML("stop"));
+		// expr.getArg(indx).analyze(gen);
+		// gen.appendToPrettyCode(HelperClass.toXML("/stop"));
+		// indx++;
+		// gen.appendToPrettyCode(HelperClass.toXML("/range"));
+		// }
+		ExprCaseHandler.handleColonExpr(node, this);
 		caseExpr(node);
 	}
 
@@ -416,8 +469,8 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 
 	public static StringBuffer generateVrir(Function functionNode,
 			Set<String> remainingVars,
-			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
-			ValueFlowMap<AggrValue<AdvancedMatrixValue>> currentOutSet,
+			ValueAnalysis<AggrValue<BasicMatrixValue>> analysis,
+			ValueFlowMap<AggrValue<BasicMatrixValue>> currentOutSet,
 			int index, int size, AnalysisEngine analysisEngine) {
 		return (new VrirXmlGen(functionNode, remainingVars, analysis,
 				currentOutSet, size, index, analysisEngine))

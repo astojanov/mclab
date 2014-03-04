@@ -7,6 +7,7 @@ BreakStmt:Stmt;
 ContinueStmt:Stmt;
 DeclStmt:Stmt ::= [MultiDeclLHS] LHS:IDInfo [RHS:Exp] <Mutable:Boolean> <Atomic:Boolean>;
 Literally:Stmt ::= <Verbatim:String>;
+LiterallyExp:Exp ::= <Verbatim:String>;
 BlockEnd:Literally;
 PointLooper:Stmt ::= PointID:IDUse ArrayID:IDUse <DimNumber:int> [Min:Exp] [Max:Exp];
 Method ::= MethodHeader MethodBlock;
@@ -34,8 +35,10 @@ SimpleArrayExp:Exp ::= Values:Exp* Point* Type;
 Point:Exp ::= CoOrd:IntLiteral* ;
 
 
-ArrayAccess:AccessVal ::= ArrayID:IDUse Indices:Exp* ; //specific for TameIR
+ArrayAccess:AccessVal ::= ArrayID:IDUse Indices:Exp* <IsColVector:Boolean>; //specific for TameIR
 ArraySetStmt:Stmt ::= LHS:IDInfo Indices:Exp* RHS:Exp;
+SubArraySetStmt:Stmt ::= LHS:IDInfo Lower:Exp* Upper:Exp* RHS:Exp;
+SubArrayGetExp:Exp ::= Lower:Exp* Upper:Exp* ArrayID:IDUse;
 
 abstract LiteralExp:Exp;
 Literal:LiteralExp ::= <Literal:String>;

@@ -98,7 +98,8 @@ public class Expressions {
 			return new FPLiteral(NatlabExp.getNodeString());
 		}
 		if (NatlabExp instanceof StringLiteralExpr) {
-			return new StringLiteral(NatlabExp.getNodeString());
+			String x10String = Helper.MakeX10String(NatlabExp.getNodeString());
+			return new StringLiteral(x10String);
 		} else if (NatlabExp instanceof LiteralExpr) {
 			return new Literal(NatlabExp.getNodeString());
 		}
@@ -163,8 +164,9 @@ public class Expressions {
 			
 			
 			//if (!((ParameterizedExpr) NatlabExp).isVariable){//TODO check if isVariable works
-			if (x10Mapping.isBuiltin(NatlabExp.getVarName())){
-				
+			if (x10Mapping.isBuiltin(NatlabExp.getVarName()))
+			{
+			
 			BuiltinMethodCall libCall = new BuiltinMethodCall();
 			libCall.setBuiltinMethodName(new MethodId("Mix10."+NatlabExp.getVarName()));
 			libCall.setArgumentList(Args);

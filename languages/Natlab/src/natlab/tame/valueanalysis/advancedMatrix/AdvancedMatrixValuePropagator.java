@@ -7,12 +7,15 @@ import natlab.tame.classes.reference.*;
 import natlab.tame.valueanalysis.*;
 import natlab.tame.valueanalysis.aggrvalue.*;
 import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
+import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValueFactory;
 import natlab.tame.valueanalysis.components.constant.Constant;
 import natlab.tame.valueanalysis.components.constant.ConstantPropagator;
 import natlab.tame.valueanalysis.components.constant.DoubleConstant;
 import natlab.tame.valueanalysis.components.isComplex.isComplexInfo;
 import natlab.tame.valueanalysis.components.isComplex.isComplexInfoPropagator;
 import natlab.tame.valueanalysis.components.mclass.ClassPropagator;
+import natlab.tame.valueanalysis.components.rangeValue.RangeValue;
+import natlab.tame.valueanalysis.components.rangeValue.RangeValuePropagator;
 import natlab.tame.valueanalysis.components.shape.Shape;
 import natlab.tame.valueanalysis.components.shape.ShapeFactory;
 import natlab.tame.valueanalysis.components.shape.ShapePropagator;
@@ -28,9 +31,14 @@ public class AdvancedMatrixValuePropagator extends
 			.getInstance();
 	ShapePropagator<AggrValue<AdvancedMatrixValue>> shapeProp = ShapePropagator
 			.getInstance();
+	
+	static RangeValuePropagator<AggrValue<AdvancedMatrixValue>> rangeValueProp = 
+			RangeValuePropagator.getInstance();
 	isComplexInfoPropagator<AggrValue<AdvancedMatrixValue>> isComplexInfoProp = isComplexInfoPropagator
 			.getInstance();
 
+	static AdvancedMatrixValueFactory factory = new AdvancedMatrixValueFactory();
+	
 	public AdvancedMatrixValuePropagator() {
 		super(new AdvancedMatrixValueFactory());
 	}
@@ -66,6 +74,8 @@ public class AdvancedMatrixValuePropagator extends
 				System.out.println("shape results are empty");
 		}
 
+		RangeValue<AggrValue<AdvancedMatrixValue>> rangeValueResult = builtin.visit(rangeValueProp, arg);
+		
 		List<isComplexInfo<AggrValue<AdvancedMatrixValue>>> matchisComplexInfoResult = builtin
 				.visit(isComplexInfoProp, arg);
 		if (matchisComplexInfoResult == null) {
@@ -75,7 +85,7 @@ public class AdvancedMatrixValuePropagator extends
 
 		// build results out of the result classes and shape XU modified, not
 		// finished!!!
-		return matchResultToRes(matchClassResult, matchShapeResult,
+		return matchResultToRes(matchClassResult, matchShapeResult,rangeValueResult,
 				matchisComplexInfoResult);
 
 	}
@@ -83,34 +93,90 @@ public class AdvancedMatrixValuePropagator extends
 	private Res<AggrValue<AdvancedMatrixValue>> matchResultToRes(
 			List<Set<ClassReference>> matchClassResult,
 			List<Shape<AggrValue<AdvancedMatrixValue>>> matchShapeResult,
+			RangeValue<AggrValue<AdvancedMatrixValue>> rangeValueResult, 
 			List<isComplexInfo<AggrValue<AdvancedMatrixValue>>> matchisComplexInfoResult) {
 		// go through and fill in result
 		Res<AggrValue<AdvancedMatrixValue>> result = Res.newInstance();
-		for (Set<ClassReference> values : matchClassResult) {
-			HashMap<ClassReference, AggrValue<AdvancedMatrixValue>> map = new HashMap<ClassReference, AggrValue<AdvancedMatrixValue>>();
-
-			for (ClassReference classRef : values) {
-
-				
-
-					map.put(classRef, new AdvancedMatrixValue(null, 
-							new AdvancedMatrixValue(null, 
-									(PrimitiveClassReference) classRef),
-							matchShapeResult.get(0), // FIXME - commented to
-														// stop
-														// visiting shape
-														// propogation
-							matchisComplexInfoResult.get(0)));// FIXME a
-																// little
-																// bit
-																// tricky
-				
+//		
+//		
+//		if (matchShapeResult!=null) {
+//			for (int counter=0; counter<matchShapeResult.size(); counter++) {
+//				HashMap<ClassReference, AggrValue<AdvancedMatrixValue>> map = 
+//						new HashMap<ClassReference, AggrValue<AdvancedMatrixValue>>();
+//				Set<ClassReference> values = matchClassResult.get(counter);
+//				for (ClassReference classRef : values) {
+//					map.put(classRef, new AdvancedMatrixValue(null, 
+//							new AdvancedMatrixValue(null, 
+//									(PrimitiveClassReference) classRef),
+//							matchShapeResult.get(counter), 
+//							matchisComplexInfoResult.get(0)));
+//				}
+//				result.add(ValueSet.newInstance(map));
+//			}
+//			return result;			
+//		}
+//		else {
+//			for (Set<ClassReference> values : matchClassResult) {
+//		
+//			HashMap<ClassReference, AggrValue<AdvancedMatrixValue>> map = new HashMap<ClassReference, AggrValue<AdvancedMatrixValue>>();
+//
+//			for (ClassReference classRef : values) {
+//
+//				
+//
+//					map.put(classRef, new AdvancedMatrixValue(null, 
+//							new AdvancedMatrixValue(null, 
+//									(PrimitiveClassReference) classRef),
+//							null, // FIXME - commented to
+//														// stop
+//														// visiting shape
+//														// propogation
+//							matchisComplexInfoResult.get(0)));// FIXME a
+//																// little
+//																// bit
+//																// tricky
+//				
+//			}
+//			result.add(ValueSet.newInstance(map));
+//		}
+//		return result;
+//		}
+		
+		if (matchShapeResult!=null) {
+			for (int counter=0; counter<matchShapeResult.size(); counter++) {
+				HashMap<ClassReference, AggrValue<AdvancedMatrixValue>> map = 
+						new HashMap<ClassReference, AggrValue<AdvancedMatrixValue>>();
+				Set<ClassReference> values = matchClassResult.get(counter);
+				for (ClassReference classRef : values) {
+					map.put(classRef, factory.newMatrixValueFromClassShapeRange(
+							null
+							, (PrimitiveClassReference)classRef
+							, matchShapeResult.get(counter)
+							, rangeValueResult
+							, matchisComplexInfoResult.get(0)
+							));
+				}
+				result.add(ValueSet.newInstance(map));
 			}
-			result.add(ValueSet.newInstance(map));
-			if (Debug)
-				System.out.println(result);
+			return result;			
 		}
-		return result;
+		else {
+			for (Set<ClassReference> values : matchClassResult) {
+				HashMap<ClassReference, AggrValue<AdvancedMatrixValue>> map = 
+						new HashMap<ClassReference, AggrValue<AdvancedMatrixValue>>();
+				for (ClassReference classRef : values) {
+					map.put(classRef, factory.newMatrixValueFromClassShapeRange(
+							null
+							, (PrimitiveClassReference)classRef
+							, null
+							, rangeValueResult
+							, matchisComplexInfoResult.get(0)
+							));
+				}
+				result.add(ValueSet.newInstance(map));
+			}
+			return result;	
+		}
 	}
 
 	@Override
@@ -132,13 +198,44 @@ public class AdvancedMatrixValuePropagator extends
 			System.out.println("no complexinfo results");
 		}
 		// this block ends
-		return Res
-				.<AggrValue<AdvancedMatrixValue>> newInstance(new AdvancedMatrixValue(null, 
-						new AdvancedMatrixValue(null, 
-								(PrimitiveClassReference) getDominantCatArgClass(arg)),
-						matchShapeResult.get(0), matchisComplexInfoResult
-								.get(0)));// FIXME a little bit
-											// tricky
+//		return Res
+//				.<AggrValue<AdvancedMatrixValue>> newInstance(new AdvancedMatrixValue(null, 
+//						new AdvancedMatrixValue(null, 
+//								(PrimitiveClassReference) getDominantCatArgClass(arg)),
+//						matchShapeResult.get(0), matchisComplexInfoResult
+//								.get(0)));// FIXME a little bit
+//											// tricky
+		Res<AggrValue<AdvancedMatrixValue>> result = Res.newInstance();
+		if (matchShapeResult != null) {
+			for (int counter = 0; counter < matchShapeResult.size(); counter++) {
+				HashMap<ClassReference, AggrValue<AdvancedMatrixValue>> map = 
+						new HashMap<ClassReference, AggrValue<AdvancedMatrixValue>>();
+				map.put((PrimitiveClassReference)getDominantCatArgClass(arg)
+						, factory.newMatrixValueFromClassShapeRange(
+						null
+						, (PrimitiveClassReference)getDominantCatArgClass(arg)
+						, matchShapeResult.get(counter)
+						, null
+						, matchisComplexInfoResult.get(0)
+						));
+				result.add(ValueSet.newInstance(map));
+			}
+	        return result;
+		}
+		else {
+			HashMap<ClassReference, AggrValue<AdvancedMatrixValue>> map = 
+					new HashMap<ClassReference, AggrValue<AdvancedMatrixValue>>();
+			map.put((PrimitiveClassReference)getDominantCatArgClass(arg)
+					, factory.newMatrixValueFromClassShapeRange(
+					null
+					, (PrimitiveClassReference)getDominantCatArgClass(arg)
+					, null
+					, null
+					, matchisComplexInfoResult.get(0)
+					));
+			result.add(ValueSet.newInstance(map));
+			return result;
+		}
 	}
 	
 	@Override
