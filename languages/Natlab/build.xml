@@ -174,7 +174,7 @@
   <target name="jar-javascript" depends="matlab.build, clean, jar-javascript-noclean"
           description="creates an executable release jar" />
   <target name="jar-javascript-noclean" depends="gen, compile" description="creates an executable release jar without cleaning first">
-    <natlab-jar basename="${entrypoint.javascript_backend.name}" excludes="**/x10/**, **/Fortran/**, **/VRIRGen/**" />
+    <natlab-jar basename="MatJuice" excludes="**/x10/**, **/Fortran/**, **/VRIRGen/**" />
   </target>
 
 
