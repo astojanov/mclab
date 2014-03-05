@@ -23,17 +23,13 @@ aspect PrettyPrinter {
             ++i;
         }
 
-        PrettyBase[] ppStmts = new PrettyBase[this.getNumStmt()];
-        i = 0;
-        for (Stmt stmt: this.getStmtList()) {
-            ppStmts[i++] = stmt.pp();
-        }
-
         return Pretty.concat(Pretty.text("function "),
                              this.hasFunctionName() ? this.getFunctionName().pp() : Pretty.EMPTY,
                              Pretty.argList(ppParams),
                              Pretty.text(" "),
-                             Pretty.block(ppStmts));
+                             this.getStmtBlock().pp());
+
+
     }
 
     public PrettyBase FunctionName.pp() {
@@ -86,7 +82,7 @@ aspect PrettyPrinter {
         return Pretty.text("EXPR SHOULD NOT BE GENERATED");
     }
 
-    public PrettyBase ExprInt.pp() {
+    public PrettyBase ExprNum.pp() {
         return Pretty.text(this.getValue() + "");
     }
 
@@ -112,6 +108,11 @@ aspect PrettyPrinter {
         }
         return Pretty.concat(this.getFunctionName().pp(),
                              Pretty.argList(args));
+    }
+
+
+    public PrettyBase ExprLambda.pp() {
+        return this.getFunction().pp();
     }
 
     public PrettyBase ExprAssign.pp() {
