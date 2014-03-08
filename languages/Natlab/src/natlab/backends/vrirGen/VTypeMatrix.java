@@ -1,14 +1,13 @@
 package natlab.backends.vrirGen;
 
 import natlab.tame.classes.reference.PrimitiveClassReference;
-import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
 import natlab.tame.valueanalysis.aggrvalue.AggrValue;
+import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
 import natlab.tame.valueanalysis.components.shape.Shape;
 
 public class VTypeMatrix extends VType {
 	public static enum Layout {
-		ROW_MAJOR("rowmajor"), COLUMN_MAJOR("colmajor"), STRIDE_MAJOR(
-				"stride");
+		ROW_MAJOR("rowmajor"), COLUMN_MAJOR("colmajor"), STRIDE_MAJOR("stride");
 
 		private String str;
 
@@ -26,18 +25,30 @@ public class VTypeMatrix extends VType {
 
 	}
 
-	Shape<AggrValue<AdvancedMatrixValue>> shape;
+	Shape<AggrValue<BasicMatrixValue>> shape;
 	PrimitiveClassReference type;
 	Layout layout;
 	String complexity;
+	boolean forceArray;
 
-	VTypeMatrix(Shape<AggrValue<AdvancedMatrixValue>> shape,
+	VTypeMatrix(Shape<AggrValue<BasicMatrixValue>> shape,
 			PrimitiveClassReference type, Layout layout, String complexity) {
 		this.shape = shape;
 		this.type = type;
 		this.layout = layout;
 		this.complexity = complexity;
+		forceArray = false;
 
+	}
+
+	VTypeMatrix(Shape<AggrValue<BasicMatrixValue>> shape,
+			PrimitiveClassReference type, Layout layout, String complexity,
+			boolean force) {
+		this.shape = shape;
+		this.type = type;
+		this.layout = layout;
+		this.complexity = complexity;
+		this.forceArray = force;
 	}
 
 	public String getComplexity() {
@@ -48,11 +59,11 @@ public class VTypeMatrix extends VType {
 		this.complexity = complexity;
 	}
 
-	public Shape<AggrValue<AdvancedMatrixValue>> getShape() {
+	public Shape<AggrValue<BasicMatrixValue>> getShape() {
 		return shape;
 	}
 
-	public void setShape(Shape<AggrValue<AdvancedMatrixValue>> shape) {
+	public void setShape(Shape<AggrValue<BasicMatrixValue>> shape) {
 		this.shape = shape;
 	}
 
@@ -100,7 +111,7 @@ public class VTypeMatrix extends VType {
 	public StringBuffer toXML() {
 		StringBuffer vTypeXML = new StringBuffer();
 
-		if (shape.isScalar()) {
+		if (shape.isScalar() && !forceArray) {
 			genScalarXML(vTypeXML);
 
 		} else {

@@ -17,27 +17,32 @@ import natlab.tame.builtin.Builtin;
 import natlab.tame.callgraph.StaticFunction;
 import natlab.tame.classes.reference.PrimitiveClassReference;
 import natlab.tame.valueanalysis.ValueAnalysis;
-import natlab.tame.valueanalysis.advancedMatrix.AdvancedMatrixValue;
 import natlab.tame.valueanalysis.aggrvalue.AggrValue;
 import natlab.tame.valueanalysis.aggrvalue.CellValue;
+import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
 import natlab.tame.valueanalysis.components.shape.Shape;
 import natlab.tame.valueanalysis.value.Value;
 
 public class HelperClass {
 
 	public static VType generateVType(
-			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
+			ValueAnalysis<AggrValue<BasicMatrixValue>> analysis,
 			int graphIndex, Function node, Name param, int paramIndx) {
 
 		@SuppressWarnings("rawtypes")
 		Value temp = analysis.getNodeList().get(graphIndex).getAnalysis()
 				.getArgs().get(paramIndx);
+		if (temp == null) {
+			throw new NullPointerException("type information for "
+					+ param.getID() + " not found");
+		}
+
 		return generateVType(temp);
 
 	}
 
 	public static VType generateVType(
-			ValueAnalysis<AggrValue<AdvancedMatrixValue>> analysis,
+			ValueAnalysis<AggrValue<BasicMatrixValue>> analysis,
 			int graphIndex, String name) {
 
 		AggrValue<?> temp = analysis.getNodeList().get(graphIndex)
@@ -48,18 +53,23 @@ public class HelperClass {
 	}
 
 	public static VType generateVType(@SuppressWarnings("rawtypes") Value value) {
-		if ((Object) value instanceof AdvancedMatrixValue) {
+
+		if ((Object) value instanceof BasicMatrixValue) {
+			// System.out.println("matlab class"
+			// + value.getMatlabClass().getName());
 			return new VTypeMatrix(
-					(((AdvancedMatrixValue) (Object) value)).getShape(),
-					(((AdvancedMatrixValue) (Object) value)).getMatlabClass(),
+					(((BasicMatrixValue) (Object) value)).getShape(),
+					(((BasicMatrixValue) (Object) value)).getMatlabClass(),
 					VTypeMatrix.Layout.COLUMN_MAJOR,
-					(((AdvancedMatrixValue) (Object) value)).getisComplexInfo()
+					(((BasicMatrixValue) (Object) value)).getisComplexInfo()
 							.geticType());
 		} else if ((Object) value instanceof CellValue) {
+
 			VTypeTuple vtypeTuple = new VTypeTuple();
 			for (Value<?> val : (((CellValue<?>) (Object) value)).getValues()) {
 				vtypeTuple.addElement(generateVType(val));
 			}
+
 			return vtypeTuple;
 		}
 		return null;
@@ -73,25 +83,25 @@ public class HelperClass {
 
 	public static PrimitiveClassReference getDataType(String name,
 			VrirXmlGen gen) {
-		AggrValue<AdvancedMatrixValue> val = gen.getAnalysis().getNodeList()
+		AggrValue<BasicMatrixValue> val = gen.getAnalysis().getNodeList()
 				.get(gen.getIndex()).getAnalysis().getCurrentOutSet().get(name)
 				.getSingleton();
-		if ((Object) val instanceof AdvancedMatrixValue) {
+		if ((Object) val instanceof BasicMatrixValue) {
 
-			return (((AdvancedMatrixValue) (Object) val)).getMatlabClass();
+			return (((BasicMatrixValue) (Object) val)).getMatlabClass();
 
 		}
 		return null;
 	}
 
-	public static Shape<AggrValue<AdvancedMatrixValue>> getShape(String name,
+	public static Shape<AggrValue<BasicMatrixValue>> getShape(String name,
 			VrirXmlGen gen) {
-		AggrValue<AdvancedMatrixValue> val = gen.getAnalysis().getNodeList()
+		AggrValue<BasicMatrixValue> val = gen.getAnalysis().getNodeList()
 				.get(gen.getIndex()).getAnalysis().getCurrentOutSet().get(name)
 				.getSingleton();
-		if ((Object) val instanceof AdvancedMatrixValue) {
+		if ((Object) val instanceof BasicMatrixValue) {
 
-			return (((AdvancedMatrixValue) (Object) val)).getShape();
+			return (((BasicMatrixValue) (Object) val)).getShape();
 
 		}
 		return null;
@@ -99,41 +109,40 @@ public class HelperClass {
 
 	public static PrimitiveClassReference getDataType(NameExpr node,
 			VrirXmlGen gen) {
-		AggrValue<AdvancedMatrixValue> val = gen.getAnalysis().getNodeList()
+		AggrValue<BasicMatrixValue> val = gen.getAnalysis().getNodeList()
 				.get(gen.getIndex()).getAnalysis().getCurrentOutSet()
 				.get(((NameExpr) node).getName().getID()).getSingleton();
-		if ((Object) val instanceof AdvancedMatrixValue) {
+		if ((Object) val instanceof BasicMatrixValue) {
 
-			return (((AdvancedMatrixValue) (Object) val)).getMatlabClass();
+			return (((BasicMatrixValue) (Object) val)).getMatlabClass();
 
 		} else {
-			System.out
-					.println("Analyses other than cell value and Advanced matrix value not supported. are currently not supported   ");
+			throw new NullPointerException(
+					"Analyses other than cell value and Advanced matrix value not supported. are currently not supported   ");
 
 		}
-		return null;
 	}
 
-	public static Shape<AggrValue<AdvancedMatrixValue>> getShape(NameExpr node,
+	public static Shape<AggrValue<BasicMatrixValue>> getShape(NameExpr node,
 			VrirXmlGen gen) {
-		AggrValue<AdvancedMatrixValue> val = gen.getAnalysis().getNodeList()
+		AggrValue<BasicMatrixValue> val = gen.getAnalysis().getNodeList()
 				.get(gen.getIndex()).getAnalysis().getCurrentOutSet()
 				.get(((NameExpr) node).getName().getID()).getSingleton();
-		if ((Object) val instanceof AdvancedMatrixValue) {
+		if ((Object) val instanceof BasicMatrixValue) {
 
-			return (((AdvancedMatrixValue) (Object) val)).getShape();
+			return (((BasicMatrixValue) (Object) val)).getShape();
 
 		}
 		return null;
 	}
 
 	public static String generateComplexityInfo(NameExpr node, VrirXmlGen gen) {
-		AggrValue<AdvancedMatrixValue> val = gen.getAnalysis().getNodeList()
+		AggrValue<BasicMatrixValue> val = gen.getAnalysis().getNodeList()
 				.get(gen.getIndex()).getAnalysis().getCurrentOutSet()
 				.get(((NameExpr) node).getName().getID()).getSingleton();
-		if ((Object) val instanceof AdvancedMatrixValue) {
+		if ((Object) val instanceof BasicMatrixValue) {
 
-			return (((AdvancedMatrixValue) (Object) val)).getisComplexInfo()
+			return (((BasicMatrixValue) (Object) val)).getisComplexInfo()
 					.geticType();
 
 		}
@@ -425,6 +434,6 @@ public class HelperClass {
 	}
 
 	public static boolean isLibFunc(String name) {
-		return LibraryExprContainer.isLibExpr(name);
+		return LibFuncMapper.containsFunc(name);
 	}
 }
