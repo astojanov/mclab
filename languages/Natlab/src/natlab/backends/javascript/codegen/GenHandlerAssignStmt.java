@@ -8,12 +8,12 @@ import natlab.tame.tir.TIRAbstractAssignStmt;
 import natlab.tame.tir.TIRAbstractAssignToVarStmt;
 
 public class GenHandlerAssignStmt {
-    public static void handle(TIRAbstractAssignStmt stmt, StmtBlock parent, JSCodeGen gen) {
-        if (stmt instanceof TIRAbstractAssignToVarStmt) {
-            stmt = (TIRAbstractAssignToVarStmt) stmt;
-            for (String lval: stmt.getLValues()) {
-                parent.addStmt(new StmtExpr(new ExprVar(new Variable(lval))));
-            }
-        }
-    }
+//    public static void handle(TIRAbstractAssignStmt stmt, StmtBlock parent, JSASTGenerator gen) {
+//        if (stmt instanceof TIRAbstractAssignToVarStmt) {
+//            stmt = (TIRAbstractAssignToVarStmt) stmt;
+//            for (String lval: stmt.getLValues()) {
+//                parent.addStmt(new StmtExpr(new ExprVar(new Variable(lval))));
+//            }
+//        }
+//    }
 }
