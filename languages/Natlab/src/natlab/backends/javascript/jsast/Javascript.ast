@@ -20,6 +20,8 @@ StmtIfThenElse:Stmt ::= Cond:Expr Then:Stmt [Else:Stmt];
 
 abstract Expr;
 
+ExprInt:Expr ::= <Value:int>;
+
 ExprNum:Expr ::= <Value:double>;
 
 ExprString:Expr ::= <Value:String>;

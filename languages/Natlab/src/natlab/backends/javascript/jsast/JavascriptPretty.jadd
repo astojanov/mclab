@@ -82,6 +82,10 @@ aspect PrettyPrinter {
         return Pretty.text("EXPR SHOULD NOT BE GENERATED");
     }
 
+    public PrettyBase ExprInt.pp() {
+        return Pretty.text(this.getValue() + "");
+    }
+
     public PrettyBase ExprNum.pp() {
         return Pretty.text(this.getValue() + "");
     }
