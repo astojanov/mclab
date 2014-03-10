@@ -24,6 +24,11 @@ public class Main {
         String   matlabFile = args[1];
         
         GenericFile gfile = GenericFile.create(matlabFile);
+        if (!gfile.exists()) {
+            System.err.printf("Error: file '%s' does not exist.%n", gfile.getName());
+            System.exit(1);
+        }
+        
         FileEnvironment fenv = new FileEnvironment(gfile);
         
         BasicTamerTool tool = new BasicTamerTool();

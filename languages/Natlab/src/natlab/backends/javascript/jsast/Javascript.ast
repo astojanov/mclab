@@ -6,6 +6,8 @@ FunctionName ::= <Name:String>;
 
 Variable ::= <Name:String>;
 
+
+
 abstract Stmt;
 
 StmtBlock:Stmt ::= Stmt:Stmt*;
@@ -18,6 +20,12 @@ StmtReturn:Stmt ::= [Expr:Expr];
 
 StmtIfThenElse:Stmt ::= Cond:Expr Then:Stmt [Else:Stmt];
 
+StmtWhile:Stmt ::= Cond:Expr Body:Stmt;
+
+StmtFor:Stmt ::= Init:Expr Test:Expr Update:Expr Body:Stmt;
+
+
+
 abstract Expr;
 
 ExprInt:Expr ::= <Value:int>;
@@ -28,10 +36,16 @@ ExprString:Expr ::= <Value:String>;
 
 ExprBoolean:Expr ::= <Value:Boolean>;
 
+ExprArray:Expr ::= Value:Expr*;
+
 ExprCall:Expr ::= FunctionName:FunctionName Argument:Expr*;
 
 ExprLambda:Expr ::= Function:Function;
 
 ExprAssign:Expr ::= LValue:Variable Expr:Expr;
+
+ExprUnaryOp:Expr ::= <Op:String> Expr:Expr;
+
+ExprBinaryOp:Expr ::= <Op:String> Expr1:Expr Expr2:Expr;
 
 ExprVar:Expr ::= Variable:Variable;
