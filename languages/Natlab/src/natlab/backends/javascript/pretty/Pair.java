@@ -1,7 +1,7 @@
 package natlab.backends.javascript.pretty;
 
 
-public class Pair {
+public final class Pair {
     public PrettyBase prettyNode;
     public int level;
     

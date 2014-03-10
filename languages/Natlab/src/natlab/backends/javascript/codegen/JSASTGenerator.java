@@ -39,9 +39,27 @@ public class JSASTGenerator {
     }
     
     public static StmtExpr genAssignStmt(ast.AssignStmt stmt) {
-        String lhs = stmt.getLHS().getVarName();
-        Expr rhs = genExpr(stmt.getRHS());
-        return new StmtExpr(new ExprAssign(new Variable(lhs), rhs));
+        ast.Expr lhs = stmt.getLHS();
+        
+        if (lhs instanceof ast.NameExpr) {
+            String lhsName = lhs.getVarName();
+            Expr rhs = genExpr(stmt.getRHS());
+            return new StmtExpr(new ExprAssign(new Variable(lhsName), rhs));
+        }
+        if (lhs instanceof ast.MatrixExpr) {
+            ast.MatrixExpr lhsMat = (ast.MatrixExpr) lhs;
+            if (lhs.getNumChild() == 1) {
+                String lhsName = ((ast.NameExpr) lhsMat.getRow(0).getElement(0)).getName().getID();
+                Expr rhs = genExpr(stmt.getRHS());
+                return new StmtExpr(new ExprAssign(new Variable(lhsName), rhs));
+            }
+            
+        }
+        throw new UnsupportedOperationException(
+                String.format("genStmt does not support arrays with multiple bindings: %d. %s",
+                        stmt.getStartLine(),
+                        stmt.getPrettyPrinted())
+                );
     }
 
     
@@ -56,15 +74,36 @@ public class JSASTGenerator {
         if (expr instanceof ast.IntLiteralExpr) return genIntLiteralExpr((ast.IntLiteralExpr) expr);
         else if (expr instanceof ast.FPLiteralExpr) return genFPLiteralExpr((ast.FPLiteralExpr) expr);
         else if (expr instanceof ast.StringLiteralExpr) return genStringLiteralExpr((ast.StringLiteralExpr) expr);
-        return null;
+        else if (expr instanceof ast.NameExpr) return genNameExpr((ast.NameExpr) expr);
+        else if (expr instanceof ast.ParameterizedExpr) return genParametrizedExpr((ast.ParameterizedExpr) expr);
+        throw new UnsupportedOperationException(
+                String.format("Expr node not supported. %d. %s [%s]", 
+                        expr.getStartLine(), 
+                        expr.getPrettyPrinted(), 
+                        expr.getClass().getName())
+                );
+
     }
 
-    public static ExprNum genIntLiteralExpr(ast.IntLiteralExpr expr) {
-        return new ExprNum(Double.parseDouble(expr.getValue().getText()));
+    public static ExprInt genIntLiteralExpr(ast.IntLiteralExpr expr) {
+        return new ExprInt(Integer.parseInt(expr.getValue().getText()));
     }
     
     public static ExprNum genFPLiteralExpr(ast.FPLiteralExpr expr) {
         return new ExprNum(Double.parseDouble(expr.getValue().getText()));
+    }
+    
+    public static ExprVar genNameExpr(ast.NameExpr expr) {
+        return new ExprVar(new Variable(expr.getName().getID()));
+    }
+    
+    public static ExprCall genParametrizedExpr(ast.ParameterizedExpr expr) {
+        ExprCall call = new ExprCall();
+        call.setFunctionName(new FunctionName(expr.getVarName()));
+        for (ast.Expr arg: expr.getArgList()) {
+            call.addArgument(genExpr(arg));
+        }
+        return call;
     }
     
     
