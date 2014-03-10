@@ -1,5 +1,8 @@
 package natlab.backends.javascript.codegen;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import natlab.backends.javascript.jsast.*;
 import natlab.tame.tir.TIRFunction;
 
@@ -12,14 +15,36 @@ public class JSASTGenerator {
     public static Function gen(TIRFunction node) {
         Function fn = new Function();
 
+        // Add input parameters.
         fn.setFunctionName(new FunctionName(node.getName()));
         for (ast.Name param: node.getInputParamList())
             fn.addParam(new Variable(param.getID()));
 
+        // Add body statements.
         StmtBlock stmts = new StmtBlock();
         for (ast.Stmt stmt: node.getStmtList()) {
             stmts.addStmt(genStmt(stmt));
         }
+        
+        // In MATLAB, results are returned to the caller by assigning
+        // into out parameters.  We accumulate them into a list, and 
+        // return an array containing the names of the out parameters
+        // or just the name in case there is only one.
+        List<Expr> returnNames = new List<>();
+        for (ast.Name outParam: node.getOutputParamList()) {
+            returnNames.add(new ExprVar(new Variable(outParam.getID())));
+        }
+        
+        switch (returnNames.getNumChild()) {
+        case 0: 
+            break;
+        case 1: 
+            stmts.addStmt(new StmtReturn(new Opt<Expr>(returnNames.getChild(0))));
+            break;
+        default: 
+            stmts.addStmt(new StmtReturn(new Opt<Expr>(new ExprArray(returnNames))));
+        }
+        
         fn.setStmtBlock(stmts);
 
         return fn;
@@ -35,6 +60,7 @@ public class JSASTGenerator {
      */
     public static Stmt genStmt(ast.Stmt stmt) {
         if (stmt instanceof ast.AssignStmt) return genAssignStmt((ast.AssignStmt) stmt);
+        if (stmt instanceof ast.WhileStmt) return genWhileStmt((ast.WhileStmt) stmt);
         return new StmtNull();
     }
     
@@ -53,13 +79,30 @@ public class JSASTGenerator {
                 Expr rhs = genExpr(stmt.getRHS());
                 return new StmtExpr(new ExprAssign(new Variable(lhsName), rhs));
             }
-            
+        }
+        if (lhs instanceof ast.ParameterizedExpr) {
+            ast.ParameterizedExpr lhsPe = (ast.ParameterizedExpr) lhs;
+            String lhsName = lhsPe.getNodeString();
+            Expr rhs = genExpr(stmt.getRHS());
+            return new StmtExpr(new ExprAssign(new Variable(lhsName), rhs));
         }
         throw new UnsupportedOperationException(
-                String.format("genStmt does not support arrays with multiple bindings: %d. %s",
+                String.format("genAssignStmt does not support arrays with multiple bindings: %d. %s [%s]",
                         stmt.getStartLine(),
-                        stmt.getPrettyPrinted())
+                        stmt.getPrettyPrinted(),
+                        lhs.getClass().getName())
                 );
+    }
+    
+    public static StmtWhile genWhileStmt(ast.WhileStmt stmt) {
+        StmtWhile wstmt = new StmtWhile();
+        wstmt.setCond(genExpr(stmt.getExpr()));
+        List<Stmt> body = new List<>();
+        for (ast.Stmt bodyStmt: stmt.getStmts()) {
+            body.add(genStmt(bodyStmt));
+        }
+        wstmt.setBody(new StmtBlock(body));
+        return wstmt;
     }
 
     
@@ -96,10 +139,13 @@ public class JSASTGenerator {
     public static ExprVar genNameExpr(ast.NameExpr expr) {
         return new ExprVar(new Variable(expr.getName().getID()));
     }
-    
-    public static ExprCall genParametrizedExpr(ast.ParameterizedExpr expr) {
+
+    // TODO: Replace function calls like plus() and mtimes() with
+    //       JavaScript operators when operands are scalars.
+    public static Expr genParametrizedExpr(ast.ParameterizedExpr expr) {
         ExprCall call = new ExprCall();
-        call.setFunctionName(new FunctionName(expr.getVarName()));
+        String funName = expr.getVarName();
+        call.setFunctionName(new FunctionName(funName));
         for (ast.Expr arg: expr.getArgList()) {
             call.addArgument(genExpr(arg));
         }
