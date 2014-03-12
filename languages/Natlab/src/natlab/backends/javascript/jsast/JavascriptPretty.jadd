@@ -122,8 +122,8 @@ aspect PrettyPrinter {
     }
 
 
-    public PrettyBase StmtNewline.pp() {
-        return Pretty.EMPTY;    // Newline will be handled at a higher level.
+    public PrettyBase StmtEmpty.pp() {
+        return Pretty.EMPTY;
     }
 
 
