@@ -116,9 +116,8 @@ aspect PrettyPrinter {
 
 
     public PrettyBase StmtComment.pp() {
-        return Pretty.wrapped(Pretty.text("/*"),
-                              Pretty.text("*/"),
-                              Pretty.text(this.getText()));
+        return Pretty.concat(Pretty.text("// "),
+                             Pretty.text(this.getText()));
     }
 
 
