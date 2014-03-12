@@ -6,6 +6,13 @@ import natlab.tame.tir.*;
 import natlab.toolkits.rewrite.TempFactory;
 
 public class JSASTGenerator {
+    
+    /**
+     * Entry point for converting a piece of MATLAB code.  We perform
+     * a rather straight-forward conversion from MATLAB to JavaScript.
+     * @param tirFunc the function to compile.
+     * @return a Function node.
+     */
     public static Function genFunction(TIRFunction tirFunc) {
         Function fn = new Function();
 
@@ -21,6 +28,7 @@ public class JSASTGenerator {
             stmts.addStmt(genStmt(tirStmt));
         }
         
+        // Add a return statement at the end of the function.
         Stmt returnStmt = makeStmtReturn(tirFunc);
         if (returnStmt != null)
             stmts.addStmt(returnStmt);
@@ -31,12 +39,15 @@ public class JSASTGenerator {
         
     }
     
-    
+    /**
+     * In MATLAB, results are returned to the caller by assigning
+     * into out parameters.  We accumulate them into a list, and 
+     * return an array containing the names of the out parameters
+     * or just the name in case there is only one.
+     * @param astFunc the function to create a return statement for
+     * @return null if the function doesn't have output parameters, a StmtReturn otherwise.
+     */
     private static Stmt makeStmtReturn(ast.Function astFunc) {
-        // In MATLAB, results are returned to the caller by assigning
-        // into out parameters.  We accumulate them into a list, and 
-        // return an array containing the names of the out parameters
-        // or just the name in case there is only one.
         List<Expr> returnNames = new List<>();
         for (ast.Name outParam: astFunc.getOutputParamList()) {
             returnNames.add(new ExprVar(outParam.getID()));
@@ -80,6 +91,13 @@ public class JSASTGenerator {
     }
     
     
+    /**
+     * In Tamer, we have a TIRStatementList that forces its elements
+     * to be TIRStmt objects.  This method creates a block of code
+     * that contains the translation of those statements.
+     * @param tirStmts the statement list
+     * @return a StmtBlock
+     */
     public static Stmt genStmtList(TIRStatementList tirStmts) {
         StmtBlock stmts = new StmtBlock();
         for (int i = 0; i < tirStmts.getNumChild(); ++i) {
@@ -245,28 +263,52 @@ public class JSASTGenerator {
     }
     
     
+    /**
+     * Compile an if/else/end statement to JavaScript.  In Tamer, there is
+     * always an else block, though it may be empty.  If the else block is empty,
+     * we won't generate it in our JavaScript.
+     * @param tirIf the if/else/end statement
+     * @return a StmtIfThenElse node
+     */
     public static Stmt genIfStmt(TIRIfStmt tirIf) {
         Expr condVar = new ExprVar(tirIf.getConditionVarName().getID());
         Stmt ifBlock = genStmtList(tirIf.getIfStatements());
+        boolean hasElseStatements = tirIf.getElseStatements().getNumChild() > 0;
         Opt<Stmt> elseBlock =
-                tirIf.hasElseBlock()
+                hasElseStatements
                 ? new Opt<Stmt>(genStmtList(tirIf.getElseStatements()))
                 : new Opt<Stmt>();
         return new StmtIfThenElse(condVar, ifBlock, elseBlock);
     }
     
     
-
+    /**
+     * Convert a MATLAB continue to a JavaScript continue.
+     * @return
+     */
     public static Stmt genContinueStmt() {
         return new StmtContinue();
     }
 
     
+    /** 
+     * Convert a MATLAB break to a JavaScript break.
+     * @return
+     */
     public static Stmt genBreakStmt() {
         return new StmtBreak();
     }
     
     
+    /**
+     * Convert a MATLAB return to a JavaScript break.  In MATLAB, you don't give
+     * an expression to return, it exits the current function and the output 
+     * parameters are returned to the called.  To emulate this behavior in JavaScript,
+     * we find the names of the output parameters of the function and return them
+     * explicitly. 
+     * @param tirReturn
+     * @return
+     */
     public static Stmt genReturnStmt(TIRReturnStmt tirReturn) {
         ast.ASTNode curr = (ast.ASTNode) tirReturn;
         while (!(curr instanceof ast.Function)) 
