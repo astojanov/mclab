@@ -1,10 +1,6 @@
 package natlab.backends.javascript.codegen;
 
 
-import javax.naming.OperationNotSupportedException;
-
-import ast.Name;
-import natlab.backends.Fortran.codegen_simplified.FortranAST_simplified.BinaryExpr;
 import natlab.backends.javascript.jsast.*;
 import natlab.tame.tir.*;
 import natlab.toolkits.rewrite.TempFactory;
@@ -62,6 +58,7 @@ public class JSASTGenerator {
         if (tirStmt instanceof TIRAbstractAssignToVarStmt) return genAssignToVarStmt((TIRAbstractAssignToVarStmt) tirStmt);
         else if (tirStmt instanceof TIRCallStmt) return genCallStmt((TIRCallStmt) tirStmt);
         else if (tirStmt instanceof TIRArraySetStmt) return genArraySetStmt((TIRArraySetStmt) tirStmt);
+        else if (tirStmt instanceof TIRArrayGetStmt) return genArrayGetStmt((TIRArrayGetStmt) tirStmt);
         else if (tirStmt instanceof TIRWhileStmt) return genWhileStmt((TIRWhileStmt) tirStmt);
         else if (tirStmt instanceof TIRForStmt) return genForStmt((TIRForStmt) tirStmt);
         else if (tirStmt instanceof TIRCommentStmt) return genCommentStmt((TIRCommentStmt) tirStmt);
@@ -114,22 +111,31 @@ public class JSASTGenerator {
      * @return A statement block (without braces) containing the call + assignments.
      */
     public static Stmt genCallStmt(TIRCallStmt tirStmt) {
-        String tempVar = TempFactory.genFreshTempString();
-        ast.Expr rhs = tirStmt.getRHS();
-
         StmtBlockNoBraces stmts = new StmtBlockNoBraces();
-        stmts.addStmt(new StmtExpr(new ExprAssign(new ExprVar(tempVar), genExpr(rhs))));
+        Expr call = genCallExpr((ast.ParameterizedExpr) tirStmt.getRHS());
         
-        int i = 0;
-        ast.MatrixExpr lhs = (ast.MatrixExpr) tirStmt.getLHS();
-        for (ast.Row row: lhs.getRowList()) {
-            for (ast.Expr expr: row.getElementList()) {
-                stmts.addStmt(
-                        new StmtExpr(
-                                new ExprAssign(
-                                        new ExprVar(((ast.NameExpr) expr).getName().getID()),
-                                        new ExprVar(String.format("%s[%d]", tempVar, i++)))));
+        switch (tirStmt.getNumTargets()) {
+        case 0:
+            stmts.addStmt(new StmtExpr(call));
+            break;
+            
+        case 1:
+            stmts.addStmt(new StmtExpr(new ExprAssign(
+                    new ExprVar(tirStmt.getTargetName().getID()),
+                    call)));
+            break;
+            
+        default:
+            ExprVar tempVar = new ExprVar(TempFactory.genFreshTempString());
+            stmts.addStmt(new StmtExpr(new ExprAssign(tempVar, call)));
+            int i = 0;
+            for (ast.Expr target: tirStmt.getTargets()) {
+                stmts.addStmt(new StmtExpr(new ExprAssign(
+                        new ExprVar(((ast.NameExpr) target).getName().getID()), 
+                        new ExprPropertyGet(tempVar, new ExprInt(i)))));
+                i++;
             }
+            
         }
         
         return stmts;
@@ -168,6 +174,23 @@ public class JSASTGenerator {
             }
         }
         return new StmtExpr(new ExprAssign(prop, new ExprVar(rhs)));
+    }
+    
+    
+    public static Stmt genArrayGetStmt(TIRArrayGetStmt tirStmt) {
+        String lhs = tirStmt.getArrayName().getID();
+        TIRCommaSeparatedList indices = tirStmt.getIndizes();
+        ExprPropertyGet prop = new ExprPropertyGet(new ExprVar(lhs), null);
+        for (int i = 0; i < indices.getNumChild(); ++i) {
+            if (i == 0)
+                prop.setProperty(indexedBy(genExpr(indices.getChild(i))));
+            else {
+                prop = new ExprPropertyGet(
+                        prop, 
+                        indexedBy(genExpr(indices.getChild(i))));
+            }
+        }
+        return new StmtExpr(new ExprAssign(prop, genArrayGetExpr((ast.ParameterizedExpr) tirStmt.getRHS())));   
     }
     
     
@@ -213,7 +236,7 @@ public class JSASTGenerator {
         if (tirComment.hasComments())
             return new StmtComment(tirComment.getNodeString());
         else
-            return new StmtNewline();
+            return new StmtEmpty();
     }
 
     
@@ -229,7 +252,7 @@ public class JSASTGenerator {
         else if (expr instanceof ast.FPLiteralExpr) return genFPLiteralExpr((ast.FPLiteralExpr) expr);
         else if (expr instanceof ast.StringLiteralExpr) return genStringLiteralExpr((ast.StringLiteralExpr) expr);
         else if (expr instanceof ast.NameExpr) return genNameExpr((ast.NameExpr) expr);
-        else if (expr instanceof ast.ParameterizedExpr) return genParametrizedExpr((ast.ParameterizedExpr) expr);
+        else if (expr instanceof ast.ParameterizedExpr) return genCallExpr((ast.ParameterizedExpr) expr);
         throw new UnsupportedOperationException(
                 String.format("Expr node not supported. %d. %s [%s]", 
                         expr.getStartLine(), 
@@ -253,7 +276,7 @@ public class JSASTGenerator {
 
     // TODO: Replace function calls like plus() and mtimes() with
     //       JavaScript operators when operands are scalars.
-    public static Expr genParametrizedExpr(ast.ParameterizedExpr expr) {
+    public static Expr genCallExpr(ast.ParameterizedExpr expr) {
         ExprCall call = new ExprCall();
         String funName = expr.getVarName();
         call.setFunctionName(new FunctionName(funName));
@@ -261,6 +284,23 @@ public class JSASTGenerator {
             call.addArgument(genExpr(arg));
         }
         return call;
+    }
+    
+    
+    public static Expr genArrayGetExpr(ast.ParameterizedExpr expr) {
+        ExprPropertyGet access = new ExprPropertyGet();
+        String arrName = expr.getVarName();
+        access.setExpr(new ExprVar(arrName));
+        int i = 0;
+        for (ast.Expr arg: expr.getArgList()) {
+            System.out.println(arg.getPrettyPrinted());
+            if (i == 0)
+                access.setProperty(indexedBy(genExpr(arg)));
+            else
+                access = new ExprPropertyGet(access, indexedBy(genExpr(expr)));
+            i++;
+        }
+        return access;
     }
     
     

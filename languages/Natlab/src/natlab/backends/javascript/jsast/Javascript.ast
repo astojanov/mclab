@@ -30,7 +30,7 @@ StmtVarDecl:Stmt ::= Var:ExprVar [Init:Expr];
 
 StmtComment:Stmt ::= <Text:String>;
 
-StmtNewline:Stmt ::= ;
+StmtEmpty:Stmt ::= ;
 
 
 

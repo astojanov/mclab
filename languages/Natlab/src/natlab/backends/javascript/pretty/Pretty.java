@@ -62,6 +62,14 @@ public class Pretty {
         return parenthesized(separateBy(text(", "), parts));
     }
 
+    
+    private static String pad(int width) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < width; ++i)
+            sb.append(' ');
+        return sb.toString();
+    }
+
 
     public static String display(PrettyBase root) {
         int currCol = 0;
@@ -79,7 +87,7 @@ public class Pretty {
                 sb.append(node.toString());
             }
             else if (node instanceof PrettyText) {
-                String s = PrettyUtils.pad(currLevel*INDENT_WIDTH - currCol) + node.toString();
+                String s = pad(currLevel*INDENT_WIDTH - currCol) + node.toString();
                 currCol += s.length();
                 sb.append(s);
             }
