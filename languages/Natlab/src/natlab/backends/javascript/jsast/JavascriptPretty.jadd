@@ -70,6 +70,16 @@ aspect PrettyPrinter {
     }
 
 
+    public PrettyBase StmtBlockNoBraces.pp() {
+        PrettyBase[] stmts = new PrettyBase[this.getNumStmt()];
+        int i = 0;
+        for (Stmt stmt: this.getStmtList()) {
+            stmts[i++] = stmt.pp();
+        }
+        return Pretty.separateBy(Pretty.NEWLINE, stmts);
+    }
+
+
     public PrettyBase StmtIfThenElse.pp() {
         return Pretty.concat(Pretty.text("if "), Pretty.parenthesized(this.getCond().pp()), Pretty.text(" "),
                              this.getThen().pp(),
@@ -118,7 +128,15 @@ aspect PrettyPrinter {
     }
 
     public PrettyBase ExprVar.pp() {
-        return this.getVariable().pp();
+        return Pretty.text(this.getVariable());
+    }
+
+
+    public PrettyBase ExprPropertyGet.pp() {
+        return Pretty.concat(this.getExpr().pp(),
+                             Pretty.wrapped(Pretty.text("["),
+                                            Pretty.text("]"),
+                                            this.getProperty().pp()));
     }
 
     public PrettyBase ExprCall.pp() {

@@ -40,7 +40,7 @@ public class Main {
         int numFunctions = analysis.getNodeList().size();
         for (int i = 0; i < numFunctions; ++i) {
             TIRFunction matlabFunction = analysis.getNodeList().get(i).getAnalysis().getTree();
-            program.addFunction(JSASTGenerator.gen(matlabFunction));
+            program.addFunction(JSASTGenerator.genFunction(matlabFunction));
         }
         
         System.out.println(Pretty.display(program.pp()));

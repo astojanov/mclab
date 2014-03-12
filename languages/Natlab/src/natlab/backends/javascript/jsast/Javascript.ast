@@ -12,6 +12,8 @@ abstract Stmt;
 
 StmtBlock:Stmt ::= Stmt:Stmt*;
 
+StmtBlockNoBraces:StmtBlock ::= Stmt:Stmt*;
+
 StmtExpr:Stmt ::= Expr:Expr;
 
 StmtNull:Stmt ::= ;
@@ -42,10 +44,12 @@ ExprCall:Expr ::= FunctionName:FunctionName Argument:Expr*;
 
 ExprLambda:Expr ::= Function:Function;
 
-ExprAssign:Expr ::= LValue:Variable Expr:Expr;
+ExprAssign:Expr ::= LValue:Expr Expr:Expr;
 
 ExprUnaryOp:Expr ::= <Op:String> Expr:Expr;
 
 ExprBinaryOp:Expr ::= <Op:String> Expr1:Expr Expr2:Expr;
 
-ExprVar:Expr ::= Variable:Variable;
+ExprVar:Expr ::= <Variable:String>;
+
+ExprPropertyGet:Expr ::= Expr:Expr Property:Expr;
