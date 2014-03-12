@@ -56,12 +56,14 @@ public class JSASTGenerator {
      */    
     public static Stmt genStmt(TIRStmt tirStmt) {
         if (tirStmt instanceof TIRAbstractAssignToVarStmt) return genAssignToVarStmt((TIRAbstractAssignToVarStmt) tirStmt);
-        else if (tirStmt instanceof TIRCallStmt) return genCallStmt((TIRCallStmt) tirStmt);
+        else if (tirStmt instanceof TIRAbstractAssignToListStmt) return genAssignToListStmt((TIRAbstractAssignToListStmt) tirStmt);
         else if (tirStmt instanceof TIRArraySetStmt) return genArraySetStmt((TIRArraySetStmt) tirStmt);
-        else if (tirStmt instanceof TIRArrayGetStmt) return genArrayGetStmt((TIRArrayGetStmt) tirStmt);
         else if (tirStmt instanceof TIRWhileStmt) return genWhileStmt((TIRWhileStmt) tirStmt);
         else if (tirStmt instanceof TIRForStmt) return genForStmt((TIRForStmt) tirStmt);
+        else if (tirStmt instanceof TIRIfStmt) return genIfStmt((TIRIfStmt) tirStmt);
         else if (tirStmt instanceof TIRCommentStmt) return genCommentStmt((TIRCommentStmt) tirStmt);
+        else if (tirStmt instanceof TIRContinueStmt) return genContinueStmt();
+        else if (tirStmt instanceof TIRBreakStmt) return genBreakStmt();
 
         throw new UnsupportedOperationException(
                 String.format("Statement not supported: %d. %s [%s]",
@@ -69,6 +71,16 @@ public class JSASTGenerator {
                         ((ast.Stmt) tirStmt).getPrettyPrinted(),
                         ((ast.Stmt) tirStmt).getClass().getName())
                 );
+    }
+    
+    
+    public static Stmt genStmtList(TIRStatementList tirStmts) {
+        StmtBlock stmts = new StmtBlock();
+        for (int i = 0; i < tirStmts.getNumChild(); ++i) {
+            TIRStmt currStmt = (TIRStmt) tirStmts.getChild(i);
+            stmts.addStmt(genStmt(currStmt));
+        }
+        return stmts;
     }
     
     
@@ -110,9 +122,12 @@ public class JSASTGenerator {
      * @param tirStmt
      * @return A statement block (without braces) containing the call + assignments.
      */
-    public static Stmt genCallStmt(TIRCallStmt tirStmt) {
+    public static Stmt genAssignToListStmt(TIRAbstractAssignToListStmt tirStmt) {
         StmtBlockNoBraces stmts = new StmtBlockNoBraces();
-        Expr call = genCallExpr((ast.ParameterizedExpr) tirStmt.getRHS());
+        Expr call =
+                tirStmt instanceof TIRCallStmt
+                ? genCallExpr((ast.ParameterizedExpr) tirStmt.getRHS())
+                : genArrayGetExpr((ast.ParameterizedExpr) tirStmt.getRHS());
         
         switch (tirStmt.getNumTargets()) {
         case 0:
@@ -177,23 +192,6 @@ public class JSASTGenerator {
     }
     
     
-    public static Stmt genArrayGetStmt(TIRArrayGetStmt tirStmt) {
-        String lhs = tirStmt.getArrayName().getID();
-        TIRCommaSeparatedList indices = tirStmt.getIndizes();
-        ExprPropertyGet prop = new ExprPropertyGet(new ExprVar(lhs), null);
-        for (int i = 0; i < indices.getNumChild(); ++i) {
-            if (i == 0)
-                prop.setProperty(indexedBy(genExpr(indices.getChild(i))));
-            else {
-                prop = new ExprPropertyGet(
-                        prop, 
-                        indexedBy(genExpr(indices.getChild(i))));
-            }
-        }
-        return new StmtExpr(new ExprAssign(prop, genArrayGetExpr((ast.ParameterizedExpr) tirStmt.getRHS())));   
-    }
-    
-    
     /**
      * Transformation of a MATLAB while loop.
      * @param tirWhile the while loop to transform
@@ -211,6 +209,15 @@ public class JSASTGenerator {
     }
     
     
+    /**
+     * Transformation of a MATLAB for loop.  Tamer ensures
+     * that the loops always have the form:
+     *   for i = low:inc:high
+     *     ...
+     *   end
+     * @param tirFor the for loop to transform
+     * @return a StmtFor node
+     */
     public static Stmt genForStmt(TIRForStmt tirFor) {
         StmtBlock body = new StmtBlock();
         for (ast.Stmt stmt: tirFor.getStmtList()) {
@@ -229,6 +236,28 @@ public class JSASTGenerator {
                 new ExprAssign(iterVar, new ExprBinaryOp("+", iterVar, incr)),
                 body
                 );
+    }
+    
+    
+    public static Stmt genIfStmt(TIRIfStmt tirIf) {
+        Expr condVar = new ExprVar(tirIf.getConditionVarName().getID());
+        Stmt ifBlock = genStmtList(tirIf.getIfStatements());
+        Opt<Stmt> elseBlock =
+                tirIf.hasElseBlock()
+                ? new Opt<Stmt>(genStmtList(tirIf.getElseStatements()))
+                : new Opt<Stmt>();
+        return new StmtIfThenElse(condVar, ifBlock, elseBlock);
+    }
+    
+    
+
+    public static Stmt genContinueStmt() {
+        return new StmtContinue();
+    }
+
+    
+    public static Stmt genBreakStmt() {
+        return new StmtBreak();
     }
     
     
@@ -293,11 +322,10 @@ public class JSASTGenerator {
         access.setExpr(new ExprVar(arrName));
         int i = 0;
         for (ast.Expr arg: expr.getArgList()) {
-            System.out.println(arg.getPrettyPrinted());
             if (i == 0)
                 access.setProperty(indexedBy(genExpr(arg)));
             else
-                access = new ExprPropertyGet(access, indexedBy(genExpr(expr)));
+                access = new ExprPropertyGet(access, indexedBy(genExpr(arg)));
             i++;
         }
         return access;

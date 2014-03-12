@@ -16,7 +16,7 @@ StmtBlockNoBraces:StmtBlock ::= Stmt:Stmt*;
 
 StmtExpr:Stmt ::= Expr:Expr;
 
-StmtNull:Stmt ::= ;
+StmtNull:Stmt ;
 
 StmtReturn:Stmt ::= [Expr:Expr];
 
@@ -28,9 +28,13 @@ StmtFor:Stmt ::= Init:Stmt Test:Expr Update:Expr Body:Stmt;
 
 StmtVarDecl:Stmt ::= Var:ExprVar [Init:Expr];
 
+StmtBreak:Stmt ;
+
+StmtContinue:Stmt ;
+
 StmtComment:Stmt ::= <Text:String>;
 
-StmtEmpty:Stmt ::= ;
+StmtEmpty:Stmt ;
 
 
 
