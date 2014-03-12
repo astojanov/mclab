@@ -140,9 +140,15 @@ public class JSASTGenerator {
     /**
      * MATLAB assignments of the form:
      *   [x1, x2, ..., xn] = f(a1, a2, ..., an)
-     * Currently, in JavaScript we assign the result of f to a
-     * temporary variable and manually extract the elements one
-     * by one into the correct variable names.  
+     *   
+     * If the target list is empty, we simply generate a call to the function.
+     * 
+     * If the target list contains a single variable, we assign directly to it.
+     * 
+     * If the target list contains more than one item, we store the result
+     * of the function call in a temporary array variable and then extract
+     * the individual parts into the target parameters.
+     *   
      * @param tirStmt
      * @return A statement block (without braces) containing the call + assignments.
      */
@@ -350,12 +356,36 @@ public class JSASTGenerator {
 
     }
 
+    /**
+     * Convert an integer literal into JavaScript.
+     * @param expr
+     * @return
+     */
     public static ExprInt genIntLiteralExpr(ast.IntLiteralExpr expr) {
         return new ExprInt(Integer.parseInt(expr.getValue().getText()));
     }
     
+    
+    /**
+     * Convert a double literal into JavaScript.
+     * @param expr
+     * @return
+     */
     public static ExprNum genFPLiteralExpr(ast.FPLiteralExpr expr) {
         return new ExprNum(Double.parseDouble(expr.getValue().getText()));
+    }
+    
+    
+    
+    /**
+     * Convert a string literal into JavaScript.
+     * 
+     * TODO: handle escaping.
+     * @param expr
+     * @return
+     */
+    public static ExprString genStringLiteralExpr(ast.StringLiteralExpr expr) {
+        return new ExprString(expr.getValue());
     }
     
     public static ExprVar genNameExpr(ast.NameExpr expr) {
@@ -388,11 +418,5 @@ public class JSASTGenerator {
             i++;
         }
         return access;
-    }
-    
-    
-    // TODO: Should we do the actual string escaping here? 
-    public static ExprString genStringLiteralExpr(ast.StringLiteralExpr expr) {
-        return new ExprString(expr.getValue());
     }
 }
