@@ -21,24 +21,9 @@ public class JSASTGenerator {
             stmts.addStmt(genStmt(tirStmt));
         }
         
-        // In MATLAB, results are returned to the caller by assigning
-        // into out parameters.  We accumulate them into a list, and 
-        // return an array containing the names of the out parameters
-        // or just the name in case there is only one.
-        List<Expr> returnNames = new List<>();
-        for (ast.Name outParam: tirFunc.getOutputParamList()) {
-            returnNames.add(new ExprVar(outParam.getID()));
-        }
-        
-        switch (returnNames.getNumChild()) {
-        case 0: 
-            break;
-        case 1: 
-            stmts.addStmt(new StmtReturn(new Opt<Expr>(returnNames.getChild(0))));
-            break;
-        default: 
-            stmts.addStmt(new StmtReturn(new Opt<Expr>(new ExprArray(returnNames))));
-        }
+        Stmt returnStmt = makeStmtReturn(tirFunc);
+        if (returnStmt != null)
+            stmts.addStmt(returnStmt);
         
         fn.setStmtBlock(stmts);
 
@@ -46,6 +31,26 @@ public class JSASTGenerator {
         
     }
     
+    
+    private static Stmt makeStmtReturn(ast.Function astFunc) {
+        // In MATLAB, results are returned to the caller by assigning
+        // into out parameters.  We accumulate them into a list, and 
+        // return an array containing the names of the out parameters
+        // or just the name in case there is only one.
+        List<Expr> returnNames = new List<>();
+        for (ast.Name outParam: astFunc.getOutputParamList()) {
+            returnNames.add(new ExprVar(outParam.getID()));
+        }
+        
+        switch (returnNames.getNumChild()) {
+        case 0: 
+            return null;
+        case 1: 
+            return new StmtReturn(new Opt<Expr>(returnNames.getChild(0)));
+        default: 
+            return new StmtReturn(new Opt<Expr>(new ExprArray(returnNames)));
+        }
+    }
     
     /**
      * Main dispatching method for statements. It would be cleaner if we could
@@ -64,6 +69,7 @@ public class JSASTGenerator {
         else if (tirStmt instanceof TIRCommentStmt) return genCommentStmt((TIRCommentStmt) tirStmt);
         else if (tirStmt instanceof TIRContinueStmt) return genContinueStmt();
         else if (tirStmt instanceof TIRBreakStmt) return genBreakStmt();
+        else if (tirStmt instanceof TIRReturnStmt) return genReturnStmt((TIRReturnStmt) tirStmt);
 
         throw new UnsupportedOperationException(
                 String.format("Statement not supported: %d. %s [%s]",
@@ -258,6 +264,17 @@ public class JSASTGenerator {
     
     public static Stmt genBreakStmt() {
         return new StmtBreak();
+    }
+    
+    
+    public static Stmt genReturnStmt(TIRReturnStmt tirReturn) {
+        ast.ASTNode curr = (ast.ASTNode) tirReturn;
+        while (!(curr instanceof ast.Function)) 
+            curr = curr.getParent();
+        ast.Function astFunc = (ast.Function) curr;
+        
+        Stmt returnStmt = makeStmtReturn(astFunc);
+        return returnStmt;
     }
     
     
