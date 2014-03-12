@@ -1,6 +1,10 @@
 package natlab.backends.javascript.codegen;
 
 
+import javax.naming.OperationNotSupportedException;
+
+import ast.Name;
+import natlab.backends.Fortran.codegen_simplified.FortranAST_simplified.BinaryExpr;
 import natlab.backends.javascript.jsast.*;
 import natlab.tame.tir.*;
 import natlab.toolkits.rewrite.TempFactory;
@@ -59,11 +63,25 @@ public class JSASTGenerator {
         else if (tirStmt instanceof TIRCallStmt) return genCallStmt((TIRCallStmt) tirStmt);
         else if (tirStmt instanceof TIRArraySetStmt) return genArraySetStmt((TIRArraySetStmt) tirStmt);
         else if (tirStmt instanceof TIRWhileStmt) return genWhileStmt((TIRWhileStmt) tirStmt);
-        
-        return new StmtNull();
+        else if (tirStmt instanceof TIRForStmt) return genForStmt((TIRForStmt) tirStmt);
+        else if (tirStmt instanceof TIRCommentStmt) return genCommentStmt((TIRCommentStmt) tirStmt);
+
+        throw new UnsupportedOperationException(
+                String.format("Statement not supported: %d. %s [%s]",
+                        ((ast.Stmt) tirStmt).getStartLine(),
+                        ((ast.Stmt) tirStmt).getPrettyPrinted(),
+                        ((ast.Stmt) tirStmt).getClass().getName())
+                );
     }
     
     
+    /**
+     * A helper function that extracts the lhs name of an assignment.
+     * Because it's a TIRAbstractAssignToVarStmt object, we are guaranteed
+     * that there is exactly one element in the .getLValues() set.
+     * @param tirStmt Extract the lhs from this statement.
+     * @return the string of the name of the lhs.
+     */
     private static String extractLHSName(TIRAbstractAssignToVarStmt tirStmt) {
         String lhs = null;
         for (String name: tirStmt.getLValues()) lhs = name;
@@ -71,6 +89,14 @@ public class JSASTGenerator {
     }
     
     
+    /**
+     * MATLAB assignments of the form:
+     *   x = <lit>
+     *   x = y
+     * where x and y are variables.
+     * @param tirStmt the statement to process.
+     * @return A JS assignment statement (ExprAssign wrapped in a StmtExpr).
+     */
     public static Stmt genAssignToVarStmt(TIRAbstractAssignToVarStmt tirStmt) {
         String lhs = extractLHSName(tirStmt);
         ast.Expr rhs = tirStmt.getRHS();
@@ -78,6 +104,15 @@ public class JSASTGenerator {
     }
     
     
+    /**
+     * MATLAB assignments of the form:
+     *   [x1, x2, ..., xn] = f(a1, a2, ..., an)
+     * Currently, in JavaScript we assign the result of f to a
+     * temporary variable and manually extract the elements one
+     * by one into the correct variable names.  
+     * @param tirStmt
+     * @return A statement block (without braces) containing the call + assignments.
+     */
     public static Stmt genCallStmt(TIRCallStmt tirStmt) {
         String tempVar = TempFactory.genFreshTempString();
         ast.Expr rhs = tirStmt.getRHS();
@@ -101,11 +136,23 @@ public class JSASTGenerator {
     }
     
     
+    /**
+     * A helper function; MATLAB is 1-index, JavaScript is 0-indexed.  We use this 
+     * method to transform an indexing expression into a subtraction by 1. 
+     * @param expr the indexing expression.
+     * @return expr - 1
+     */
     private static Expr indexedBy(Expr expr) {
         return new ExprBinaryOp("-", expr, new ExprInt(1));
     }
     
     
+    /**
+     * MATLAB assignments of the form:
+     *   m(i1, i2, ..., in) = x
+     * @param tirStmt
+     * @return m[i1-1][i2-1]...[in-1] = x
+     */
     public static Stmt genArraySetStmt(TIRArraySetStmt tirStmt) {
         String lhs = tirStmt.getArrayName().getID();
         String rhs = tirStmt.getValueName().getID();
@@ -124,6 +171,11 @@ public class JSASTGenerator {
     }
     
     
+    /**
+     * Transformation of a MATLAB while loop.
+     * @param tirWhile the while loop to transform
+     * @return a StmtWhile node
+     */
     public static Stmt genWhileStmt(TIRWhileStmt tirWhile) {
         StmtBlock body = new StmtBlock();
         for (ast.Stmt stmt: tirWhile.getStmtList()) {
@@ -133,6 +185,35 @@ public class JSASTGenerator {
         return new StmtWhile(
                 genExpr(tirWhile.getExpr()),
                 body);
+    }
+    
+    
+    public static Stmt genForStmt(TIRForStmt tirFor) {
+        StmtBlock body = new StmtBlock();
+        for (ast.Stmt stmt: tirFor.getStmtList()) {
+            body.addStmt(genStmt((TIRStmt) stmt));
+        }
+        ExprVar iterVar = new ExprVar(tirFor.getLoopVarName().getID());
+        ExprVar lowerBound = new ExprVar(tirFor.getLowerName().getID());
+        ExprVar upperBound = new ExprVar(tirFor.getUpperName().getID());
+        String increment = tirFor.hasIncr() ? tirFor.getIncName().getID() : null;
+        
+        Expr incr = increment == null ? new ExprInt(1) : new ExprVar(increment);
+        
+        return new StmtFor(
+                new StmtVarDecl(iterVar, new Opt<Expr>(lowerBound)),
+                new ExprBinaryOp("<=", iterVar, upperBound),
+                new ExprAssign(iterVar, new ExprBinaryOp("+", iterVar, incr)),
+                body
+                );
+    }
+    
+    
+    public static Stmt genCommentStmt(TIRCommentStmt tirComment) {
+        if (tirComment.hasComments())
+            return new StmtComment(tirComment.getNodeString());
+        else
+            return new StmtNewline();
     }
 
     

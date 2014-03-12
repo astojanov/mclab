@@ -24,7 +24,13 @@ StmtIfThenElse:Stmt ::= Cond:Expr Then:Stmt [Else:Stmt];
 
 StmtWhile:Stmt ::= Cond:Expr Body:Stmt;
 
-StmtFor:Stmt ::= Init:Expr Test:Expr Update:Expr Body:Stmt;
+StmtFor:Stmt ::= Init:Stmt Test:Expr Update:Expr Body:Stmt;
+
+StmtVarDecl:Stmt ::= Var:ExprVar [Init:Expr];
+
+StmtComment:Stmt ::= <Text:String>;
+
+StmtNewline:Stmt ::= ;
 
 
 

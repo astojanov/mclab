@@ -94,9 +94,46 @@ aspect PrettyPrinter {
                              this.getBody().pp());
     }
 
+
+    public PrettyBase StmtFor.pp() {
+        PrettyBase init = this.getInit().pp();
+        PrettyBase test = this.getTest().pp();
+        PrettyBase upd  = this.getUpdate().pp();
+        return Pretty.concat(Pretty.text("for "),
+                             Pretty.parenthesized(Pretty.separateBy(Pretty.text("; "), init, test, upd)),
+                             Pretty.text(" "),
+                             this.getBody().pp());
+    }
+
+
+    public PrettyBase StmtVarDecl.pp() {
+        PrettyBase init =
+            this.hasInit()
+            ? Pretty.concat(Pretty.text(" = "), this.getInit().pp())
+            : Pretty.EMPTY;
+        return Pretty.concat(Pretty.text("var "), this.getVar().pp(), init);
+    }
+
+
+    public PrettyBase StmtComment.pp() {
+        return Pretty.wrapped(Pretty.text("/*"),
+                              Pretty.text("*/"),
+                              Pretty.text(this.getText()));
+    }
+
+
+    public PrettyBase StmtNewline.pp() {
+        return Pretty.EMPTY;    // Newline will be handled at a higher level.
+    }
+
+
+
     public PrettyBase Expr.pp() {
         return Pretty.text("EXPR SHOULD NOT BE GENERATED");
     }
+
+
+
 
     public PrettyBase ExprInt.pp() {
         return Pretty.text(this.getValue() + "");
