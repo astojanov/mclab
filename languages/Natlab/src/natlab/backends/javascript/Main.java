@@ -1,5 +1,8 @@
 package natlab.backends.javascript;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import natlab.backends.javascript.codegen.JSASTGenerator;
 import natlab.backends.javascript.jsast.Program;
 import natlab.backends.javascript.pretty.Pretty;
@@ -31,16 +34,19 @@ public class Main {
         
         FileEnvironment fenv = new FileEnvironment(gfile);
         
-        BasicTamerTool tool = new BasicTamerTool();
-        ValueAnalysis<AggrValue<BasicMatrixValue>> analysis = tool.analyze(shapeDesc, fenv);
+        ValueAnalysis<AggrValue<BasicMatrixValue>> analysis = BasicTamerTool.analyze(shapeDesc, fenv);
     
         System.out.println("=================================");
         Program program = new Program();
         
+        Set<String> processedFunctions = new HashSet<>();
         int numFunctions = analysis.getNodeList().size();
         for (int i = 0; i < numFunctions; ++i) {
             TIRFunction matlabFunction = analysis.getNodeList().get(i).getAnalysis().getTree();
-            program.addFunction(JSASTGenerator.genFunction(matlabFunction));
+            if (!processedFunctions.contains(matlabFunction.getName())) {
+                program.addFunction(JSASTGenerator.genFunction(matlabFunction));
+                processedFunctions.add(matlabFunction.getName());
+            }
         }
         
         System.out.println(Pretty.display(program.pp()));

@@ -127,6 +127,16 @@ aspect PrettyPrinter {
     }
 
 
+    public PrettyBase StmtBreak.pp() {
+        return Pretty.text("break");
+    }
+
+
+    public PrettyBase StmtContinue.pp() {
+        return Pretty.text("continue");
+    }
+
+
 
     public PrettyBase Expr.pp() {
         return Pretty.text("EXPR SHOULD NOT BE GENERATED");
