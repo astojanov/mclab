@@ -310,7 +310,7 @@ public class JSASTGenerator {
      * Convert a MATLAB return to a JavaScript break.  In MATLAB, you don't give
      * an expression to return, it exits the current function and the output 
      * parameters are returned to the called.  To emulate this behavior in JavaScript,
-     * we find the names of the output parameters of the function and return them
+     * we find the names of the output parameters of the enclosing function and return them
      * explicitly. 
      * @param tirReturn
      * @return
@@ -396,8 +396,8 @@ public class JSASTGenerator {
     //       JavaScript operators when operands are scalars.
     public static Expr genCallExpr(ast.ParameterizedExpr expr) {
         ExprCall call = new ExprCall();
-        String funName = expr.getVarName();
-        call.setFunctionName(new FunctionName(funName));
+        ExprVar funName = new ExprVar(expr.getVarName());
+        call.setExpr(funName);
         for (ast.Expr arg: expr.getArgList()) {
             call.addArgument(genExpr(arg));
         }

@@ -192,7 +192,7 @@ aspect PrettyPrinter {
             args[i] = arg.pp();
             ++i;
         }
-        return Pretty.concat(this.getFunctionName().pp(),
+        return Pretty.concat(this.getExpr().pp(),
                              Pretty.argList(args));
     }
 

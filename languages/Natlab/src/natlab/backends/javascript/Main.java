@@ -7,6 +7,7 @@ import natlab.backends.javascript.codegen.JSASTGenerator;
 import natlab.backends.javascript.jsast.Program;
 import natlab.backends.javascript.pretty.Pretty;
 import natlab.tame.BasicTamerTool;
+import natlab.tame.TamerTool;
 import natlab.tame.tir.TIRFunction;
 import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.aggrvalue.AggrValue;
@@ -33,19 +34,18 @@ public class Main {
         }
         
         FileEnvironment fenv = new FileEnvironment(gfile);
-        
         ValueAnalysis<AggrValue<BasicMatrixValue>> analysis = BasicTamerTool.analyze(shapeDesc, fenv);
-    
+
         System.out.println("=================================");
         Program program = new Program();
-        
+  
         Set<String> processedFunctions = new HashSet<>();
         int numFunctions = analysis.getNodeList().size();
         for (int i = 0; i < numFunctions; ++i) {
             TIRFunction matlabFunction = analysis.getNodeList().get(i).getAnalysis().getTree();
             if (!processedFunctions.contains(matlabFunction.getName())) {
-                program.addFunction(JSASTGenerator.genFunction(matlabFunction));
                 processedFunctions.add(matlabFunction.getName());
+                program.addFunction(JSASTGenerator.genFunction(matlabFunction));
             }
         }
         

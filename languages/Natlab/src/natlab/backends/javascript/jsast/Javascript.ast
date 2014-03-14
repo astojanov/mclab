@@ -12,7 +12,7 @@ abstract Stmt;
 
 StmtBlock:Stmt ::= Stmt:Stmt*;
 
-StmtBlockNoBraces:StmtBlock ::= Stmt:Stmt*;
+StmtBlockNoBraces:StmtBlock ;
 
 StmtExpr:Stmt ::= Expr:Expr;
 
@@ -50,7 +50,7 @@ ExprBoolean:Expr ::= <Value:Boolean>;
 
 ExprArray:Expr ::= Value:Expr*;
 
-ExprCall:Expr ::= FunctionName:FunctionName Argument:Expr*;
+ExprCall:Expr ::= Expr:Expr Argument:Expr*;
 
 ExprLambda:Expr ::= Function:Function;
 
