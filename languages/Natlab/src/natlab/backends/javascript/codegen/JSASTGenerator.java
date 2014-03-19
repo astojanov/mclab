@@ -72,15 +72,15 @@ public class JSASTGenerator {
      */    
     public static Stmt genStmt(TIRStmt tirStmt) {
         if (tirStmt instanceof TIRAbstractAssignToVarStmt) return genAssignToVarStmt((TIRAbstractAssignToVarStmt) tirStmt);
-        else if (tirStmt instanceof TIRAbstractAssignToListStmt) return genAssignToListStmt((TIRAbstractAssignToListStmt) tirStmt);
-        else if (tirStmt instanceof TIRArraySetStmt) return genArraySetStmt((TIRArraySetStmt) tirStmt);
-        else if (tirStmt instanceof TIRWhileStmt) return genWhileStmt((TIRWhileStmt) tirStmt);
-        else if (tirStmt instanceof TIRForStmt) return genForStmt((TIRForStmt) tirStmt);
-        else if (tirStmt instanceof TIRIfStmt) return genIfStmt((TIRIfStmt) tirStmt);
-        else if (tirStmt instanceof TIRCommentStmt) return genCommentStmt((TIRCommentStmt) tirStmt);
-        else if (tirStmt instanceof TIRContinueStmt) return genContinueStmt();
-        else if (tirStmt instanceof TIRBreakStmt) return genBreakStmt();
-        else if (tirStmt instanceof TIRReturnStmt) return genReturnStmt((TIRReturnStmt) tirStmt);
+        if (tirStmt instanceof TIRAbstractAssignToListStmt) return genAssignToListStmt((TIRAbstractAssignToListStmt) tirStmt);
+        if (tirStmt instanceof TIRArraySetStmt) return genArraySetStmt((TIRArraySetStmt) tirStmt);
+        if (tirStmt instanceof TIRWhileStmt) return genWhileStmt((TIRWhileStmt) tirStmt);
+        if (tirStmt instanceof TIRForStmt) return genForStmt((TIRForStmt) tirStmt);
+        if (tirStmt instanceof TIRIfStmt) return genIfStmt((TIRIfStmt) tirStmt);
+        if (tirStmt instanceof TIRCommentStmt) return genCommentStmt((TIRCommentStmt) tirStmt);
+        if (tirStmt instanceof TIRContinueStmt) return genContinueStmt();
+        if (tirStmt instanceof TIRBreakStmt) return genBreakStmt();
+        if (tirStmt instanceof TIRReturnStmt) return genReturnStmt((TIRReturnStmt) tirStmt);
 
         throw new UnsupportedOperationException(
                 String.format("Statement not supported: %d. %s [%s]",
@@ -343,10 +343,10 @@ public class JSASTGenerator {
      */
     public static Expr genExpr(ast.Expr expr) {
         if (expr instanceof ast.IntLiteralExpr) return genIntLiteralExpr((ast.IntLiteralExpr) expr);
-        else if (expr instanceof ast.FPLiteralExpr) return genFPLiteralExpr((ast.FPLiteralExpr) expr);
-        else if (expr instanceof ast.StringLiteralExpr) return genStringLiteralExpr((ast.StringLiteralExpr) expr);
-        else if (expr instanceof ast.NameExpr) return genNameExpr((ast.NameExpr) expr);
-        else if (expr instanceof ast.ParameterizedExpr) return genCallExpr((ast.ParameterizedExpr) expr);
+        if (expr instanceof ast.FPLiteralExpr) return genFPLiteralExpr((ast.FPLiteralExpr) expr);
+        if (expr instanceof ast.StringLiteralExpr) return genStringLiteralExpr((ast.StringLiteralExpr) expr);
+        if (expr instanceof ast.NameExpr) return genNameExpr((ast.NameExpr) expr);
+        if (expr instanceof ast.ParameterizedExpr) return genCallExpr((ast.ParameterizedExpr) expr);
         throw new UnsupportedOperationException(
                 String.format("Expr node not supported. %d. %s [%s]", 
                         expr.getStartLine(), 
