@@ -1,7 +1,6 @@
 package natlab.backends.javascript.pretty;
 
-import java.util.Stack;
-
+import java.util.*;
 
 public class Pretty {
     public static int INDENT_WIDTH = 4;
@@ -105,6 +104,4 @@ public class Pretty {
 
         return sb.toString();
     }
-
-
 }
