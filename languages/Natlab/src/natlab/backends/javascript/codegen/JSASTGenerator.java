@@ -392,8 +392,15 @@ public class JSASTGenerator {
         return new ExprVar(expr.getName().getID());
     }
 
-    // TODO: Replace function calls like plus() and mtimes() with
-    //       JavaScript operators when operands are scalars.
+    /**
+     * Convert a function call expression into JavaScript.
+     * @param expr a ParametrizedExpr where the name corresponds to a
+     * function kind.
+     * @return The JavaScript function call.
+     *
+     * TODO: Replace function calls like plus() and mtimes() with
+     *       JavaScript operators when operands are scalars.
+     */
     public static Expr genCallExpr(ast.ParameterizedExpr expr) {
         ExprCall call = new ExprCall();
         ExprVar funName = new ExprVar(expr.getVarName());
