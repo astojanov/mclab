@@ -18,7 +18,7 @@ aspect PrettyPrinter {
         // Formal parameters
         PrettyBase[] ppParams = new PrettyBase[this.getNumParam()];
         int i = 0;
-        for (Variable param: this.getParamList()) {
+        for (Parameter param: this.getParamList()) {
             ppParams[i] = param.pp();
             ++i;
         }
@@ -37,7 +37,7 @@ aspect PrettyPrinter {
     }
 
 
-    public PrettyBase Variable.pp() {
+    public PrettyBase Parameter.pp() {
         return Pretty.text(this.getName());
     }
 

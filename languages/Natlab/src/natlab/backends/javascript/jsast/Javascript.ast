@@ -1,10 +1,10 @@
 Program ::= Function:Function*;
 
-Function ::= [FunctionName:FunctionName] Param:Variable* StmtBlock:StmtBlock;
+Function ::= [FunctionName:FunctionName] Param:Parameter* StmtBlock:StmtBlock;
 
 FunctionName ::= <Name:String>;
 
-Variable ::= <Name:String>;
+Parameter ::= <Name:String>;
 
 
 

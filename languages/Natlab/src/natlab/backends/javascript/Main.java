@@ -59,7 +59,7 @@ public class Main {
             Set<String> vars = JSFixVars.getVars(f);
 
             // Parameters should not be redeclared.
-            for (Variable param: f.getParamList()) {
+            for (Parameter param: f.getParamList()) {
                 vars.remove(param.getName());
             }
 
