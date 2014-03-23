@@ -54,7 +54,7 @@ ExprCall:Expr ::= Expr:Expr Argument:Expr*;
 
 ExprLambda:Expr ::= Function:Function;
 
-ExprAssign:Expr ::= LValue:Expr Expr:Expr;
+ExprAssign:Expr ::= LHS:Expr Expr:Expr;
 
 ExprUnaryOp:Expr ::= <Op:String> Expr:Expr;
 

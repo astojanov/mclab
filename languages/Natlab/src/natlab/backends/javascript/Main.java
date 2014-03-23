@@ -57,25 +57,18 @@ public class Main {
         // Add variable declarations inside every function.
         for (Function f: program.getFunctions()) {
             Set<String> vars = JSFixVars.getVars(f);
+
+            // Parameters should not be redeclared.
             for (Variable param: f.getParamList()) {
                 vars.remove(param.getName());
             }
+
             StmtBlock sb = f.getStmtBlock();
             List<Stmt> stmts = sb.getStmtList();
             for (String var: vars) {
                 stmts.insertChild(new StmtVarDecl(new ExprVar(var), new Opt<Expr>()), 0);
             }
         }
-        /*
-        for (Function f: program.getFunctions()) {
-            Set<String> declaredVars = new HashSet<>();
-            for (Variable param: f.getParamList()) {
-                declaredVars.add(param.getName());
-            }
-
-            JSFixVars.fixVars(f, declaredVars);
-        }
-        */
 
         // Write out the JavaScript program.
         // TODO: Fix the relative path of lib.js.

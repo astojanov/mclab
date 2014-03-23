@@ -213,7 +213,7 @@ aspect PrettyPrinter {
     }
 
     public PrettyBase ExprAssign.pp() {
-        return Pretty.concat(this.getLValue().pp(),
+        return Pretty.concat(this.getLHS().pp(),
                              Pretty.text(" = "),
                              this.getExpr().pp());
     }
