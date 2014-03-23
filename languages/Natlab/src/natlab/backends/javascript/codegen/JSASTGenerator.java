@@ -19,7 +19,7 @@ public class JSASTGenerator {
         // Add input parameters.
         fn.setFunctionName(new FunctionName(tirFunc.getName()));
         for (ast.Name param: tirFunc.getInputParamList())
-            fn.addParam(new Variable(param.getID()));
+            fn.addParam(new Parameter(param.getID()));
 
         // Add body statements.
         StmtBlock stmts = new StmtBlock();
