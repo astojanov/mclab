@@ -24,7 +24,7 @@ StmtIfThenElse:Stmt ::= Cond:Expr Then:Stmt [Else:Stmt];
 
 StmtWhile:Stmt ::= Cond:Expr Body:Stmt;
 
-StmtFor:Stmt ::= Init:Stmt Test:Expr Update:Expr Body:Stmt;
+StmtFor:Stmt ::= Init:Expr Test:Expr Update:Expr Body:Stmt;
 
 StmtVarDecl:Stmt ::= Var:ExprVar [Init:Expr];
 
@@ -60,6 +60,6 @@ ExprUnaryOp:Expr ::= <Op:String> Expr:Expr;
 
 ExprBinaryOp:Expr ::= <Op:String> Expr1:Expr Expr2:Expr;
 
-ExprVar:Expr ::= <Variable:String>;
+ExprVar:Expr ::= <Name:String>;
 
 ExprPropertyGet:Expr ::= Expr:Expr Property:Expr;

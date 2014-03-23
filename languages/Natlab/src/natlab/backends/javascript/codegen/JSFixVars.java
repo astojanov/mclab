@@ -8,6 +8,26 @@ import natlab.backends.javascript.jsast.*;
  * `var x = ...` for the first assignment to x.
  */
 public class JSFixVars {
+    public static Set<String> getVars(ASTNode node) {
+        Set<String> vars = new HashSet<>();
+        Set<String> funs = new HashSet<>();
+        for (int i = 0; i < node.getNumChild(); ++i) {
+            ASTNode child = node.getChild(i);
+
+            if (child instanceof ExprVar) {
+                vars.add(((ExprVar) child).getName());
+            }
+            else if (child instanceof ExprCall) {
+                Expr fun = ((ExprCall) child).getExpr();
+                if (fun instanceof ExprVar)
+                    funs.add(((ExprVar) fun).getName());
+            }
+            vars.addAll(getVars(child));
+        }
+        vars.removeAll(funs);
+        return vars;
+    }
+
     public static void fixVars(ASTNode node, Set<String> declaredVars) {
         JSFixVars inst = new JSFixVars();
         for (int i = 0; i < node.getNumChild(); ++i) {
@@ -21,7 +41,7 @@ public class JSFixVars {
 
                 // the assignment is to a variable.
                 if (assignment.getLValue() instanceof ExprVar) {
-                    String var = ((ExprVar) assignment.getLValue()).getVariable();
+                    String var = ((ExprVar) assignment.getLValue()).getName();
                     if (!declaredVars.contains(var)) {
                         declaredVars.add(var);
                         node.setChild(new StmtVarDecl(new ExprVar(var),
@@ -33,7 +53,7 @@ public class JSFixVars {
 
             if (child instanceof StmtVarDecl) {
                 StmtVarDecl varDecl = (StmtVarDecl) child;
-                declaredVars.add(varDecl.getVar().getVariable());
+                declaredVars.add(varDecl.getVar().getName());
             }
 
             fixVars(child, declaredVars);
