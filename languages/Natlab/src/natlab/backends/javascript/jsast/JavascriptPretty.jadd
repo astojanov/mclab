@@ -111,7 +111,7 @@ aspect PrettyPrinter {
             this.hasInit()
             ? Pretty.concat(Pretty.text(" = "), this.getInit().pp())
             : Pretty.EMPTY;
-        return Pretty.concat(Pretty.text("var "), this.getVar().pp(), init);
+        return Pretty.concat(Pretty.text("var "), this.getVar().pp(), init, Pretty.text(";"));
     }
 
 
@@ -174,7 +174,7 @@ aspect PrettyPrinter {
     }
 
     public PrettyBase ExprVar.pp() {
-        return Pretty.text(this.getVariable());
+        return Pretty.text(this.getName());
     }
 
 

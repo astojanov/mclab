@@ -6,7 +6,7 @@ import natlab.tame.tir.*;
 import natlab.toolkits.rewrite.TempFactory;
 
 public class JSASTGenerator {
-    
+
     /**
      * Entry point for converting a piece of MATLAB code.  We perform
      * a rather straight-forward conversion from MATLAB to JavaScript.
@@ -20,28 +20,28 @@ public class JSASTGenerator {
         fn.setFunctionName(new FunctionName(tirFunc.getName()));
         for (ast.Name param: tirFunc.getInputParamList())
             fn.addParam(new Variable(param.getID()));
-        
+
         // Add body statements.
         StmtBlock stmts = new StmtBlock();
         for (ast.Stmt astStmt: tirFunc.getStmts()) {
             TIRStmt tirStmt = (TIRStmt) astStmt;
             stmts.addStmt(genStmt(tirStmt));
         }
-        
+
         // Add a return statement at the end of the function.
         Stmt returnStmt = makeStmtReturn(tirFunc);
         if (returnStmt != null)
             stmts.addStmt(returnStmt);
-        
+
         fn.setStmtBlock(stmts);
 
         return fn;
-        
+
     }
-    
+
     /**
      * In MATLAB, results are returned to the caller by assigning
-     * into out parameters.  We accumulate them into a list, and 
+     * into out parameters.  We accumulate them into a list, and
      * return an array containing the names of the out parameters
      * or just the name in case there is only one.
      * @param astFunc the function to create a return statement for
@@ -52,24 +52,24 @@ public class JSASTGenerator {
         for (ast.Name outParam: astFunc.getOutputParamList()) {
             returnNames.add(new ExprVar(outParam.getID()));
         }
-        
+
         switch (returnNames.getNumChild()) {
-        case 0: 
+        case 0:
             return null;
-        case 1: 
+        case 1:
             return new StmtReturn(new Opt<Expr>(returnNames.getChild(0)));
-        default: 
+        default:
             return new StmtReturn(new Opt<Expr>(new ExprArray(returnNames)));
         }
     }
-    
+
     /**
      * Main dispatching method for statements. It would be cleaner if we could
      * use Java's dynamic dispatch mechanism, but it would require us to modify every
      * Tamer/McSAF class, which we don't want to do.
      * @param stmt The IR statement to convert.
      * @return The JS statement.
-     */    
+     */
     public static Stmt genStmt(TIRStmt tirStmt) {
         if (tirStmt instanceof TIRAbstractAssignToVarStmt) return genAssignToVarStmt((TIRAbstractAssignToVarStmt) tirStmt);
         if (tirStmt instanceof TIRAbstractAssignToListStmt) return genAssignToListStmt((TIRAbstractAssignToListStmt) tirStmt);
@@ -89,8 +89,8 @@ public class JSASTGenerator {
                         ((ast.Stmt) tirStmt).getClass().getName())
                 );
     }
-    
-    
+
+
     /**
      * In Tamer, we have a TIRStatementList that forces its elements
      * to be TIRStmt objects.  This method creates a block of code
@@ -106,8 +106,8 @@ public class JSASTGenerator {
         }
         return stmts;
     }
-    
-    
+
+
     /**
      * A helper function that extracts the lhs name of an assignment.
      * Because it's a TIRAbstractAssignToVarStmt object, we are guaranteed
@@ -120,8 +120,8 @@ public class JSASTGenerator {
         for (String name: tirStmt.getLValues()) lhs = name;
         return lhs;
     }
-    
-    
+
+
     /**
      * MATLAB assignments of the form:
      *   x = <lit>
@@ -135,20 +135,20 @@ public class JSASTGenerator {
         ast.Expr rhs = tirStmt.getRHS();
         return new StmtExpr(new ExprAssign(new ExprVar(lhs), genExpr(rhs)));
     }
-    
-    
+
+
     /**
      * MATLAB assignments of the form:
      *   [x1, x2, ..., xn] = f(a1, a2, ..., an)
-     *   
+     *
      * If the target list is empty, we simply generate a call to the function.
-     * 
+     *
      * If the target list contains a single variable, we assign directly to it.
-     * 
+     *
      * If the target list contains more than one item, we store the result
      * of the function call in a temporary array variable and then extract
      * the individual parts into the target parameters.
-     *   
+     *
      * @param tirStmt
      * @return A statement block (without braces) containing the call + assignments.
      */
@@ -158,46 +158,46 @@ public class JSASTGenerator {
                 tirStmt instanceof TIRCallStmt
                 ? genCallExpr((ast.ParameterizedExpr) tirStmt.getRHS())
                 : genArrayGetExpr((ast.ParameterizedExpr) tirStmt.getRHS());
-        
+
         switch (tirStmt.getNumTargets()) {
         case 0:
             stmts.addStmt(new StmtExpr(call));
             break;
-            
+
         case 1:
             stmts.addStmt(new StmtExpr(new ExprAssign(
                     new ExprVar(tirStmt.getTargetName().getID()),
                     call)));
             break;
-            
+
         default:
             ExprVar tempVar = new ExprVar(TempFactory.genFreshTempString());
             stmts.addStmt(new StmtExpr(new ExprAssign(tempVar, call)));
             int i = 0;
             for (ast.Expr target: tirStmt.getTargets()) {
                 stmts.addStmt(new StmtExpr(new ExprAssign(
-                        new ExprVar(((ast.NameExpr) target).getName().getID()), 
+                        new ExprVar(((ast.NameExpr) target).getName().getID()),
                         new ExprPropertyGet(tempVar, new ExprInt(i)))));
                 i++;
             }
-            
+
         }
-        
+
         return stmts;
     }
-    
-    
+
+
     /**
-     * A helper function; MATLAB is 1-index, JavaScript is 0-indexed.  We use this 
-     * method to transform an indexing expression into a subtraction by 1. 
+     * A helper function; MATLAB is 1-index, JavaScript is 0-indexed.  We use this
+     * method to transform an indexing expression into a subtraction by 1.
      * @param expr the indexing expression.
      * @return expr - 1
      */
     private static Expr indexedBy(Expr expr) {
         return new ExprBinaryOp("-", expr, new ExprInt(1));
     }
-    
-    
+
+
     /**
      * MATLAB assignments of the form:
      *   m(i1, i2, ..., in) = x
@@ -214,14 +214,14 @@ public class JSASTGenerator {
                 prop.setProperty(indexedBy(genExpr(indices.getChild(i))));
             else {
                 prop = new ExprPropertyGet(
-                        prop, 
+                        prop,
                         indexedBy(genExpr(indices.getChild(i))));
             }
         }
         return new StmtExpr(new ExprAssign(prop, new ExprVar(rhs)));
     }
-    
-    
+
+
     /**
      * Transformation of a MATLAB while loop.
      * @param tirWhile the while loop to transform
@@ -232,13 +232,13 @@ public class JSASTGenerator {
         for (ast.Stmt stmt: tirWhile.getStmtList()) {
             body.addStmt(genStmt((TIRStmt) stmt));
         }
-        
+
         return new StmtWhile(
                 genExpr(tirWhile.getExpr()),
                 body);
     }
-    
-    
+
+
     /**
      * Transformation of a MATLAB for loop.  Tamer ensures
      * that the loops always have the form:
@@ -257,18 +257,18 @@ public class JSASTGenerator {
         ExprVar lowerBound = new ExprVar(tirFor.getLowerName().getID());
         ExprVar upperBound = new ExprVar(tirFor.getUpperName().getID());
         String increment = tirFor.hasIncr() ? tirFor.getIncName().getID() : null;
-        
+
         Expr incr = increment == null ? new ExprInt(1) : new ExprVar(increment);
-        
+
         return new StmtFor(
-                new StmtVarDecl(iterVar, new Opt<Expr>(lowerBound)),
-                new ExprBinaryOp("<=", iterVar, upperBound),
-                new ExprAssign(iterVar, new ExprBinaryOp("+", iterVar, incr)),
-                body
-                );
+            new ExprAssign(iterVar, lowerBound),
+            new ExprBinaryOp("<=", iterVar, upperBound),
+            new ExprAssign(iterVar, new ExprBinaryOp("+", iterVar, incr)),
+            body
+            );
     }
-    
-    
+
+
     /**
      * Compile an if/else/end statement to JavaScript.  In Tamer, there is
      * always an else block, though it may be empty.  If the else block is empty,
@@ -286,8 +286,8 @@ public class JSASTGenerator {
                 : new Opt<Stmt>();
         return new StmtIfThenElse(condVar, ifBlock, elseBlock);
     }
-    
-    
+
+
     /**
      * Convert a MATLAB continue to a JavaScript continue.
      * @return
@@ -296,36 +296,36 @@ public class JSASTGenerator {
         return new StmtContinue();
     }
 
-    
-    /** 
+
+    /**
      * Convert a MATLAB break to a JavaScript break.
      * @return
      */
     public static Stmt genBreakStmt() {
         return new StmtBreak();
     }
-    
-    
+
+
     /**
      * Convert a MATLAB return to a JavaScript break.  In MATLAB, you don't give
-     * an expression to return, it exits the current function and the output 
+     * an expression to return, it exits the current function and the output
      * parameters are returned to the called.  To emulate this behavior in JavaScript,
      * we find the names of the output parameters of the enclosing function and return them
-     * explicitly. 
+     * explicitly.
      * @param tirReturn
      * @return
      */
     public static Stmt genReturnStmt(TIRReturnStmt tirReturn) {
         ast.ASTNode curr = (ast.ASTNode) tirReturn;
-        while (!(curr instanceof ast.Function)) 
+        while (!(curr instanceof ast.Function))
             curr = curr.getParent();
         ast.Function astFunc = (ast.Function) curr;
-        
+
         Stmt returnStmt = makeStmtReturn(astFunc);
         return returnStmt;
     }
-    
-    
+
+
     public static Stmt genCommentStmt(TIRCommentStmt tirComment) {
         if (tirComment.hasComments())
             return new StmtComment(tirComment.getNodeString());
@@ -333,7 +333,7 @@ public class JSASTGenerator {
             return new StmtEmpty();
     }
 
-    
+
     /**
      * Main dispatching method for expressions.  Like with statements, we use instanceof
      * to dispatch to the correct method, since we don't want to modify the class of all
@@ -348,9 +348,9 @@ public class JSASTGenerator {
         if (expr instanceof ast.NameExpr) return genNameExpr((ast.NameExpr) expr);
         if (expr instanceof ast.ParameterizedExpr) return genCallExpr((ast.ParameterizedExpr) expr);
         throw new UnsupportedOperationException(
-                String.format("Expr node not supported. %d. %s [%s]", 
-                        expr.getStartLine(), 
-                        expr.getPrettyPrinted(), 
+                String.format("Expr node not supported. %d. %s [%s]",
+                        expr.getStartLine(),
+                        expr.getPrettyPrinted(),
                         expr.getClass().getName())
                 );
 
@@ -364,8 +364,8 @@ public class JSASTGenerator {
     public static ExprInt genIntLiteralExpr(ast.IntLiteralExpr expr) {
         return new ExprInt(Integer.parseInt(expr.getValue().getText()));
     }
-    
-    
+
+
     /**
      * Convert a double literal into JavaScript.
      * @param expr
@@ -374,12 +374,12 @@ public class JSASTGenerator {
     public static ExprNum genFPLiteralExpr(ast.FPLiteralExpr expr) {
         return new ExprNum(Double.parseDouble(expr.getValue().getText()));
     }
-    
-    
-    
+
+
+
     /**
      * Convert a string literal into JavaScript.
-     * 
+     *
      * TODO: handle escaping.
      * @param expr
      * @return
@@ -387,7 +387,7 @@ public class JSASTGenerator {
     public static ExprString genStringLiteralExpr(ast.StringLiteralExpr expr) {
         return new ExprString(expr.getValue());
     }
-    
+
     public static ExprVar genNameExpr(ast.NameExpr expr) {
         return new ExprVar(expr.getName().getID());
     }
@@ -410,8 +410,8 @@ public class JSASTGenerator {
         }
         return call;
     }
-    
-    
+
+
     public static Expr genArrayGetExpr(ast.ParameterizedExpr expr) {
         ExprPropertyGet access = new ExprPropertyGet();
         String arrName = expr.getVarName();
