@@ -1,50 +1,6 @@
 function plus(x, y) {
-    function plus_SS(x, y) {
-        return x+y;
-    }
-
-
-    function plus_SM(x, m) {
-        var m2 = clone(m);
-        for (var i = 0, len1 = length(m2); i < len1; ++i) {
-            for (var j = 0, len2 = length(m2[i]); j < len2; ++j) {
-                m2[i][j] += x;
-            }
-        }
-        return m2;
-    }
-
-    function plus_MS(m, x) {
-        return plus_SM(x, m);
-    }
-
-    function plus_MM(m1, m2) {
-        // if (size(m1) !== size(m2)) {
-        //     throw "error: the sizes of arg1 and arg2 differ";
-        // }
-
-        var r = clone(m1);
-
-        for (var i = 0, len1 = length(m1); i < len1; ++i) {
-            for (var j = 0, len2 = length(m1[i]); j < len2; ++j) {
-                r[i][j] += m2[i][j];
-            }
-        }
-
-        return r;
-    }
-
-
-    if (typeof(x) === "object" && typeof(y) === "object")
-        return plus_MM(x, y);
-    else if (typeof(x) === "object")
-        return plus_MS(x, y);
-    else if (typeof(y) === "object")
-        return plus_SM(x, y);
-    else
-        return plus_SS(x, y);
+    return x+y;
 }
-
 
 function minus(x, y) {
     return x-y;
