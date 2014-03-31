@@ -6,8 +6,16 @@ function minus(x, y) {
     return x-y;
 }
 
+function uminus(x) {
+    return -x;
+}
+
 function gt(x, y) {
     return x>y;
+}
+
+function lt(x, y) {
+    return x < y;
 }
 
 function ne(x, y) {
@@ -35,15 +43,8 @@ function length(xs) {
 }
 
 
-function clone(x) {
-    var y = [];
-    for (var key in x) {
-        if (typeof x[key] === "object")
-            y[key] = clone(x[key]);
-        else
-            y[key] = x[key];
-    }
-    return y;
+function array_copy(x) {
+    return x.concat();
 }
 
 function size(m) {

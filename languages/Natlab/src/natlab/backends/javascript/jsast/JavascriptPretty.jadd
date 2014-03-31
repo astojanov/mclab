@@ -89,9 +89,11 @@ aspect PrettyPrinter {
 
 
     public PrettyBase StmtWhile.pp() {
-        return Pretty.concat(Pretty.text("while "),
-                             Pretty.parenthesized(this.getCond().pp()), Pretty.text(" "),
-                             this.getBody().pp());
+        return Pretty.separateBy(
+            Pretty.text(" "),
+            Pretty.text("while"),
+            Pretty.parenthesized(this.getCond().pp()),
+            this.getBody().pp());
     }
 
 
@@ -99,10 +101,11 @@ aspect PrettyPrinter {
         PrettyBase init = this.getInit().pp();
         PrettyBase test = this.getTest().pp();
         PrettyBase upd  = this.getUpdate().pp();
-        return Pretty.concat(Pretty.text("for "),
-                             Pretty.parenthesized(Pretty.separateBy(Pretty.text("; "), init, test, upd)),
-                             Pretty.text(" "),
-                             this.getBody().pp());
+        return Pretty.separateBy(
+            Pretty.text(" "),
+            Pretty.text("for"),
+            Pretty.parenthesized(Pretty.separateBy(Pretty.text("; "), init, test, upd)),
+            this.getBody().pp());
     }
 
 
