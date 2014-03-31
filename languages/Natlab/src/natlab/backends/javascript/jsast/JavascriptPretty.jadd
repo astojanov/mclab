@@ -117,6 +117,11 @@ aspect PrettyPrinter {
         return Pretty.concat(Pretty.text("var "), this.getVar().pp(), init, Pretty.text(";"));
     }
 
+    public PrettyBase StmtGlobalDecl.pp() {
+        // JavaScript doesn't have explicit global declarations.
+        return Pretty.EMPTY;
+    }
+
 
     public PrettyBase StmtComment.pp() {
         return Pretty.concat(Pretty.text("// "),
