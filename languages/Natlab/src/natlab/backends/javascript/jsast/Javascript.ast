@@ -28,6 +28,8 @@ StmtFor:Stmt ::= Init:Expr Test:Expr Update:Expr Body:Stmt;
 
 StmtVarDecl:Stmt ::= Var:ExprVar [Init:Expr];
 
+StmtGlobalDecl:Stmt ::= Var:ExprVar*;
+
 StmtBreak:Stmt ;
 
 StmtContinue:Stmt ;

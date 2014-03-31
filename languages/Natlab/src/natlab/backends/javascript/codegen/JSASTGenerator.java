@@ -81,6 +81,7 @@ public class JSASTGenerator {
         if (tirStmt instanceof TIRContinueStmt) return genContinueStmt();
         if (tirStmt instanceof TIRBreakStmt) return genBreakStmt();
         if (tirStmt instanceof TIRReturnStmt) return genReturnStmt((TIRReturnStmt) tirStmt);
+        if (tirStmt instanceof TIRGlobalStmt) return genGlobalStmt((TIRGlobalStmt) tirStmt);
 
         throw new UnsupportedOperationException(
                 String.format("Statement not supported: %d. %s [%s]",
@@ -323,6 +324,20 @@ public class JSASTGenerator {
 
         Stmt returnStmt = makeStmtReturn(astFunc);
         return returnStmt;
+    }
+
+
+    /**
+     * Convert a MATLAB global declaration to a StmtGlobalDecl in our AST;
+     * JavaScript doesn't have such declarations, however we include them
+     * to facilitate some analyses.
+     */
+    public static Stmt genGlobalStmt(TIRGlobalStmt tirGlobal) {
+        StmtGlobalDecl globalDecl = new StmtGlobalDecl();
+        for (ast.Name name: tirGlobal.getNameList()) {
+            globalDecl.addVar(new ExprVar(name.getID()));
+        }
+        return globalDecl;
     }
 
 
