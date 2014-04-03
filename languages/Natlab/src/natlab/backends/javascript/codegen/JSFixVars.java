@@ -5,6 +5,9 @@ import natlab.backends.javascript.jsast.*;
 
 public class JSFixVars {
 
+    /**
+     * @return the names of local variables that are assigned to.
+     */
     public static Set<String> getVars(ASTNode root) {
         Set<String> locals = getLocals(root);
         Set<String> globals = getGlobals(root);
