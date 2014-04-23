@@ -355,7 +355,63 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 		}
 		else if (lhsName.isEmpty()) {
 			// TODO for the case where there is no return value, i.e. the builtin function disp.
-			return;
+			if (rhsString.substring(0, rhsString.indexOf("(")).equals("disp")) {
+				FSubroutines fSubroutines = new FSubroutines();
+				fSubroutines.setIndent(getMoreIndent(0));
+				fSubroutines.setFunctionCall("PRINT *, " 
+						+ rhsString.substring(rhsString.indexOf("(") + 1, rhsString.indexOf(")")));
+				if (ifWhileForBlockNest != 0) {
+					stmtSecForIfWhileForBlock.addStatement(fSubroutines);
+				}
+				else {
+					subprogram.getStatementSection().addStatement(fSubroutines);
+				}
+			}
+			else if (rhsString.substring(0, rhsString.indexOf("(")).equals("load")) {
+				FSubroutines fSubroutines = new FSubroutines();
+				fSubroutines.setIndent(getMoreIndent(0));
+				StringBuffer sb = new StringBuffer();
+				String fileName = rhsString.substring(rhsString.indexOf("(") + 1, rhsString.indexOf(")")).replace("'", "");
+				sb.append("OPEN(UNIT = 1, FILE = \"" + fileName + "\");\n");
+				String varName = fileName.split("\\.")[0];
+				// TODO adding some preprocessing function to get the shape of the file.
+				sb.append(getMoreIndent(0) + "CALL file_analyze('" + fileName + "', " + varName + "_r, " + varName + "_c);\n");
+				sb.append(getMoreIndent(0) + "ALLOCATE(" + varName + "(" + varName + "_r, " + varName + "_c));\n");
+				fotranTemporaries.put(varName + "_r", new BasicMatrixValue(
+						null, 
+						PrimitiveClassReference.INT32, 
+						new ShapeFactory<AggrValue<BasicMatrixValue>>().getScalarShape(), 
+						null, 
+						new isComplexInfoFactory<AggrValue<BasicMatrixValue>>()
+						.newisComplexInfoFromStr("REAL")
+						));
+				fotranTemporaries.put(varName + "_c", new BasicMatrixValue(
+						null, 
+						PrimitiveClassReference.INT32, 
+						new ShapeFactory<AggrValue<BasicMatrixValue>>().getScalarShape(), 
+						null, 
+						new isComplexInfoFactory<AggrValue<BasicMatrixValue>>()
+						.newisComplexInfoFromStr("REAL")
+						));
+				sb.append(getMoreIndent(0) + "DO row_" + varName + " = 1, SIZE(" + varName + ", 1)\n");
+				sb.append(getMoreIndent(1) + "READ(1, *) " + varName + "(row_" + varName + ", :);\n");
+				sb.append(getMoreIndent(0) + "END DO\n");
+				fSubroutines.setFunctionCall(sb.toString());
+				fotranTemporaries.put("row_" + varName, new BasicMatrixValue(
+						null, 
+						PrimitiveClassReference.INT32, 
+						new ShapeFactory<AggrValue<BasicMatrixValue>>().getScalarShape(), 
+						null, 
+						new isComplexInfoFactory<AggrValue<BasicMatrixValue>>()
+						.newisComplexInfoFromStr("REAL")
+						));
+				if (ifWhileForBlockNest != 0) {
+					stmtSecForIfWhileForBlock.addStatement(fSubroutines);
+				}
+				else {
+					subprogram.getStatementSection().addStatement(fSubroutines);
+				}
+			}
 		}
 		else if (convertUserFuncToSubroutine) {
 			sb.setLength(0);
@@ -1641,29 +1697,6 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 				else if (name.equals("false")) {
 					sb.append(".FALSE.");
 				}
-				else if (name.equals("toc")) {
-					GetInput inlineTic = new GetInput();
-					inlineTic.setBlock("CALL CPU_TIME(ftime1);\n");
-					subprogram.setGetInput(inlineTic);
-					sb.append("(ftime2 - ftime1)");
-					FSubroutines tempSubroutine = new FSubroutines();
-					tempSubroutine.setFunctionCall("CPU_TIME(ftime2)");
-					subprogram.getStatementSection().addStatement(tempSubroutine);
-					fotranTemporaries.put("ftime1", new BasicMatrixValue(
-							null, 
-							PrimitiveClassReference.DOUBLE, 
-							new ShapeFactory<AggrValue<BasicMatrixValue>>().getScalarShape(), 
-							null, 
-							new isComplexInfoFactory<AggrValue<BasicMatrixValue>>()
-							.newisComplexInfoFromStr("REAL")));
-					fotranTemporaries.put("ftime2", new BasicMatrixValue(
-							null, 
-							PrimitiveClassReference.DOUBLE, 
-							new ShapeFactory<AggrValue<BasicMatrixValue>>().getScalarShape(), 
-							null, 
-							new isComplexInfoFactory<AggrValue<BasicMatrixValue>>()
-							.newisComplexInfoFromStr("REAL")));
-				}
 				else {
 					// no directly-mapping functions, leave the hole.
 					sb.append(name + "()");
@@ -1888,7 +1921,8 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 					sb.append(name + "(");
 					node.getChild(1).analyze(this);
 					sb.append(")");
-					allSubprograms.add(name);
+					if (!name.equals("disp") && !name.equals("load")) 
+						allSubprograms.add(name);
 				}
 			}
 			/*

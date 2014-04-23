@@ -101,6 +101,11 @@ public class VTypeMatrix extends VType {
 	}
 
 	private void genArrayXML(StringBuffer vTypeXML) {
+		if (HelperClass.isScalar(shape.getDimensions())) {
+			System.out.println("in is scalar in array");
+			genScalarXML(vTypeXML);
+			return;
+		}
 		vTypeXML.append("<vtype layout= \"" + getLayoutString()
 				+ "\" name=\"array\" ndims=\""
 				+ getShape().getDimensions().size() + "\">\n");
@@ -111,6 +116,23 @@ public class VTypeMatrix extends VType {
 	public StringBuffer toXML() {
 		StringBuffer vTypeXML = new StringBuffer();
 
+		if (shape.isScalar() && !forceArray) {
+			genScalarXML(vTypeXML);
+
+		} else {
+			genArrayXML(vTypeXML);
+		}
+
+		return vTypeXML;
+	}
+
+	public StringBuffer toXML(boolean reqScal) {
+
+		StringBuffer vTypeXML = new StringBuffer();
+		if (reqScal) {
+			genScalarXML(vTypeXML);
+			return vTypeXML;
+		}
 		if (shape.isScalar() && !forceArray) {
 			genScalarXML(vTypeXML);
 

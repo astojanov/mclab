@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 
+import natlab.backends.vrirGen.WrapperGenFactory.TargetLang;
 //import natlab.backends.vrirGen.vrirCodeGen.CppCodeGen;
 import natlab.tame.BasicTamerTool;
 import natlab.tame.callgraph.StaticFunction;
@@ -33,21 +34,25 @@ public class Main {
 		 * pass the type info of the input argument to the program, currently,
 		 * the type info is composed like double&3*3&REAL.
 		 */
-		String fileDir = "/home/sable/sjagda/mclab/mbrt/";
+		// String fileDir =
+		// "/home/sable/sjagda/mclab/calgo-benchmarks/694/Matlab/Sp/Src/";
+		String fileDir = "/home/sable/sjagda/mclab/capr/";
 		// String fileName = "drv_mbrt.m";
 		// String fileDir = File.separator + "home" + File.separator
 		// + "2012" + "sjagda" + File.separator + "mclab"
 		// + File.separator + "mbrt" + File.separator;
-		String fileName = "drv_mbrt.m";
+		String fileName = "drv_capr.m";
 		String fileIn = fileDir + fileName;
 		GenericFile gFile = GenericFile.create(fileIn);
 		FileEnvironment env = new FileEnvironment(gFile); // get path
-															// environment obj
+		// environment obj
 		BasicTamerTool tool = new BasicTamerTool();
 		ValueAnalysis<AggrValue<BasicMatrixValue>> analysis = tool.analyze(
 				args, env);
 
 		int size = analysis.getNodeList().size();
+		WrapperGenerator wrapper = WrapperGenFactory.getWrapperGen(
+				TargetLang.Cpp, analysis.getMainNode().getFunction());
 
 		StringBuffer genXML = new StringBuffer();
 		VrirXmlGen.genModuleXMLHead(genXML, fileName.split("\\.")[0]);
@@ -56,6 +61,7 @@ public class Main {
 		VrirTypeMapper.initTypeMap();
 
 		HashSet<StaticFunction> funcSet = new HashSet<StaticFunction>();
+
 		for (int i = 0; i < size; i++) {
 			StringBuffer sb;
 			/*
@@ -70,11 +76,15 @@ public class Main {
 			 */
 			StaticFunction function = analysis.getNodeList().get(i)
 					.getFunction();
+			System.out.flush();
 			System.out.println("Analysis function  " + function.getName());
 			if (!funcSet.contains(function)) {
 				// TamerPlusUtils.debugMode();
 				// System.out.println("tamer pretty print: \n"+function.getAst().getPrettyPrinted());
-
+				if (function.equals(analysis.getMainNode().getFunction())) {
+					funcSet.add(function);
+					continue;
+				}
 				TransformationEngine transformationEngine = TransformationEngine
 						.forAST(function.getAst());
 
@@ -96,7 +106,9 @@ public class Main {
 					genXML.append(sb);
 				} catch (RuntimeException e) {
 					System.out.println("did not work for " + fileName);
+					System.out.println(fTree.getPrettyPrinted());
 					e.printStackTrace();
+					break;
 				}
 				// genXML.append(sb);
 
@@ -107,7 +119,10 @@ public class Main {
 
 		VrirXmlGen.genModuleXMLTail(genXML);
 		System.out.println(" print the generated VRIR in XML format  .\n");
-		System.err.println(genXML);
+		// System.err.println(genXML);
+		System.out.println("main function "
+				+ analysis.getMainNode().getFunction().getName());
+		System.out.println(wrapper.genWrapper());
 		// System.setProperty(
 		// "java.library.path",
 		// System.getProperty("java.library.path")
