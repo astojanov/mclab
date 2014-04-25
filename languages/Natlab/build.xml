@@ -13,6 +13,7 @@
   <path id="jastaddparser.jar.path" path="${lib.dir}/${jastaddparser.jar.path.prop}" />
   <path id="junit.jar.path" path="${lib.dir}/${junit.jar.path.prop}" />
   <path id="guava.jar.path" path="${lib.dir}/${guava.jar.path.prop}" />
+  <path id="json.jar.path" path="${lib.dir}/${json.jar.path.prop}" />
   <path id="antlr.jar.path">
     <fileset dir="${lib.dir}">
       <include name="${antlr.task.jar.path.prop}" />
@@ -97,6 +98,7 @@
       <path refid="beaver.rt.jar.path" />
       <path refid="antlr.jar.path" />
       <path refid="guava.jar.path" />
+      <path refid="json.jar.path" />
       <path location="${basedir}/${matlab.bin.dir}" />
     </path>
     <path id="test.classpath">
@@ -104,6 +106,7 @@
       <path refid="beaver.rt.jar.path" />
       <path refid="antlr.jar.path" />
       <path refid="guava.jar.path" />
+      <path refid="json.jar.path" />
       <path location="${basedir}/${bin.dir}" />
       <path location="${basedir}/${matlab.bin.dir}" />
       <path location="${basedir}/resources" />
@@ -122,12 +125,12 @@
     <attribute name="basename" />
     <sequential>
       <jar destfile="@{basename}.jar">
-	<manifest><attribute name="Main-Class" value="${entrypoint.class}" /></manifest>
-	<zipgroupfileset dir="${lib.dir}"
-			 includes="${beaver.rt.jar.path.prop},${antlr3.rt.jar.path.prop},${string.template.jar.path.prop},${antlr2.jar.path.prop},${guava.jar.path.prop}" />
-	<fileset dir="${matlab.bin.dir}/" includes="**/*.class" />
-	<fileset dir="${basedir}/resources" />
-	<fileset dir="${basedir}/${bin.dir}" includes="**/*.class" excludes="@{excludes}" />
+        <manifest><attribute name="Main-Class" value="${entrypoint.class}" /></manifest>
+        <zipgroupfileset dir="${lib.dir}"
+                         includes="${beaver.rt.jar.path.prop},${antlr3.rt.jar.path.prop},${string.template.jar.path.prop},${antlr2.jar.path.prop},${guava.jar.path.prop},${json.jar.path.prop}" />
+        <fileset dir="${matlab.bin.dir}/" includes="**/*.class" />
+        <fileset dir="${basedir}/resources" />
+        <fileset dir="${basedir}/${bin.dir}" includes="**/*.class" excludes="@{excludes}" />
       </jar>
       <echo file="@{basename}.sh">${entrypoint.script.header}
       java -jar "${basedir}/@{basename}.jar" "$$@"</echo>
@@ -170,14 +173,6 @@
     <natlab-jar basename="${entrypoint.x10_backend.name}" excludes="**/Fortran/**, **/VRIRGen/**" />
   </target>
 
-  <!-- jar build with JavaScript backend. -->
-  <target name="jar-javascript" depends="matlab.build, clean, jar-javascript-noclean"
-          description="creates an executable release jar" />
-  <target name="jar-javascript-noclean" depends="gen, compile" description="creates an executable release jar without cleaning first">
-    <natlab-jar basename="MatJuice" excludes="**/x10/**, **/Fortran/**, **/VRIRGen/**" />
-  </target>
-
-
   <!-- jar build with fortran  backend-->
   <target name="jar-mc2for" depends="matlab.build, clean, jar_noclean_mc2for"
           description="creates an executable release jar" />
@@ -185,6 +180,14 @@
           description="creates an executable release jar without cleaning first">
     <natlab-jar basename="${entrypoint.fortran_backend.name}" excludes="**/x10/**,**/VRIRGen/**" />
   </target>
+
+  <!-- jar build with JavaScript backend. -->
+  <target name="jar-javascript" depends="matlab.build, clean, jar-javascript-noclean"
+          description="creates an executable release jar" />
+  <target name="jar-javascript-noclean" depends="gen, compile" description="creates an executable release jar without cleaning first">
+    <natlab-jar basename="MatJuice" excludes="**/x10/**, **/Fortran/**, **/VRIRGen/**" />
+  </target>
+
 
   <!-- public versions of eclipse.xml targets -->
   <target name="eclipse.build" depends="matlab.eclipse.build, Eclipse.eclipse.build" description="generate all files (including matlab), let Eclipse build" />

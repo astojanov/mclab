@@ -3,6 +3,7 @@ package natlab.backends.javascript.codegen;
 
 import natlab.backends.javascript.jsast.*;
 import natlab.tame.tir.*;
+import natlab.tame.builtin.*;
 import natlab.toolkits.rewrite.TempFactory;
 
 public class JSASTGenerator {
@@ -409,16 +410,18 @@ public class JSASTGenerator {
 
     /**
      * Convert a function call expression into JavaScript.
+     * 
      * @param expr a ParametrizedExpr where the name corresponds to a
      * function kind.
      * @return The JavaScript function call.
      *
-     * TODO: Replace function calls like plus() and mtimes() with
+     * TODO: Replace builtin calls like plus() and mtimes() with
      *       JavaScript operators when operands are scalars.
      */
     public static Expr genCallExpr(ast.ParameterizedExpr expr) {
+        String funcName = expr.getVarName();
         ExprCall call = new ExprCall();
-        ExprVar funName = new ExprVar(expr.getVarName());
+        ExprVar funName = new ExprVar(funcName);
         call.setExpr(funName);
         for (ast.Expr arg: expr.getArgList()) {
             call.addArgument(genExpr(arg));

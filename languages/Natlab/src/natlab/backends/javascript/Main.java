@@ -40,7 +40,7 @@ public class Main {
 
         FileEnvironment fenv = new FileEnvironment(gfile);
         ValueAnalysis<AggrValue<BasicMatrixValue>> analysis = BasicTamerTool.analyze(shapeDesc, fenv);
-
+        
         Program program = new Program();
 
         // Convert the Tamer instructions to JavaScript.
@@ -67,6 +67,15 @@ public class Main {
             List<Stmt> stmts = sb.getStmtList();
             for (String var: vars) {
                 stmts.insertChild(new StmtVarDecl(new ExprVar(var), new Opt<Expr>()), 0);
+            }
+        }
+        
+        // Rename builtins
+        {
+            int i = 0;
+            for (Function f: program.getFunctions()) {
+                JSFixBuiltins.fix(f, analysis, i);
+                ++i;
             }
         }
 
