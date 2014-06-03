@@ -2,6 +2,7 @@ package natlab.backends.vrirGen;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import natlab.tame.classes.reference.PrimitiveClassReference;
 import natlab.tame.valueanalysis.aggrvalue.AggrValue;
 import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
@@ -74,7 +75,7 @@ public class ExprCaseHandler {
 	public static void handleOpExpr(ParameterizedExpr node, VrirXmlGen gen,
 			String name) {
 		boolean flag = false;
-		System.out.println("name " + name );
+		System.out.println("name " + name);
 		if (name.trim().equalsIgnoreCase("mmult")) {
 			VType vt = HelperClass.getExprType(node.getArg(0), gen);
 			if (vt instanceof VTypeMatrix) {
@@ -101,6 +102,39 @@ public class ExprCaseHandler {
 						&& (((VTypeMatrix) vt).getShape().getDimensions()
 								.size() == 2)) {
 					name = "mult";
+				}
+			} else {
+				throw new UnsupportedOperationException(
+						"operations on cell arrays not supported");
+			}
+
+		}
+		if (name.trim().equalsIgnoreCase("mrdiv")||name.trim().equalsIgnoreCase("mldiv")) {
+			VType vt = HelperClass.getExprType(node.getArg(0), gen);
+			if (vt instanceof VTypeMatrix) {
+
+				if (((VTypeMatrix) vt).getShape().getDimensions().get(0)
+						.equalsOne()
+						&& ((VTypeMatrix) vt).getShape().getDimensions().get(1)
+								.equalsOne()
+						&& (((VTypeMatrix) vt).getShape().getDimensions()
+								.size() == 2)) {
+					name = "div";
+				}
+			} else {
+				throw new UnsupportedOperationException(
+						"operations on cell arrays not supported");
+			}
+			vt = HelperClass.getExprType(node.getArg(1), gen);
+			if (vt instanceof VTypeMatrix) {
+
+				if (((VTypeMatrix) vt).getShape().getDimensions().get(0)
+						.equalsOne()
+						&& ((VTypeMatrix) vt).getShape().getDimensions().get(1)
+								.equalsOne()
+						&& (((VTypeMatrix) vt).getShape().getDimensions()
+								.size() == 2)) {
+					name = "div";
 				}
 			} else {
 				throw new UnsupportedOperationException(
@@ -353,6 +387,7 @@ public class ExprCaseHandler {
 		// handleColonCall(expr, gen);
 		// return;
 		// }
+		System.out.println(expr.getVarName());
 		gen.appendToPrettyCode(toXMLHead("fncall", expr.getVarName(), "fnname"));
 		VType vt = HelperClass.getExprType(expr, gen);
 		if (vt == null) {
@@ -371,6 +406,7 @@ public class ExprCaseHandler {
 	public static void handleFunCallExpr(NameExpr expr, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("fncall", expr.getName().getID(),
 				"fnname"));
+		
 		VType vt = HelperClass.getExprType(expr, gen);
 		if (vt == null) {
 			throw new NullPointerException(
@@ -482,6 +518,13 @@ public class ExprCaseHandler {
 		// gen.appendToPrettyCode(HelperClass.toXML("/stop"));
 		// indx++;
 		// gen.appendToPrettyCode(HelperClass.toXML("/range"));
+		if (expr.getParent().getParent() instanceof ParameterizedExpr) {
+			System.out.println("it is a paramaterized expr");
+		} else {
+			System.out.println("it is some random crap class "
+					+ expr.getParent().getParent());
+		}
+
 		Expr start, step, stop;
 		int indx = 0;
 		start = expr.getArg(indx);
@@ -597,7 +640,7 @@ public class ExprCaseHandler {
 		if (vt instanceof VTypeMatrix) {
 			if (HelperClass.isScalar(((VTypeMatrix) vt).getShape()
 					.getDimensions())) {
-				gen.appendToPrettyCode(((VTypeMatrix) vt).toXML(true));
+				gen.appendToPrettyCode(((VTypeMatrix) vt).toXML());
 			} else {
 				gen.appendToPrettyCode(sym.getVtype().toXML());
 			}
@@ -606,16 +649,19 @@ public class ExprCaseHandler {
 		}
 		gen.appendToPrettyCode(HelperClass.toXML("indices"));
 
-		for (Expr args : expr.getArgList()) {
+		for (Expr arg : expr.getArgList()) {
 
 			gen.appendToPrettyCode(HelperClass
 					.toXML("index boundscheck=\"1\" negative=\"0\""));
-			if (!(args instanceof RangeExpr)) {
-				System.out.println("expression class" + args.getClass());
-			} else {
-				System.out.println("is range expression");
+			if (arg instanceof ParameterizedExpr) {
+				if (arg.getVarName().equals("colon")) {
+					handleColonCall((ParameterizedExpr) arg, gen);
+					 gen.appendToPrettyCode(HelperClass.toXML("/index"));
+					continue;
+				}
 			}
-			args.analyze(gen);
+			arg.analyze(gen);
+
 			gen.appendToPrettyCode(HelperClass.toXML("/index"));
 
 		}

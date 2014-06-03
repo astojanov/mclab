@@ -2,6 +2,16 @@ package natlab.backends.vrirGen;
 
 import java.util.ArrayList;
 
+import natlab.tame.builtin.Builtin;
+import natlab.tame.callgraph.StaticFunction;
+import natlab.tame.classes.reference.PrimitiveClassReference;
+import natlab.tame.valueanalysis.ValueAnalysis;
+import natlab.tame.valueanalysis.aggrvalue.AggrValue;
+import natlab.tame.valueanalysis.aggrvalue.CellValue;
+import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
+import natlab.tame.valueanalysis.components.shape.DimValue;
+import natlab.tame.valueanalysis.components.shape.Shape;
+import natlab.tame.valueanalysis.value.Value;
 import ast.AssignStmt;
 import ast.ColonExpr;
 import ast.Expr;
@@ -14,16 +24,6 @@ import ast.Name;
 import ast.NameExpr;
 import ast.ParameterizedExpr;
 import ast.Row;
-import natlab.tame.builtin.Builtin;
-import natlab.tame.callgraph.StaticFunction;
-import natlab.tame.classes.reference.PrimitiveClassReference;
-import natlab.tame.valueanalysis.ValueAnalysis;
-import natlab.tame.valueanalysis.aggrvalue.AggrValue;
-import natlab.tame.valueanalysis.aggrvalue.CellValue;
-import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
-import natlab.tame.valueanalysis.components.shape.DimValue;
-import natlab.tame.valueanalysis.components.shape.Shape;
-import natlab.tame.valueanalysis.value.Value;
 
 public class HelperClass {
 
@@ -186,7 +186,8 @@ public class HelperClass {
 			if (row.getElementList().getNumChild() == 0) {
 				return new VoidType();
 			}
-			if (row.getNumChild() == 1) {
+			System.out.println("number of children" + row.getNumChild());
+			if (row.getElementList().getNumChild() == 1) {
 
 				Expr expr = row.getElement(0);
 
@@ -281,6 +282,7 @@ public class HelperClass {
 	}
 
 	public static VType getLhsType(ParameterizedExpr lhsExpr, VrirXmlGen gen) {
+		System.out.println("skjdhaskjdahslkdhaskldh" + lhsExpr.getVarName());
 		AggrValue<?> val = gen.getAnalysis().getNodeList().get(gen.getIndex())
 				.getAnalysis().getCurrentOutSet().get(lhsExpr.getVarName())
 				.getSingleton();
@@ -441,13 +443,13 @@ public class HelperClass {
 			argList.add(new Arg(sym.getId(), false));
 		}
 
-		for (int i = 0; i < outParamList.getNumChild(); i++) {
-			Symbol sym = gen.getSymbol(outParamList.getChild(i).getID());
-			if (sym == null) {
-				throw new NullPointerException("Symbol not found");
-			}
-			argList.add(new Arg(sym.getId(), false));
-		}
+		// for (int i = 0; i < outParamList.getNumChild(); i++) {
+		// Symbol sym = gen.getSymbol(outParamList.getChild(i).getID());
+		// if (sym == null) {
+		// throw new NullPointerException("Symbol not found");
+		// }
+		// argList.add(new Arg(sym.getId(), false));
+		// }
 
 		return argList;
 	}

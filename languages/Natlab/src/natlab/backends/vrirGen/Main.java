@@ -1,6 +1,7 @@
 package natlab.backends.vrirGen;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -36,14 +37,16 @@ public class Main {
 		 */
 		// String fileDir =
 		// "/home/sable/sjagda/mclab/calgo-benchmarks/694/Matlab/Sp/Src/";
-		String fileDir = "/home/sable/sjagda/mclab/capr/";
+		String fileDir = "";//"capr/";
+
 		// String fileName = "drv_mbrt.m";
 		// String fileDir = File.separator + "home" + File.separator
 		// + "2012" + "sjagda" + File.separator + "mclab"
 		// + File.separator + "mbrt" + File.separator;
-		String fileName = "drv_capr.m";
+		String fileName = "simple.m";
 		String fileIn = fileDir + fileName;
-		GenericFile gFile = GenericFile.create(fileIn);
+		File file= new File(fileIn);
+		GenericFile gFile = GenericFile.create(file.getAbsolutePath());
 		FileEnvironment env = new FileEnvironment(gFile); // get path
 		// environment obj
 		BasicTamerTool tool = new BasicTamerTool();
@@ -61,7 +64,7 @@ public class Main {
 		VrirTypeMapper.initTypeMap();
 
 		HashSet<StaticFunction> funcSet = new HashSet<StaticFunction>();
-
+		
 		for (int i = 0; i < size; i++) {
 			StringBuffer sb;
 			/*
@@ -76,15 +79,14 @@ public class Main {
 			 */
 			StaticFunction function = analysis.getNodeList().get(i)
 					.getFunction();
-			System.out.flush();
+			
 			System.out.println("Analysis function  " + function.getName());
 			if (!funcSet.contains(function)) {
-				// TamerPlusUtils.debugMode();
-				// System.out.println("tamer pretty print: \n"+function.getAst().getPrettyPrinted());
-				if (function.equals(analysis.getMainNode().getFunction())) {
-					funcSet.add(function);
-					continue;
-				}
+			
+//				if (function.getName().equals(analysis.getMainNode().getFunction().getName())) {
+//					funcSet.add(function);
+//					continue;
+//				}
 				TransformationEngine transformationEngine = TransformationEngine
 						.forAST(function.getAst());
 
@@ -105,10 +107,10 @@ public class Main {
 							analysisEngine);
 					genXML.append(sb);
 				} catch (RuntimeException e) {
-					System.out.println("did not work for " + fileName);
+					System.out.println("did not work for " + function.getName());
 					System.out.println(fTree.getPrettyPrinted());
 					e.printStackTrace();
-					break;
+					System.exit(0);
 				}
 				// genXML.append(sb);
 
