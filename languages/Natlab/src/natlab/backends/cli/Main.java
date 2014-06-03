@@ -1,13 +1,13 @@
 package natlab.backends.cli;
 
-import natlab.tame.*;
-import natlab.tame.valueanalysis.*;
-import natlab.tame.valueanalysis.aggrvalue.*;
-import natlab.tame.valueanalysis.basicmatrix.*;
-import natlab.toolkits.filehandling.*;
-import natlab.toolkits.path.*;
+import java.io.FileOutputStream;
 
-import java.io.*;
+import natlab.tame.BasicTamerTool;
+import natlab.tame.valueanalysis.ValueAnalysis;
+import natlab.tame.valueanalysis.aggrvalue.AggrValue;
+import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
+import natlab.toolkits.filehandling.GenericFile;
+import natlab.toolkits.path.FileEnvironment;
 
 public class Main
 {

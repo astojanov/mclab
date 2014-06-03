@@ -1,23 +1,60 @@
 package natlab.backends.cli;
 
-import ast.*;
-import natlab.tame.classes.reference.*;
-import natlab.tame.tir.*;
-import natlab.tame.tir.analysis.*;
-import natlab.tame.valueanalysis.*;
-import natlab.tame.valueanalysis.aggrvalue.*;
-import natlab.tame.valueanalysis.basicmatrix.*;
-import natlab.tame.valueanalysis.components.constant.*;
-import natlab.tame.valueanalysis.components.isComplex.*;
-import natlab.tame.valueanalysis.components.shape.*;
-import org.w3c.dom.*;
+import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 
-import javax.xml.parsers.*;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.*;
-import javax.xml.transform.stream.*;
-import java.io.*;
-import java.util.*;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
+import natlab.tame.classes.reference.PrimitiveClassReference;
+import natlab.tame.tir.TIRAbstractAssignToListStmt;
+import natlab.tame.tir.TIRAbstractAssignToVarStmt;
+import natlab.tame.tir.TIRArrayGetStmt;
+import natlab.tame.tir.TIRArraySetStmt;
+import natlab.tame.tir.TIRAssignLiteralStmt;
+import natlab.tame.tir.TIRBreakStmt;
+import natlab.tame.tir.TIRCallStmt;
+import natlab.tame.tir.TIRCommaSeparatedList;
+import natlab.tame.tir.TIRCommentStmt;
+import natlab.tame.tir.TIRContinueStmt;
+import natlab.tame.tir.TIRCopyStmt;
+import natlab.tame.tir.TIRForStmt;
+import natlab.tame.tir.TIRFunction;
+import natlab.tame.tir.TIRIfStmt;
+import natlab.tame.tir.TIRReturnStmt;
+import natlab.tame.tir.TIRStatementList;
+import natlab.tame.tir.TIRStmt;
+import natlab.tame.tir.TIRWhileStmt;
+import natlab.tame.tir.analysis.TIRAbstractNodeCaseHandler;
+import natlab.tame.valueanalysis.IntraproceduralValueAnalysis;
+import natlab.tame.valueanalysis.ValueAnalysis;
+import natlab.tame.valueanalysis.ValueFlowMap;
+import natlab.tame.valueanalysis.aggrvalue.AggrValue;
+import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
+import natlab.tame.valueanalysis.components.constant.Constant;
+import natlab.tame.valueanalysis.components.isComplex.isComplexInfo;
+import natlab.tame.valueanalysis.components.shape.Shape;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import ast.ASTNode;
+import ast.ColonExpr;
+import ast.Expr;
+import ast.FPLiteralExpr;
+import ast.IntLiteralExpr;
+import ast.LiteralExpr;
+import ast.Name;
+import ast.NameExpr;
+import ast.Stmt;
+import ast.StringLiteralExpr;
 
 public final class XMLTIRSerializer extends TIRAbstractNodeCaseHandler
 {
