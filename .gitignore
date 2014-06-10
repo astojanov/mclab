@@ -7,3 +7,7 @@ gen
 *.n
 *.f95
 *~
+Natlab.jar
+Natlab.sh
+tags
+benchmarks

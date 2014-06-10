@@ -2,21 +2,22 @@ package natlab.backends.x10.codegen;
 
 import java.util.ArrayList;
 
-import natlab.backends.x10.IRx10.ast.*;
+import natlab.backends.x10.IRx10.ast.ArrayAccess;
+import natlab.backends.x10.IRx10.ast.AssignStmt;
+import natlab.backends.x10.IRx10.ast.DeclStmt;
+import natlab.backends.x10.IRx10.ast.IDInfo;
+import natlab.backends.x10.IRx10.ast.IDUse;
+import natlab.backends.x10.IRx10.ast.IntLiteral;
+import natlab.backends.x10.IRx10.ast.MultiAssignLHS;
+import natlab.backends.x10.IRx10.ast.Stmt;
+import natlab.backends.x10.IRx10.ast.StmtBlock;
+import natlab.backends.x10.IRx10.ast.Type;
 import natlab.tame.tir.TIRAbstractAssignStmt;
 import natlab.tame.tir.TIRAbstractAssignToListStmt;
 import natlab.tame.tir.TIRAbstractAssignToVarStmt;
-import natlab.tame.tir.TIRAbstractCreateFunctionHandleStmt;
-import natlab.tame.tir.TIRArraySetStmt;
-import natlab.tame.tir.TIRAssignLiteralStmt;
-import natlab.tame.tir.TIRCallStmt;
-import natlab.tame.tir.TIRCopyStmt;
 import natlab.tame.valueanalysis.components.shape.ShapeFactory;
 import ast.Expr;
-import ast.FPLiteralExpr;
-import ast.IntLiteralExpr;
 import ast.ParameterizedExpr;
-import ast.StringLiteralExpr;
 
 public class AssignsAndDecls {
 
@@ -190,6 +191,9 @@ public class AssignsAndDecls {
 				else{
 					list_single_assign_stmt.setAtomic(false);
 				}
+				
+				target.symbolMap.put(target.symbolMapKey,
+						list_single_assign_stmt.getLHS());
 
 			} else {
 				isDecl = true;
@@ -248,6 +252,8 @@ public class AssignsAndDecls {
 					if (target.parforSwitch == false || isReductionStmt == true)
 						target.symbolMap.put(target.symbolMapKey,
 								decl_stmt.getLHS());
+					target.symbolMap.put(target.symbolMapKey,
+							decl_stmt.getLHS());
 
 				}
 
@@ -263,9 +269,6 @@ public class AssignsAndDecls {
 			list_assign_stmt.setMultiAssignLHS(LHSinfo);
 			for (ast.Name name : ((TIRAbstractAssignToListStmt) node)
 					.getTargets().asNameList()) {
-
-				System.out.println(name.getID()
-						+ "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 				list_assign_stmt.getMultiAssignLHS().addIDInfo(
 						Helper.generateIDInfo(target.analysis, target.index,
 								node, name.getID()));

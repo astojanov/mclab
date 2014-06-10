@@ -6,6 +6,7 @@ import ast.ContinueStmt;
 import ast.ForStmt;
 import ast.IfBlock;
 import ast.IfStmt;
+import ast.Name;
 import ast.NameExpr;
 import ast.ReturnStmt;
 import ast.Stmt;
@@ -28,6 +29,7 @@ public class StmtCaseHandler {
 		gen.appendToPrettyCode(toXMLHead("whilestmt"));
 		gen.appendToPrettyCode(HelperClass.toXML("test"));
 		node.getExpr().analyze(gen);
+
 		gen.appendToPrettyCode(HelperClass.toXML("/test"));
 		gen.appendToPrettyCode(toListXMLHead(VrirXmlGen.onGPU));
 		for (int i = 0; i < node.getStmtList().getNumChild(); i++) {
@@ -89,8 +91,26 @@ public class StmtCaseHandler {
 
 	public static void handleReturnStmt(ReturnStmt node, VrirXmlGen gen) {
 		gen.appendToPrettyCode(toXMLHead("returnstmt"));
-		gen.appendToPrettyCode(HelperClass.toXML("rvars"));
-		gen.appendToPrettyCode(HelperClass.toXML("/rvars"));
+		gen.appendToPrettyCode(HelperClass.toXML("exprs"));
+		for (Name rvar : gen.getFunctionNode().getOutputParamList()) {
+			if (!gen.getSymTab().contains(rvar.getID())) {
+				VType vtype = HelperClass.generateVType(gen.getAnalysis(),
+						gen.getIndex(), rvar.getID());
+				gen.getSymTab().putSymbol(vtype, rvar.getID());
+			}
+			if (gen.getSymbol(rvar.getID()) != null) {
+				gen.appendToPrettyCode(ExprCaseHandler.toXMLHead("name", gen
+						.getSymbol(rvar.getID()).getId(), "id"));
+			} else {
+				throw new NullPointerException("Symbol not found for "
+						+ rvar.getID());
+			}
+			gen.appendToPrettyCode(gen.getSymbol(rvar.getID()).getVtype()
+					.toXML());
+			gen.appendToPrettyCode(ExprCaseHandler.toXMLTail());
+		}
+
+		gen.appendToPrettyCode(HelperClass.toXML("/exprs"));
 		gen.appendToPrettyCode(toXMLTail());
 	}
 
@@ -112,12 +132,13 @@ public class StmtCaseHandler {
 			gen.appendToPrettyCode(HelperClass.toXML("/if"));
 
 		}
-		if (node.hasElseBlock()) {
+		if (node.hasElseBlock() && node.getElseBlock().getStmtList().getNumChild() > 0) {
 			gen.appendToPrettyCode(HelperClass.toXML("else"));
-
+			gen.appendToPrettyCode(toListXMLHead(false));
 			for (Stmt stmt : node.getElseBlock().getStmtList()) {
 				stmt.analyze(gen);
 			}
+			gen.appendToPrettyCode(toListXMLTail());
 			gen.appendToPrettyCode(HelperClass.toXML("/else"));
 		}
 		gen.appendToPrettyCode(toXMLTail());

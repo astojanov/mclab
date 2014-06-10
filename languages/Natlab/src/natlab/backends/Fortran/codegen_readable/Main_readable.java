@@ -3,11 +3,13 @@ package natlab.backends.Fortran.codegen_readable;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-import ast.ASTNode;
-import ast.*;
-
+import natlab.backends.Fortran.codegen_readable.FortranAST_readable.Subprogram;
 import natlab.options.Options;
 import natlab.tame.BasicTamerTool;
 import natlab.tame.callgraph.StaticFunction;
@@ -19,7 +21,8 @@ import natlab.tame.valueanalysis.aggrvalue.AggrValue;
 import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
 import natlab.toolkits.filehandling.GenericFile;
 import natlab.toolkits.path.FileEnvironment;
-import natlab.backends.Fortran.codegen_readable.FortranAST_readable.*;
+import ast.ASTNode;
+import ast.Function;
 
 public class Main_readable {
 	static boolean Debug =false;
@@ -30,8 +33,8 @@ public class Main_readable {
 	 * to the program, currently, the type info is composed like double&3*3&REAL.
 	 */
 	public static void main(String[] args) {
-		String fileDir = "/home/aaron/for_test/readable/disp/";
-	    String entryPointFile = "test_disp";
+		String fileDir = "/home/aaron/Dropbox/benchmarks/testload/";
+	    String entryPointFile = "test_load";
 	    GenericFile gFile = GenericFile.create(fileDir + entryPointFile + ".m");
 		FileEnvironment env = new FileEnvironment(gFile); //get path environment obj
 		

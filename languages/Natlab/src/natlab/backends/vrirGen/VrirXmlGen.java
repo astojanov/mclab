@@ -2,105 +2,44 @@ package natlab.backends.vrirGen;
 
 import java.util.Set;
 
-import ast.ASTNode;
-import ast.ArrayTransposeExpr;
-import ast.AssignStmt;
-import ast.Attribute;
-import ast.BinaryExpr;
-import ast.Body;
-import ast.BreakStmt;
-import ast.CSLExpr;
-import ast.CellArrayExpr;
-import ast.CellIndexExpr;
-import ast.CheckScalarStmt;
-import ast.ClassBody;
-import ast.ClassDef;
-import ast.ClassEvents;
-import ast.ColonExpr;
-import ast.CompilationUnits;
-import ast.ContinueStmt;
-import ast.DefaultCaseBlock;
-import ast.DotExpr;
-import ast.EDivExpr;
-import ast.ELDivExpr;
-import ast.EPowExpr;
-import ast.EQExpr;
-import ast.ETimesExpr;
-import ast.ElseBlock;
-import ast.EmptyProgram;
-import ast.EmptyStmt;
-import ast.EndCallExpr;
-import ast.EndExpr;
-import ast.Event;
-import ast.Expr;
-import ast.ExprStmt;
-import ast.FPLiteralExpr;
-import ast.ForStmt;
-import ast.Function;
-import ast.FunctionHandleExpr;
-import ast.FunctionList;
-import ast.FunctionOrSignatureOrPropertyAccessOrStmt;
-import ast.GEExpr;
-import ast.GTExpr;
-import ast.GlobalStmt;
-import ast.HelpComment;
-import ast.IfBlock;
-import ast.IfStmt;
-import ast.IntLiteralExpr;
-import ast.LEExpr;
-import ast.LTExpr;
-import ast.LValueExpr;
-import ast.LambdaExpr;
-import ast.List;
-import ast.LiteralExpr;
-import ast.MDivExpr;
-import ast.MLDivExpr;
-import ast.MPowExpr;
-import ast.MTimesExpr;
-import ast.MTransposeExpr;
-import ast.MatrixExpr;
-import ast.Methods;
-import ast.MinusExpr;
-import ast.MultiLineHelpComment;
-import ast.NEExpr;
-import ast.Name;
-import ast.NameExpr;
-import ast.NotExpr;
-import ast.OneLineHelpComment;
-import ast.OrExpr;
-import ast.ParameterizedExpr;
-import ast.PersistentStmt;
-import ast.PlusExpr;
-import ast.Program;
-import ast.Properties;
-import ast.Property;
-import ast.PropertyAccess;
-import ast.RangeExpr;
-import ast.ReturnStmt;
-import ast.Row;
-import ast.Script;
-import ast.ShellCommandStmt;
-import ast.ShortCircuitAndExpr;
-import ast.ShortCircuitOrExpr;
-import ast.Signature;
-import ast.Stmt;
-import ast.StringLiteralExpr;
-import ast.SuperClass;
-import ast.SuperClassMethodExpr;
-import ast.SwitchCaseBlock;
-import ast.SwitchStmt;
-import ast.TryStmt;
-import ast.UMinusExpr;
-import ast.UPlusExpr;
-import ast.UnaryExpr;
-import ast.WhileStmt;
 import natlab.tame.tamerplus.analysis.AnalysisEngine;
 import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.ValueFlowMap;
-
 import natlab.tame.valueanalysis.aggrvalue.AggrValue;
 import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
 import nodecases.natlab.NatlabAbstractNodeCaseHandler;
+import ast.ASTNode;
+import ast.AssignStmt;
+import ast.BreakStmt;
+import ast.CellArrayExpr;
+import ast.CellIndexExpr;
+import ast.ColonExpr;
+import ast.ContinueStmt;
+import ast.DotExpr;
+import ast.ElseBlock;
+import ast.EmptyStmt;
+import ast.Expr;
+import ast.FPLiteralExpr;
+import ast.ForStmt;
+import ast.Function;
+import ast.FunctionList;
+import ast.IfBlock;
+import ast.IfStmt;
+import ast.IntLiteralExpr;
+import ast.List;
+import ast.MatrixExpr;
+import ast.Name;
+import ast.NameExpr;
+import ast.ParameterizedExpr;
+import ast.RangeExpr;
+import ast.ReturnStmt;
+import ast.Row;
+import ast.Stmt;
+import ast.StringLiteralExpr;
+import ast.SuperClassMethodExpr;
+import ast.SwitchStmt;
+import ast.TryStmt;
+import ast.WhileStmt;
 
 public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 
@@ -114,11 +53,12 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	private int index;
 	final static public boolean onGPU = false;
 	private AnalysisEngine analysisEngine;
+	private Function functionNode;
 
 	VrirXmlGen(Function functionNode, Set<String> remainVars,
 			ValueAnalysis<AggrValue<BasicMatrixValue>> analysis,
-			ValueFlowMap<AggrValue<BasicMatrixValue>> currentOutSet,
-			int size, int index, AnalysisEngine analysisEngine) {
+			ValueFlowMap<AggrValue<BasicMatrixValue>> currentOutSet, int size,
+			int index, AnalysisEngine analysisEngine) {
 		prettyPrintedCode = new StringBuffer();
 		remainingVars = remainVars;
 		this.analysis = analysis;
@@ -128,9 +68,17 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 		symTab = new SymbolTable();
 		// indent = 0;
 		this.analysisEngine = analysisEngine;
-
+		this.functionNode = functionNode;
 		functionNode.analyze(this);
 
+	}
+
+	public Function getFunctionNode() {
+		return functionNode;
+	}
+
+	public void setFunctionNode(Function functionNode) {
+		this.functionNode = functionNode;
 	}
 
 	public static void genModuleXMLHead(StringBuffer target, String moduleName) {
@@ -170,8 +118,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 		return analysis;
 	}
 
-	public void setAnalysis(
-			ValueAnalysis<AggrValue<BasicMatrixValue>> analysis) {
+	public void setAnalysis(ValueAnalysis<AggrValue<BasicMatrixValue>> analysis) {
 		this.analysis = analysis;
 	}
 
@@ -247,6 +194,30 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 
 			stmt.analyze(this);
 		}
+		if (node.getOutputParamList().getNumChild() > 0) {
+			this.appendToPrettyCode(StmtCaseHandler.toXMLHead("returnstmt"));
+			this.appendToPrettyCode(HelperClass.toXML("exprs"));
+			for (Name rvar : this.getFunctionNode().getOutputParamList()) {
+				if (!this.getSymTab().contains(rvar.getID())) {
+					VType vtype = HelperClass.generateVType(this.getAnalysis(),
+							this.getIndex(), rvar.getID());
+					this.getSymTab().putSymbol(vtype, rvar.getID());
+				}
+				if (this.getSymbol(rvar.getID()) != null) {
+					this.appendToPrettyCode(ExprCaseHandler.toXMLHead("name",
+							this.getSymbol(rvar.getID()).getId(), "id"));
+				} else {
+					throw new NullPointerException("Symbol not found for "
+							+ rvar.getID());
+				}
+				this.appendToPrettyCode(this.getSymbol(rvar.getID()).getVtype()
+						.toXML());
+				this.appendToPrettyCode(ExprCaseHandler.toXMLTail());
+			}
+			
+			this.appendToPrettyCode(HelperClass.toXML("/exprs"));
+			this.appendToPrettyCode(StmtCaseHandler.toXMLTail());
+		}
 		this.appendToPrettyCode(StmtCaseHandler.toListXMLTail());
 		this.appendToPrettyCode(HelperClass.toXML("/body"));
 
@@ -293,7 +264,7 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	public void caseWhileStmt(WhileStmt node) {
 
 		StmtCaseHandler.handleWhileStmt(node, this);
-		caseStmt(node);
+		// caseStmt(node);
 	}
 
 	public void caseTryStmt(TryStmt node) {
@@ -470,8 +441,8 @@ public class VrirXmlGen extends NatlabAbstractNodeCaseHandler {
 	public static StringBuffer generateVrir(Function functionNode,
 			Set<String> remainingVars,
 			ValueAnalysis<AggrValue<BasicMatrixValue>> analysis,
-			ValueFlowMap<AggrValue<BasicMatrixValue>> currentOutSet,
-			int index, int size, AnalysisEngine analysisEngine) {
+			ValueFlowMap<AggrValue<BasicMatrixValue>> currentOutSet, int index,
+			int size, AnalysisEngine analysisEngine) {
 		return (new VrirXmlGen(functionNode, remainingVars, analysis,
 				currentOutSet, size, index, analysisEngine))
 				.getPrettyPrintedCode();

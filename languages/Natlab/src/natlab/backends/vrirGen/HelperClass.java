@@ -2,7 +2,18 @@ package natlab.backends.vrirGen;
 
 import java.util.ArrayList;
 
+import natlab.tame.builtin.Builtin;
+import natlab.tame.callgraph.StaticFunction;
+import natlab.tame.classes.reference.PrimitiveClassReference;
+import natlab.tame.valueanalysis.ValueAnalysis;
+import natlab.tame.valueanalysis.aggrvalue.AggrValue;
+import natlab.tame.valueanalysis.aggrvalue.CellValue;
+import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
+import natlab.tame.valueanalysis.components.shape.DimValue;
+import natlab.tame.valueanalysis.components.shape.Shape;
+import natlab.tame.valueanalysis.value.Value;
 import ast.AssignStmt;
+import ast.ColonExpr;
 import ast.Expr;
 import ast.FPLiteralExpr;
 import ast.Function;
@@ -13,15 +24,6 @@ import ast.Name;
 import ast.NameExpr;
 import ast.ParameterizedExpr;
 import ast.Row;
-import natlab.tame.builtin.Builtin;
-import natlab.tame.callgraph.StaticFunction;
-import natlab.tame.classes.reference.PrimitiveClassReference;
-import natlab.tame.valueanalysis.ValueAnalysis;
-import natlab.tame.valueanalysis.aggrvalue.AggrValue;
-import natlab.tame.valueanalysis.aggrvalue.CellValue;
-import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
-import natlab.tame.valueanalysis.components.shape.Shape;
-import natlab.tame.valueanalysis.value.Value;
 
 public class HelperClass {
 
@@ -57,12 +59,13 @@ public class HelperClass {
 		if ((Object) value instanceof BasicMatrixValue) {
 			// System.out.println("matlab class"
 			// + value.getMatlabClass().getName());
+			String complexity = HelperClass
+					.getVrComplexity((((BasicMatrixValue) (Object) value))
+							.getisComplexInfo().geticType());
 			return new VTypeMatrix(
 					(((BasicMatrixValue) (Object) value)).getShape(),
 					(((BasicMatrixValue) (Object) value)).getMatlabClass(),
-					VTypeMatrix.Layout.COLUMN_MAJOR,
-					(((BasicMatrixValue) (Object) value)).getisComplexInfo()
-							.geticType());
+					VTypeMatrix.Layout.COLUMN_MAJOR, complexity);
 		} else if ((Object) value instanceof CellValue) {
 
 			VTypeTuple vtypeTuple = new VTypeTuple();
@@ -123,6 +126,19 @@ public class HelperClass {
 		}
 	}
 
+	public static String getVrComplexity(String complexity) {
+		if (complexity.equals("REAL")) {
+			return "real";
+		} else if (complexity.equals("COMPLEX")) {
+			return "complex";
+		} else {
+			System.out.println("value is neither complex nor real "
+					+ complexity + " .Returning may complex ");
+			return "maycomplex";
+		}
+
+	}
+
 	public static Shape<AggrValue<BasicMatrixValue>> getShape(NameExpr node,
 			VrirXmlGen gen) {
 		AggrValue<BasicMatrixValue> val = gen.getAnalysis().getNodeList()
@@ -170,7 +186,8 @@ public class HelperClass {
 			if (row.getElementList().getNumChild() == 0) {
 				return new VoidType();
 			}
-			if (row.getNumChild() == 1) {
+			System.out.println("number of children" + row.getNumChild());
+			if (row.getElementList().getNumChild() == 1) {
 
 				Expr expr = row.getElement(0);
 
@@ -211,10 +228,19 @@ public class HelperClass {
 			return generateVType(gen.getAnalysis(), gen.getIndex(),
 					((NameExpr) expr).getName().getID());
 		}
-		if (expr instanceof ParameterizedExpr
-				&& isVar(gen, ((ParameterizedExpr) expr).getVarName())) {
-			return generateVType(gen.getAnalysis(), gen.getIndex(),
-					((ParameterizedExpr) expr).getVarName());
+		if (expr instanceof ParameterizedExpr) {
+			Name tempName = (Name) gen.getAnalysisEngine()
+					.getTemporaryVariablesRemovalAnalysis()
+					.getExprToTempVarTable().get(expr);
+			if (tempName != null) {
+				AggrValue<?> val = gen.getAnalysis().getNodeList()
+						.get(gen.getIndex()).getAnalysis().getCurrentOutSet()
+						.get(tempName.getID()).getSingleton();
+				return generateVType(val);
+			} else if (isVar(gen, ((ParameterizedExpr) expr).getVarName())) {
+				return generateVType(gen.getAnalysis(), gen.getIndex(),
+						((ParameterizedExpr) expr).getVarName());
+			}
 		}
 		if (expr.getParent() instanceof AssignStmt) {
 			Expr lhsExpr = ((AssignStmt) expr.getParent()).getLHS();
@@ -240,7 +266,9 @@ public class HelperClass {
 			AggrValue<?> val = gen.getAnalysis().getNodeList()
 					.get(gen.getIndex()).getAnalysis().getCurrentOutSet()
 					.get(tempName.getID()).getSingleton();
-			return generateVType(val);
+			VType vt = generateVType(val);
+
+			return vt;
 		}
 		return null;
 	}
@@ -254,6 +282,7 @@ public class HelperClass {
 	}
 
 	public static VType getLhsType(ParameterizedExpr lhsExpr, VrirXmlGen gen) {
+		System.out.println("skjdhaskjdahslkdhaskldh" + lhsExpr.getVarName());
 		AggrValue<?> val = gen.getAnalysis().getNodeList().get(gen.getIndex())
 				.getAnalysis().getCurrentOutSet().get(lhsExpr.getVarName())
 				.getSingleton();
@@ -413,13 +442,15 @@ public class HelperClass {
 			}
 			argList.add(new Arg(sym.getId(), false));
 		}
-		for (int i = 0; i < outParamList.getNumChild(); i++) {
-			Symbol sym = gen.getSymbol(outParamList.getChild(i).getID());
-			if (sym == null) {
-				throw new NullPointerException("Symbol not found");
-			}
-			argList.add(new Arg(sym.getId(), false));
-		}
+
+		// for (int i = 0; i < outParamList.getNumChild(); i++) {
+		// Symbol sym = gen.getSymbol(outParamList.getChild(i).getID());
+		// if (sym == null) {
+		// throw new NullPointerException("Symbol not found");
+		// }
+		// argList.add(new Arg(sym.getId(), false));
+		// }
+
 		return argList;
 	}
 
@@ -440,5 +471,59 @@ public class HelperClass {
 
 	public static boolean isLibFunc(String name) {
 		return LibFuncMapper.containsFunc(name);
+	}
+
+	public static boolean isScalar(ParameterizedExpr expr, VrirXmlGen gen) {
+		VType vt = getExprType(expr, gen);
+		boolean flag = true;
+
+		if (vt instanceof VTypeMatrix) {
+			if (((VTypeMatrix) vt).getShape().isScalar()) {
+				return true;
+			}
+			for (DimValue val : ((VTypeMatrix) vt).getShape().getDimensions()) {
+				if ((!val.equalsOne()) && val.hasIntValue()) {
+					return false;
+				}
+				if (!val.hasIntValue()) {
+					flag = false;
+					break;
+				}
+			}
+		}
+		if (flag) {
+			return true;
+		}
+		for (Expr arg : expr.getArgList()) {
+			if (arg instanceof ColonExpr) {
+				return false;
+			}
+			if (arg instanceof ParameterizedExpr) {
+				if (arg.getVarName().equals("colon")) {
+					return false;
+				}
+				if (!isScalar((ParameterizedExpr) arg, gen)) {
+					return false;
+				}
+			}
+			vt = getExprType(arg, gen);
+			if (vt instanceof VTypeMatrix) {
+				if (!isScalar(((VTypeMatrix) vt).getShape().getDimensions())) {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static boolean isScalar(java.util.List<DimValue> dimensions) {
+		for (DimValue dim : dimensions) {
+			if (!dim.equalsOne()) {
+				return false;
+			}
+		}
+		return true;
 	}
 }

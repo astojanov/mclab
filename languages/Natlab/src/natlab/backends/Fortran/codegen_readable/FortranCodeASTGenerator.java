@@ -1,23 +1,53 @@
 package natlab.backends.Fortran.codegen_readable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
-import ast.ASTNode;
-import ast.List;
-import ast.*;
-import natlab.tame.tir.TIRCommentStmt;
-
-import nodecases.AbstractNodeCaseHandler;
+import natlab.backends.Fortran.codegen_readable.FortranAST_readable.ExtraInlined;
+import natlab.backends.Fortran.codegen_readable.FortranAST_readable.FAssignStmt;
+import natlab.backends.Fortran.codegen_readable.FortranAST_readable.FBreakStmt;
+import natlab.backends.Fortran.codegen_readable.FortranAST_readable.FCommentStmt;
+import natlab.backends.Fortran.codegen_readable.FortranAST_readable.FSubroutines;
+import natlab.backends.Fortran.codegen_readable.FortranAST_readable.RuntimeAllocate;
+import natlab.backends.Fortran.codegen_readable.FortranAST_readable.StatementSection;
+import natlab.backends.Fortran.codegen_readable.FortranAST_readable.Subprogram;
+import natlab.backends.Fortran.codegen_readable.astCaseHandler.HandleCaseForStmt;
+import natlab.backends.Fortran.codegen_readable.astCaseHandler.HandleCaseFunction;
+import natlab.backends.Fortran.codegen_readable.astCaseHandler.HandleCaseIfStmt;
+import natlab.backends.Fortran.codegen_readable.astCaseHandler.HandleCaseWhileStmt;
 import natlab.tame.classes.reference.PrimitiveClassReference;
+import natlab.tame.tamerplus.analysis.AnalysisEngine;
+import natlab.tame.tir.TIRCommentStmt;
 import natlab.tame.valueanalysis.ValueFlowMap;
 import natlab.tame.valueanalysis.aggrvalue.AggrValue;
 import natlab.tame.valueanalysis.aggrvalue.CellValue;
-import natlab.tame.tamerplus.analysis.AnalysisEngine;
 import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
-import natlab.tame.valueanalysis.components.shape.*;
 import natlab.tame.valueanalysis.components.isComplex.isComplexInfoFactory;
-import natlab.backends.Fortran.codegen_readable.FortranAST_readable.*;
-import natlab.backends.Fortran.codegen_readable.astCaseHandler.*;
+import natlab.tame.valueanalysis.components.shape.Shape;
+import natlab.tame.valueanalysis.components.shape.ShapeFactory;
+import nodecases.AbstractNodeCaseHandler;
+import ast.ASTNode;
+import ast.AssignStmt;
+import ast.BreakStmt;
+import ast.ColonExpr;
+import ast.EmptyStmt;
+import ast.ForStmt;
+import ast.Function;
+import ast.IfStmt;
+import ast.IntLiteralExpr;
+import ast.List;
+import ast.LiteralExpr;
+import ast.MatrixExpr;
+import ast.Name;
+import ast.NameExpr;
+import ast.ParameterizedExpr;
+import ast.RangeExpr;
+import ast.Row;
+import ast.StringLiteralExpr;
+import ast.WhileStmt;
 
 public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 	/*
@@ -360,6 +390,51 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 				fSubroutines.setIndent(getMoreIndent(0));
 				fSubroutines.setFunctionCall("PRINT *, " 
 						+ rhsString.substring(rhsString.indexOf("(") + 1, rhsString.indexOf(")")));
+				if (ifWhileForBlockNest != 0) {
+					stmtSecForIfWhileForBlock.addStatement(fSubroutines);
+				}
+				else {
+					subprogram.getStatementSection().addStatement(fSubroutines);
+				}
+			}
+			else if (rhsString.substring(0, rhsString.indexOf("(")).equals("load")) {
+				FSubroutines fSubroutines = new FSubroutines();
+				fSubroutines.setIndent(getMoreIndent(0));
+				StringBuffer sb = new StringBuffer();
+				String fileName = rhsString.substring(rhsString.indexOf("(") + 1, rhsString.indexOf(")")).replace("'", "");
+				sb.append("OPEN(UNIT = 1, FILE = \"" + fileName + "\");\n");
+				String varName = fileName.split("\\.")[0];
+				// TODO adding some preprocessing function to get the shape of the file.
+				sb.append(getMoreIndent(0) + "CALL file_analyze('" + fileName + "', " + varName + "_r, " + varName + "_c);\n");
+				sb.append(getMoreIndent(0) + "ALLOCATE(" + varName + "(" + varName + "_r, " + varName + "_c));\n");
+				fotranTemporaries.put(varName + "_r", new BasicMatrixValue(
+						null, 
+						PrimitiveClassReference.INT32, 
+						new ShapeFactory<AggrValue<BasicMatrixValue>>().getScalarShape(), 
+						null, 
+						new isComplexInfoFactory<AggrValue<BasicMatrixValue>>()
+						.newisComplexInfoFromStr("REAL")
+						));
+				fotranTemporaries.put(varName + "_c", new BasicMatrixValue(
+						null, 
+						PrimitiveClassReference.INT32, 
+						new ShapeFactory<AggrValue<BasicMatrixValue>>().getScalarShape(), 
+						null, 
+						new isComplexInfoFactory<AggrValue<BasicMatrixValue>>()
+						.newisComplexInfoFromStr("REAL")
+						));
+				sb.append(getMoreIndent(0) + "DO row_" + varName + " = 1, SIZE(" + varName + ", 1)\n");
+				sb.append(getMoreIndent(1) + "READ(1, *) " + varName + "(row_" + varName + ", :);\n");
+				sb.append(getMoreIndent(0) + "END DO\n");
+				fSubroutines.setFunctionCall(sb.toString());
+				fotranTemporaries.put("row_" + varName, new BasicMatrixValue(
+						null, 
+						PrimitiveClassReference.INT32, 
+						new ShapeFactory<AggrValue<BasicMatrixValue>>().getScalarShape(), 
+						null, 
+						new isComplexInfoFactory<AggrValue<BasicMatrixValue>>()
+						.newisComplexInfoFromStr("REAL")
+						));
 				if (ifWhileForBlockNest != 0) {
 					stmtSecForIfWhileForBlock.addStatement(fSubroutines);
 				}
@@ -1876,7 +1951,8 @@ public class FortranCodeASTGenerator extends AbstractNodeCaseHandler {
 					sb.append(name + "(");
 					node.getChild(1).analyze(this);
 					sb.append(")");
-					if (!name.equals("disp")) allSubprograms.add(name);
+					if (!name.equals("disp") && !name.equals("load")) 
+						allSubprograms.add(name);
 				}
 			}
 			/*

@@ -2,14 +2,21 @@
 package natlab.tame.builtin;
 
 //decloare the required imports:
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Set;
+
+import natlab.tame.builtin.classprop.ClassPropTool;
+import natlab.tame.builtin.classprop.HasClassPropagationInfo;
+import natlab.tame.builtin.classprop.ast.CP;
+import natlab.tame.builtin.classprop.ast.CPNone;
+import natlab.tame.builtin.isComplexInfoProp.HasisComplexPropagationInfo;
+import natlab.tame.builtin.isComplexInfoProp.isComplexInfoPropTool;
+import natlab.tame.builtin.isComplexInfoProp.ast.ICNode;
+import natlab.tame.builtin.shapeprop.HasShapePropagationInfo;
+import natlab.tame.builtin.shapeprop.ShapePropTool;
+import natlab.tame.builtin.shapeprop.ast.SPNode; //XU -- remove this!!!!! XU did
 import natlab.toolkits.path.BuiltinQuery;
-import natlab.tame.builtin.classprop.*;
-import natlab.tame.builtin.classprop.ast.*;
-import natlab.tame.builtin.shapeprop.*;
-import natlab.tame.builtin.shapeprop.ast.*; //XU -- remove this!!!!! XU did
-import natlab.tame.builtin.isComplexInfoProp.*;
-import natlab.tame.builtin.isComplexInfoProp.ast.*;
 
 
 public abstract class Builtin {
@@ -7384,7 +7391,7 @@ public abstract class Builtin {
         }
         
     }
-    public static class Load extends AbstractIoFunction  {
+    public static class Load extends AbstractIoFunction implements HasShapePropagationInfo, HasClassPropagationInfo, HasisComplexPropagationInfo {
         //returns the singleton instance of this class
         private static Load singleton = null;
         public static Load getInstance(){
@@ -7400,6 +7407,39 @@ public abstract class Builtin {
             return "load";
         }
         
+        private SPNode shapePropInfo = null;
+        public SPNode getShapePropagationInfo(){
+            //set shapePropInfo if not defined
+            if (shapePropInfo == null){
+                shapePropInfo = ShapePropTool.parse("#->[]");
+            }
+            return shapePropInfo;
+        }
+
+        public CP getMatlabClassPropagationInfo(){{
+            return getClassPropagationInfo();
+        }}
+
+        private CP classPropInfo = null;
+        public CP getClassPropagationInfo(){
+            //set classPropInfo if not defined
+            if (classPropInfo == null){
+                classPropInfo = ClassPropTool.parse("char->none");
+                classPropInfo.setVar("parent",new CPNone());
+                classPropInfo.setVar("matlab",getMatlabClassPropagationInfo());
+            }
+            return classPropInfo;
+        }
+
+        private ICNode isComplexPropInfo = null;
+        public ICNode getisComplexPropagationInfo(){
+            //set isComplexPropInfo if not defined
+            if (isComplexPropInfo == null){
+                isComplexPropInfo = isComplexInfoPropTool.parse("A->X");
+            }
+            return isComplexPropInfo;
+        }
+
     }
     public static class Save extends AbstractIoFunction  {
         //returns the singleton instance of this class

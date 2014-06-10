@@ -10,17 +10,20 @@ public class OperatorMapper {
 		opMap = new HashMap<String, String>();
 		opMap.put("plus", "plus");
 		opMap.put("minus", "minus");
+		opMap.put("rdivide", "div");
 		opMap.put("mtimes", "mmult");
 		opMap.put("times", "mult");
-		opMap.put("mrdivide", "div");
+		opMap.put("mrdivide", "mrdiv");
+		opMap.put("mldivide", "mldiv");
 		opMap.put("and", "and");
 		opMap.put("or", "or");
 		// TODO : to be entered
-		opMap.put("eq", "");
-		opMap.put("leq", "leq");
-		opMap.put("geq", "geq");
+		opMap.put("eq", "eq");
+		opMap.put("le", "leq");
+		opMap.put("ge", "geq");
 		opMap.put("lt", "lt");
 		opMap.put("gt", "gt");
+		opMap.put("le", "lt");
 		// TODO: need to check all divisions and then add them
 		// TODO: check equivalents for Unary operators
 		opMap.put("uplus", "");
