@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package natlab.backends.javascript;
+package natlab.backends.javascript.transformers;
 
 import natlab.backends.javascript.jsast.*;
 import natlab.tame.builtin.Builtin;
@@ -22,8 +22,19 @@ import natlab.tame.valueanalysis.ValueAnalysis;
 import natlab.tame.valueanalysis.aggrvalue.AggrValue;
 import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
 
-public class JSFixBuiltins {
-    public static void fix(ASTNode node, ValueAnalysis<AggrValue<BasicMatrixValue>> analysis, int index) {
+/**
+ * Rename JavaScript function calls; the prefix "mc_" is added to all
+ * built-in calls, and a suffix describing the shape of the parameters
+ * is also added with "S" representing a scalar parameter and "M" a
+ * matrix parameter.
+ * 
+ * e.g. plus(3, 4)        => mc_plus_SS(3, 4)
+ *      times([1 2 3], 4) => mc_times_MS([1 2 3], 4)
+ * @author vfoley1
+ *
+ */
+public class JSRenameBuiltins {
+    public static void apply(ASTNode node, ValueAnalysis<AggrValue<BasicMatrixValue>> analysis, int index) {
         if (node instanceof ExprCall) {
             ExprCall call = (ExprCall) node;
             if (call.getExpr() instanceof ExprVar) {
@@ -55,7 +66,7 @@ public class JSFixBuiltins {
         }
         
         for (int i = 0; i < node.getNumChild(); ++i) {
-            fix(node.getChild(i), analysis, index);
+            apply(node.getChild(i), analysis, index);
         }
     }
 }

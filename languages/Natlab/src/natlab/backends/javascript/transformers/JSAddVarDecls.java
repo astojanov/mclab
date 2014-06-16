@@ -14,20 +14,48 @@
  *  limitations under the License.
  */
 
-package natlab.backends.javascript.codegen;
+package natlab.backends.javascript.transformers;
 
 import java.util.*;
 import natlab.backends.javascript.jsast.*;
+import natlab.backends.javascript.jsast.List;
 
-public class JSFixVars {
+/**
+ * In MATLAB, you don't declare variables, however in JavaScript you need
+ * to declare your local variables.  This class finds the locals.
+ * @author vfoley1
+ *
+ */
+public class JSAddVarDecls {
+    
+    public static void apply(Function func) {
+        Set<String> vars = getVars(func);
+        
+        StmtBlock sb = func.getStmtBlock();
+        List<Stmt> stmts = sb.getStmtList();
+        for (String var: vars) {
+            stmts.insertChild(new StmtVarDecl(new ExprVar(var), new Opt<Expr>()), 0);
+        }
+    }
 
     /**
+     * Compute the following three sets:
+     *   - Local variables
+     *   - Global variables
+     *   - Formal parameters
+     * and return locals \ (globals U params)
      * @return the names of local variables that are assigned to.
      */
-    public static Set<String> getVars(ASTNode root) {
-        Set<String> locals = getLocals(root);
-        Set<String> globals = getGlobals(root);
+    public static Set<String> getVars(Function func) {
+        Set<String> locals = getLocals(func);
+        Set<String> globals = getGlobals(func);
+        Set<String> params =  new HashSet<String>();
+        for (Parameter param: func.getParamList()) {
+            params.add(param.getName());
+        }
+
         locals.removeAll(globals);
+        locals.removeAll(params);
         return locals;
     }
 
