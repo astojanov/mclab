@@ -24,9 +24,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import natlab.backends.javascript.codegen.JSASTGenerator;
-import natlab.backends.javascript.codegen.JSFixVars;
 import natlab.backends.javascript.jsast.*;
 import natlab.backends.javascript.pretty.Pretty;
+import natlab.backends.javascript.transformers.JSAddVarDecls;
+import natlab.backends.javascript.transformers.JSRenameBuiltins;
 import natlab.tame.BasicTamerTool;
 import natlab.tame.tir.TIRFunction;
 import natlab.tame.valueanalysis.ValueAnalysis;
@@ -70,27 +71,16 @@ public class Main {
             }
         }
 
-        // Add variable declarations inside every function.
-        for (Function f: program.getFunctions()) {
-            Set<String> vars = JSFixVars.getVars(f);
 
-            // Parameters should not be redeclared.
-            for (Parameter param: f.getParamList()) {
-                vars.remove(param.getName());
-            }
-
-            StmtBlock sb = f.getStmtBlock();
-            List<Stmt> stmts = sb.getStmtList();
-            for (String var: vars) {
-                stmts.insertChild(new StmtVarDecl(new ExprVar(var), new Opt<Expr>()), 0);
-            }
-        }
-        
-        // Rename builtins
+        // Apply JavaScript program transformations
         {
             int i = 0;
             for (Function f: program.getFunctions()) {
-                JSFixBuiltins.fix(f, analysis, i);
+                // Add variable declarations inside every function.
+                JSAddVarDecls.apply(f);
+
+                // Rename builtin function calls.
+                JSRenameBuiltins.apply(f, analysis, i);
                 ++i;
             }
         }

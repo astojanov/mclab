@@ -238,7 +238,7 @@ public final class XMLTIRSerializer extends TIRAbstractNodeCaseHandler
 		Element element = createChild(parentElement, "If");
 		element.setAttribute("condition", node.getConditionVarName().getID());
 
-		createChildrenStatements(element, node.getIfStameents());
+		createChildrenStatements(element, node.getIfStatements());
 		if (node.hasElseBlock() && node.getElseStatements().getNumChild() > 0)
 		{
 			createChild(element, "Else");
