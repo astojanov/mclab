@@ -22,7 +22,8 @@ import natlab.backends.javascript.jsast.List;
 
 /**
  * In MATLAB, you don't declare variables, however in JavaScript you need
- * to declare your local variables.  This class finds the locals.
+ * to declare your local variables.  This class finds the locals and inserts
+ * the appropriate declarations.
  * @author vfoley1
  *
  */
@@ -43,7 +44,8 @@ public class JSAddVarDecls {
      *   - Local variables
      *   - Global variables
      *   - Formal parameters
-     * and return locals \ (globals U params)
+     * and return locals \ (globals U params), which are the variables
+     * that need to be declared.
      * @return the names of local variables that are assigned to.
      */
     public static Set<String> getVars(Function func) {

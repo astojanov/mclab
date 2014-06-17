@@ -294,3 +294,8 @@ function mc_uminus_M(m) {
     elemwise(out <= function(x) { return -x; } m);
     return out;
 }
+
+
+function mc_horzcat() {
+    return new Float64Array(arguments);
+}
