@@ -16,6 +16,8 @@
 
 package natlab.backends.javascript.transformers;
 
+import java.util.Arrays;
+
 import natlab.backends.javascript.jsast.*;
 import natlab.tame.builtin.Builtin;
 import natlab.tame.valueanalysis.ValueAnalysis;
@@ -27,25 +29,39 @@ import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
  * built-in calls, and a suffix describing the shape of the parameters
  * is also added with "S" representing a scalar parameter and "M" a
  * matrix parameter.
- * 
+ *
  * e.g. plus(3, 4)        => mc_plus_SS(3, 4)
  *      times([1 2 3], 4) => mc_times_MS([1 2 3], 4)
  * @author vfoley1
  *
  */
 public class JSRenameBuiltins {
+    /**
+     * Array of builtins that we shouldn't add a type suffix to.
+     * Mostly variadic functions.
+     */
+    private static String[] NO_SUFFIXES = {
+        "horzcat",
+        "vertcat",
+    };
+
+    static {
+        Arrays.sort(NO_SUFFIXES, (s, t) -> s.compareTo(t));
+    }
+
+
     public static void apply(ASTNode node, ValueAnalysis<AggrValue<BasicMatrixValue>> analysis, int index) {
         if (node instanceof ExprCall) {
             ExprCall call = (ExprCall) node;
             if (call.getExpr() instanceof ExprVar) {
                 ExprVar var = (ExprVar) call.getExpr();
-                
+
                 if (Builtin.getInstance(var.getName()) != null) {
                     String suffix = "";
-                    
+
                     for (Expr e: call.getArguments()) {
                         ExprVar arg = (ExprVar) e;
-                        AggrValue<BasicMatrixValue> val = 
+                        AggrValue<BasicMatrixValue> val =
                                 analysis.getNodeList()
                                 .get(index)
                                 .getAnalysis()
@@ -59,12 +75,13 @@ public class JSRenameBuiltins {
                                 suffix += "M";
                         }
                     }
-                    
-                    var.setName("mc_" + var.getName() + "_" + suffix);                   
+
+                    int pos = Arrays.binarySearch(NO_SUFFIXES, var.getName(), (s, t) -> s.compareTo(t));
+                    var.setName("mc_" + var.getName() + (pos >= 0 ? "" : "_" + suffix));
                 }
             }
         }
-        
+
         for (int i = 0; i < node.getNumChild(); ++i) {
             apply(node.getChild(i), analysis, index);
         }

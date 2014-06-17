@@ -184,10 +184,17 @@
   <!-- jar build with JavaScript backend. -->
   <target name="jar-javascript" depends="matlab.build, clean, jar-javascript-noclean"
           description="creates an executable release jar" />
-  <target name="jar-javascript-noclean" depends="gen, compile" description="creates an executable release jar without cleaning first">
+  <target name="jar-javascript-noclean" depends="gen, compile, jar-javascript-lib" description="creates an executable release jar without cleaning first">
     <natlab-jar basename="MatJuice" excludes="**/x10/**, **/Fortran/**, **/VRIRGen/**" />
   </target>
-
+  <target name="jar-javascript-lib" description="compile sweet.js lib to JS (requires sjs)">
+    <exec executable="sjs">
+      <arg value="-r" />
+      <arg value="src/natlab/backends/javascript/lib/lib.sjs" />
+      <arg value="-o" />
+      <arg value="src/natlab/backends/javascript/lib/lib.js" />
+    </exec>
+  </target>
 
   <!-- public versions of eclipse.xml targets -->
   <target name="eclipse.build" depends="matlab.eclipse.build, Eclipse.eclipse.build" description="generate all files (including matlab), let Eclipse build" />
