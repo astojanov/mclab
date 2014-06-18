@@ -12,9 +12,21 @@ abstract public class TIRAbstractAssignFromVarStmt extends TIRAbstractAssignStmt
     }
 
     /**
+     * Return the lhs name
+     */
+    abstract public Name getName();
+
+    /**
      * returns the rhs name
      */
     public Name getValueName(){
         return ((NameExpr)getRHS()).getName();
     }
+
+    /**
+     * Return indices
+     */
+    abstract public TIRCommaSeparatedList getIndices();
+
+
 }

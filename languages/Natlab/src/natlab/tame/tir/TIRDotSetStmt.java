@@ -18,12 +18,22 @@ public class TIRDotSetStmt extends TIRAbstractAssignFromVarStmt{
     public Name getDotName(){
         return ((NameExpr)(((DotExpr)getLHS()).getTarget())).getName();
     }
+
+    public Name getName() {
+        return getDotName();
+    }
+
     public Name getFieldName(){
         return ((DotExpr)getLHS()).getField();
     }
-    
-    
-    
+
+    public TIRCommaSeparatedList getIndices() {
+        TIRCommaSeparatedList fields = new TIRCommaSeparatedList(new NameExpr(getFieldName()));
+        return fields;
+    }
+
+
+
     @Override
     public void tirAnalyze(TIRNodeCaseHandler irHandler) {
         irHandler.caseTIRDotSetStmt(this);

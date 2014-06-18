@@ -275,3 +275,6 @@ function mc_uminus_M(m) {
     ;
     return out;
 }
+function mc_horzcat() {
+    return new Float64Array(arguments);
+}

@@ -25,29 +25,37 @@ import ast.NameExpr;
 
 /**
  * statements of the form
- * 
+ *
  * v{i1,i2,i3,..,in} = t;
- * 
+ *
  * where v is a cell array
  */
 
 
 public class TIRCellArraySetStmt extends TIRAbstractAssignFromVarStmt {
     private static final long serialVersionUID = 1L;
-    
+
     public TIRCellArraySetStmt(Name array, TIRCommaSeparatedList indizes,Name rhs){
         super(rhs);
         setLHS(new CellIndexExpr(new NameExpr(array),indizes));
     }
-    
+
     public Name getCellArrayName(){
         return ((NameExpr)((CellIndexExpr)getLHS()).getTarget()).getName();
     }
-            
+
+    public Name getName() {
+        return getCellArrayName();
+    }
+
     public TIRCommaSeparatedList getIndizes(){
         return (TIRCommaSeparatedList)(((CellIndexExpr)getLHS()).getArgList());
     }
-    
+
+    public TIRCommaSeparatedList getIndices() {
+        return getIndizes();
+    }
+
     @Override
     public void tirAnalyze(TIRNodeCaseHandler irHandler) {
         irHandler.caseTIRCellArraySetStmt(this);
