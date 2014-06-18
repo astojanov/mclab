@@ -25,9 +25,9 @@ import ast.ParameterizedExpr;
 
 /**
  * statements of the form
- * 
+ *
  * v(i1,i2,i3,..,in) = t
- * 
+ *
  * where v is an array
  * @author ant6n
  */
@@ -40,20 +40,31 @@ public class TIRArraySetStmt extends TIRAbstractAssignFromVarStmt {
         super(rhs);
         setLHS(new ParameterizedExpr(new NameExpr(array),indizes));
     }
-    
+
     public Name getArrayName(){
         return ((NameExpr)((ParameterizedExpr)getLHS()).getTarget()).getName();
     }
-        
+
+
+    public Name getName() {
+        return getArrayName();
+    }
+
+
     public Name getValueName(){
         return ((NameExpr)getRHS()).getName();
     }
-    
+
     public TIRCommaSeparatedList getIndizes(){
         return (TIRCommaSeparatedList)(((ParameterizedExpr)getLHS()).getArgList());
     }
-    
-    
+
+
+    public TIRCommaSeparatedList getIndices() {
+        return getIndizes();
+    }
+
+
     @Override
     public void tirAnalyze(TIRNodeCaseHandler irHandler) {
         irHandler.caseTIRArraySetStmt(this);

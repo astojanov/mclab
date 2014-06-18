@@ -18,6 +18,7 @@ package natlab.backends.javascript.codegen;
 
 
 import natlab.backends.javascript.jsast.*;
+import natlab.utils.NodeFinder;
 import natlab.tame.tir.*;
 import natlab.tame.builtin.*;
 import natlab.toolkits.rewrite.TempFactory;
@@ -57,10 +58,10 @@ public class JSASTGenerator {
     }
 
     /**
-     * In MATLAB, results are returned to the caller by assigning
-     * into out parameters.  We accumulate them into a list, and
-     * return an array containing the names of the out parameters
-     * or just the name in case there is only one.
+     * In MATLAB, results are returned to the caller by assigning into
+     * out parameters.  We accumulate the name of these parameters
+     * into a list, and return an array of the out parameters or just
+     * the name in case there is only one.
      * @param astFunc the function to create a return statement for
      * @return null if the function doesn't have output parameters, a StmtReturn otherwise.
      */
@@ -81,23 +82,32 @@ public class JSASTGenerator {
     }
 
     /**
-     * Main dispatching method for statements. It would be cleaner if we could
-     * use Java's dynamic dispatch mechanism, but it would require us to modify every
-     * Tamer/McSAF class, which we don't want to do.
+     * Main dispatching method for statements. It would be cleaner if
+     * we could use Java's dynamic dispatch mechanism, but it would
+     * require us to modify every Tamer/McSAF class, which we don't
+     * want to do.
      * @param stmt The IR statement to convert.
      * @return The JS statement.
      */
-    public static Stmt genStmt(TIRStmt tirStmt) {
+    private static Stmt genStmt(TIRStmt tirStmt) {
+        // Assignment statements.
+        if (tirStmt instanceof TIRDotSetStmt) return genDotSetStmt((TIRDotSetStmt) tirStmt);
+        if (tirStmt instanceof TIRAbstractAssignFromVarStmt) return genAbstractAssignFromVarStmt((TIRAbstractAssignFromVarStmt) tirStmt);
         if (tirStmt instanceof TIRAbstractAssignToVarStmt) return genAssignToVarStmt((TIRAbstractAssignToVarStmt) tirStmt);
         if (tirStmt instanceof TIRAbstractAssignToListStmt) return genAssignToListStmt((TIRAbstractAssignToListStmt) tirStmt);
-        if (tirStmt instanceof TIRArraySetStmt) return genArraySetStmt((TIRArraySetStmt) tirStmt);
+
+        // Control flow statements.
+        // (Missing: None)
+        if (tirStmt instanceof TIRIfStmt) return genIfStmt((TIRIfStmt) tirStmt);
         if (tirStmt instanceof TIRWhileStmt) return genWhileStmt((TIRWhileStmt) tirStmt);
         if (tirStmt instanceof TIRForStmt) return genForStmt((TIRForStmt) tirStmt);
-        if (tirStmt instanceof TIRIfStmt) return genIfStmt((TIRIfStmt) tirStmt);
-        if (tirStmt instanceof TIRCommentStmt) return genCommentStmt((TIRCommentStmt) tirStmt);
-        if (tirStmt instanceof TIRContinueStmt) return genContinueStmt();
-        if (tirStmt instanceof TIRBreakStmt) return genBreakStmt();
         if (tirStmt instanceof TIRReturnStmt) return genReturnStmt((TIRReturnStmt) tirStmt);
+        if (tirStmt instanceof TIRBreakStmt) return genBreakStmt();
+        if (tirStmt instanceof TIRContinueStmt) return genContinueStmt();
+
+        // Other statements.
+        // (Missing: TIRPersistentStmt)
+        if (tirStmt instanceof TIRCommentStmt) return genCommentStmt((TIRCommentStmt) tirStmt);
         if (tirStmt instanceof TIRGlobalStmt) return genGlobalStmt((TIRGlobalStmt) tirStmt);
 
         throw new UnsupportedOperationException(
@@ -116,7 +126,7 @@ public class JSASTGenerator {
      * @param tirStmts the statement list
      * @return a StmtBlock
      */
-    public static Stmt genStmtList(TIRStatementList tirStmts) {
+    private static Stmt genStmtList(TIRStatementList tirStmts) {
         StmtBlock stmts = new StmtBlock();
         for (int i = 0; i < tirStmts.getNumChild(); ++i) {
             TIRStmt currStmt = (TIRStmt) tirStmts.getChild(i);
@@ -140,15 +150,17 @@ public class JSASTGenerator {
     }
 
 
+
     /**
      * MATLAB assignments of the form:
      *   x = <lit>
      *   x = y
      * where x and y are variables.
+     *
      * @param tirStmt the statement to process.
      * @return A JS assignment statement (ExprAssign wrapped in a StmtExpr).
      */
-    public static Stmt genAssignToVarStmt(TIRAbstractAssignToVarStmt tirStmt) {
+    private static Stmt genAssignToVarStmt(TIRAbstractAssignToVarStmt tirStmt) {
         String lhs = extractLHSName(tirStmt);
         ast.Expr rhs = tirStmt.getRHS();
         return new StmtExpr(new ExprAssign(new ExprVar(lhs), genExpr(rhs)));
@@ -170,7 +182,7 @@ public class JSASTGenerator {
      * @param tirStmt
      * @return A statement block (without braces) containing the call + assignments.
      */
-    public static Stmt genAssignToListStmt(TIRAbstractAssignToListStmt tirStmt) {
+    private static Stmt genAssignToListStmt(TIRAbstractAssignToListStmt tirStmt) {
         StmtBlockNoBraces stmts = new StmtBlockNoBraces();
         Expr call =
                 tirStmt instanceof TIRCallStmt
@@ -207,7 +219,7 @@ public class JSASTGenerator {
 
     /**
      * A helper function; MATLAB is 1-index, JavaScript is 0-indexed.  We use this
-     * method to transform an indexing expression into a subtraction by 1.
+     * method to transform an expression into `expr - 1`.
      * @param expr the indexing expression.
      * @return expr - 1
      */
@@ -220,23 +232,31 @@ public class JSASTGenerator {
      * MATLAB assignments of the form:
      *   m(i1, i2, ..., in) = x
      * @param tirStmt
-     * @return m[i1-1][i2-1]...[in-1] = x
+     * @return mc_array_set(m, x, i1-1, i2-1, ..., in-1)
      */
-    public static Stmt genArraySetStmt(TIRArraySetStmt tirStmt) {
-        String lhs = tirStmt.getArrayName().getID();
+    private static Stmt genAbstractAssignFromVarStmt(TIRAbstractAssignFromVarStmt tirStmt) {
+        String setterName = tirStmt instanceof TIRArraySetStmt ? "mc_array_set" : "mc_cellarray_set";
+
+        ExprCall setter = new ExprCall();
+        setter.setExpr(new ExprVar(setter));
+
+        String lhs = tirStmt.getName().getID();
         String rhs = tirStmt.getValueName().getID();
-        TIRCommaSeparatedList indices = tirStmt.getIndizes();
-        ExprPropertyGet prop = new ExprPropertyGet(new ExprVar(lhs), null);
-        for (int i = 0; i < indices.getNumChild(); ++i) {
-            if (i == 0)
-                prop.setProperty(indexedBy(genExpr(indices.getChild(i))));
-            else {
-                prop = new ExprPropertyGet(
-                        prop,
-                        indexedBy(genExpr(indices.getChild(i))));
-            }
+        TIRCommaSeparatedList indices = tirStmt.getIndices();
+
+        List<Expr> args = new List<>();
+        args.add(new ExprVar(lhs));
+        args.add(new ExprVar(rhs));
+        for (ast.Expr expr: indices) {
+            args.add(genExpr(expr));
         }
-        return new StmtExpr(new ExprAssign(prop, new ExprVar(rhs)));
+        setter.setArgumentList(args);
+        return new StmtExpr(setter);
+    }
+
+
+    private static Stmt genDotSetStmt(TIRDotSetStmt tirStmt) {
+        throw new UnsupportedOperationException("MATLAB structs are not yet supported");
     }
 
 
@@ -245,7 +265,7 @@ public class JSASTGenerator {
      * @param tirWhile the while loop to transform
      * @return a StmtWhile node
      */
-    public static Stmt genWhileStmt(TIRWhileStmt tirWhile) {
+    private static Stmt genWhileStmt(TIRWhileStmt tirWhile) {
         StmtBlock body = new StmtBlock();
         for (ast.Stmt stmt: tirWhile.getStmtList()) {
             body.addStmt(genStmt((TIRStmt) stmt));
@@ -266,7 +286,7 @@ public class JSASTGenerator {
      * @param tirFor the for loop to transform
      * @return a StmtFor node
      */
-    public static Stmt genForStmt(TIRForStmt tirFor) {
+    private static Stmt genForStmt(TIRForStmt tirFor) {
         StmtBlock body = new StmtBlock();
         for (ast.Stmt stmt: tirFor.getStmtList()) {
             body.addStmt(genStmt((TIRStmt) stmt));
@@ -294,7 +314,7 @@ public class JSASTGenerator {
      * @param tirIf the if/else/end statement
      * @return a StmtIfThenElse node
      */
-    public static Stmt genIfStmt(TIRIfStmt tirIf) {
+    private static Stmt genIfStmt(TIRIfStmt tirIf) {
         Expr condVar = new ExprVar(tirIf.getConditionVarName().getID());
         Stmt ifBlock = genStmtList(tirIf.getIfStatements());
         boolean hasElseStatements = tirIf.getElseStatements().getNumChild() > 0;
@@ -308,18 +328,18 @@ public class JSASTGenerator {
 
     /**
      * Convert a MATLAB continue to a JavaScript continue.
-     * @return
+     * @return A JavaScript continue statement.
      */
-    public static Stmt genContinueStmt() {
+    private static Stmt genContinueStmt() {
         return new StmtContinue();
     }
 
 
     /**
      * Convert a MATLAB break to a JavaScript break.
-     * @return
+     * @return A JavaScript break statement.
      */
-    public static Stmt genBreakStmt() {
+    private static Stmt genBreakStmt() {
         return new StmtBreak();
     }
 
@@ -331,14 +351,11 @@ public class JSASTGenerator {
      * we find the names of the output parameters of the enclosing function and return them
      * explicitly.
      * @param tirReturn
-     * @return
+     * @return A JavaScript return statement (returns a single value or a JS array depending
+     *         on the number
      */
-    public static Stmt genReturnStmt(TIRReturnStmt tirReturn) {
-        ast.ASTNode curr = (ast.ASTNode) tirReturn;
-        while (!(curr instanceof ast.Function))
-            curr = curr.getParent();
-        ast.Function astFunc = (ast.Function) curr;
-
+    private static Stmt genReturnStmt(TIRReturnStmt tirReturn) {
+        ast.Function astFunc = NodeFinder.findParent(ast.Function.class, tirReturn);
         Stmt returnStmt = makeStmtReturn(astFunc);
         return returnStmt;
     }
@@ -349,7 +366,7 @@ public class JSASTGenerator {
      * JavaScript doesn't have such declarations, however we include them
      * to facilitate some analyses.
      */
-    public static Stmt genGlobalStmt(TIRGlobalStmt tirGlobal) {
+    private static Stmt genGlobalStmt(TIRGlobalStmt tirGlobal) {
         StmtGlobalDecl globalDecl = new StmtGlobalDecl();
         for (ast.Name name: tirGlobal.getNameList()) {
             globalDecl.addVar(new ExprVar(name.getID()));
@@ -358,7 +375,7 @@ public class JSASTGenerator {
     }
 
 
-    public static Stmt genCommentStmt(TIRCommentStmt tirComment) {
+    private static Stmt genCommentStmt(TIRCommentStmt tirComment) {
         if (tirComment.hasComments())
             return new StmtComment(tirComment.getNodeString());
         else
@@ -373,7 +390,7 @@ public class JSASTGenerator {
      * @param expr The IR expression to convert.
      * @return The JS expression.
      */
-    public static Expr genExpr(ast.Expr expr) {
+    private static Expr genExpr(ast.Expr expr) {
         if (expr instanceof ast.IntLiteralExpr) return genIntLiteralExpr((ast.IntLiteralExpr) expr);
         if (expr instanceof ast.FPLiteralExpr) return genFPLiteralExpr((ast.FPLiteralExpr) expr);
         if (expr instanceof ast.StringLiteralExpr) return genStringLiteralExpr((ast.StringLiteralExpr) expr);
@@ -393,7 +410,7 @@ public class JSASTGenerator {
      * @param expr
      * @return
      */
-    public static ExprInt genIntLiteralExpr(ast.IntLiteralExpr expr) {
+    private static ExprInt genIntLiteralExpr(ast.IntLiteralExpr expr) {
         return new ExprInt(Integer.parseInt(expr.getValue().getText()));
     }
 
@@ -403,7 +420,7 @@ public class JSASTGenerator {
      * @param expr
      * @return
      */
-    public static ExprNum genFPLiteralExpr(ast.FPLiteralExpr expr) {
+    private static ExprNum genFPLiteralExpr(ast.FPLiteralExpr expr) {
         return new ExprNum(Double.parseDouble(expr.getValue().getText()));
     }
 
@@ -416,17 +433,17 @@ public class JSASTGenerator {
      * @param expr
      * @return
      */
-    public static ExprString genStringLiteralExpr(ast.StringLiteralExpr expr) {
+    private static ExprString genStringLiteralExpr(ast.StringLiteralExpr expr) {
         return new ExprString(expr.getValue());
     }
 
-    public static ExprVar genNameExpr(ast.NameExpr expr) {
+    private static ExprVar genNameExpr(ast.NameExpr expr) {
         return new ExprVar(expr.getName().getID());
     }
 
     /**
      * Convert a function call expression into JavaScript.
-     * 
+     *
      * @param expr a ParametrizedExpr where the name corresponds to a
      * function kind.
      * @return The JavaScript function call.
@@ -434,7 +451,7 @@ public class JSASTGenerator {
      * TODO: Replace builtin calls like plus() and mtimes() with
      *       JavaScript operators when operands are scalars.
      */
-    public static Expr genCallExpr(ast.ParameterizedExpr expr) {
+    private static Expr genCallExpr(ast.ParameterizedExpr expr) {
         String funcName = expr.getVarName();
         ExprCall call = new ExprCall();
         ExprVar funName = new ExprVar(funcName);
@@ -446,7 +463,7 @@ public class JSASTGenerator {
     }
 
 
-    public static Expr genArrayGetExpr(ast.ParameterizedExpr expr) {
+    private static Expr genArrayGetExpr(ast.ParameterizedExpr expr) {
         ExprPropertyGet access = new ExprPropertyGet();
         String arrName = expr.getVarName();
         access.setExpr(new ExprVar(arrName));
