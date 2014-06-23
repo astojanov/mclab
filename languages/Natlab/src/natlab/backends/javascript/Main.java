@@ -57,7 +57,7 @@ public class Main {
 
         FileEnvironment fenv = new FileEnvironment(gfile);
         ValueAnalysis<AggrValue<BasicMatrixValue>> analysis = BasicTamerTool.analyze(shapeDesc, fenv);
-        
+
         Program program = new Program();
 
         // Convert the Tamer instructions to JavaScript.
@@ -66,7 +66,7 @@ public class Main {
         for (int i = 0; i < numFunctions; ++i) {
             TIRFunction matlabFunction = analysis.getNodeList().get(i).getAnalysis().getTree();
             if (!processedFunctions.contains(matlabFunction.getName())) {
-                processedFunctions.add(matlabFunction.getName());
+                processedFunctions.add(matlabFunction.getName().getID());
                 program.addFunction(JSASTGenerator.genFunction(matlabFunction));
             }
         }
