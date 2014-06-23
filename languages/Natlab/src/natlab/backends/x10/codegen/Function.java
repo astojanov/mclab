@@ -2,7 +2,6 @@ package natlab.backends.x10.codegen;
 
 import java.util.ArrayList;
 
-import ast.Name;
 //import natlab.backends.x10.IRx10.ast.Args;
 import natlab.backends.x10.IRx10.ast.IDInfo;
 import natlab.backends.x10.IRx10.ast.IDUse;
@@ -12,9 +11,9 @@ import natlab.backends.x10.IRx10.ast.MethodHeader;
 import natlab.backends.x10.IRx10.ast.ReturnStmt;
 import natlab.backends.x10.IRx10.ast.Stmt;
 import natlab.backends.x10.IRx10.ast.Type;
-import natlab.tame.tir.TIRAbstractAssignStmt;
 import natlab.tame.tir.TIRFunction;
 import natlab.tame.tir.TIRNode;
+import ast.Name;
 
 public class Function {
 
@@ -47,21 +46,12 @@ public class Function {
 		target.method.setMethodHeader(method_header);
 		target.method.setMethodBlock(method_block);
 		target.currentBlock.add(target.method.getMethodBlock());
-		/* TODO
-		 * Below statement handles the case when there is only one return value.
-		 * extend it to support multiple returns
-		 * Add a return type stmt with a list of return values
-		 */
 		System.out.println(node.getNodeString());
 		if (null != node.getOutputParams() && node.getOutputParams().getNumChild()>0){
 		Type returnType = Helper.getReturnType(target.analysis, target.index, node, node.getOutputParam(0).getID());
 		target.method.getMethodHeader().setReturnType(returnType);
 		}
-		
-		//DEBUG
-		//System.out.println(returnType.getName());
 		buildStmtsSubAST(node.getStmts(), target);
-		//make return statement
 		
 			ReturnStmt returnStmt = new ReturnStmt();
 			for (int i=0; i<node.getNumOutputParam();i++){
