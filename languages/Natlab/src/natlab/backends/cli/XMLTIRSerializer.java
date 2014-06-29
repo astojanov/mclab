@@ -189,7 +189,7 @@ public final class XMLTIRSerializer extends TIRAbstractNodeCaseHandler
 
 		// Create the XML node for the function
 		Element element = createChild(parentElement, "Function");
-		element.setAttribute("name", node.getName());
+		element.setAttribute("name", node.getName().getID());
 		if (node == analysis.getMainNode().getAnalysis().getTree())
 			element.setAttribute("entry", "true");
 
