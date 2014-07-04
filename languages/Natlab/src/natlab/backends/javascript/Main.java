@@ -16,12 +16,13 @@
 
 package natlab.backends.javascript;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
+
 
 import natlab.backends.javascript.codegen.JSASTGenerator;
 import natlab.backends.javascript.jsast.*;
@@ -43,27 +44,11 @@ public class Main {
     }
 
     private static String slurp(String filename) {
-    	BufferedReader reader = null;
-    	StringBuffer sbuf = new StringBuffer();
-
     	try {
-            reader = new BufferedReader(new FileReader(filename));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sbuf.append(String.format("%s%n", line));
-            }
-    	} catch (IOException e) {
-			e.printStackTrace();
+			return new String(Files.readAllBytes(Paths.get(filename)));
+		} catch (IOException e) {
+			return "";
 		}
-    	finally {
-    		try {
-    			reader.close();
-    		}
-    		catch (IOException e) {
-
-    		}
-    	}
-    	return sbuf.toString();
     }
 
 
