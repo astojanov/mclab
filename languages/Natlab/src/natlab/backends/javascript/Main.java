@@ -42,6 +42,31 @@ public class Main {
         System.exit(1);
     }
 
+    private static String slurp(String filename) {
+    	BufferedReader reader = null;
+    	StringBuffer sbuf = new StringBuffer();
+
+    	try {
+            reader = new BufferedReader(new FileReader(filename));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sbuf.append(String.format("%s%n", line));
+            }
+    	} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	finally {
+    		try {
+    			reader.close();
+    		}
+    		catch (IOException e) {
+
+    		}
+    	}
+    	return sbuf.toString();
+    }
+
+
     public static void main(String[] args) {
         if (args.length < 3) usage();
 
@@ -89,14 +114,18 @@ public class Main {
         // TODO: Fix the relative path of lib.js.
         // TODO: Better error messages.
         FileWriter out = null;
-        BufferedReader libReader = null;
+        String[] jsDeps = {
+        		"src/natlab/backends/javascript/lib/mjapi.js",
+        		"src/natlab/backends/javascript/lib/lib.js",
+        };
+
         try {
             out = new FileWriter(javascriptFile);
-            libReader = new BufferedReader(new FileReader("src/natlab/backends/javascript/lib/lib.js"));
-            String line;
-            while ((line = libReader.readLine()) != null) {
-                out.write(String.format("%s%n", line));
+
+            for (String jsDep: jsDeps) {
+            	out.write(slurp(jsDep));
             }
+
             out.write(String.format("%n%n// BEGINNING OF PROGRAM%n%n"));
             out.write(Pretty.display(program.pp()));
 
@@ -107,7 +136,6 @@ public class Main {
         finally {
             try {
                 out.close();
-                libReader.close();
             }
             catch (IOException e) {}
         }
