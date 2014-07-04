@@ -20,7 +20,6 @@ package natlab.backends.javascript.codegen;
 import natlab.backends.javascript.jsast.*;
 import natlab.utils.NodeFinder;
 import natlab.tame.tir.*;
-import natlab.tame.builtin.*;
 import natlab.toolkits.rewrite.TempFactory;
 
 public class JSASTGenerator {
@@ -35,7 +34,7 @@ public class JSASTGenerator {
         Function fn = new Function();
 
         // Add input parameters.
-        fn.setFunctionName(new FunctionName(tirFunc.getName()));
+        fn.setFunctionName(new FunctionName(tirFunc.getName().getID()));
         for (ast.Name param: tirFunc.getInputParamList())
             fn.addParam(new Parameter(param.getID()));
 
@@ -238,7 +237,7 @@ public class JSASTGenerator {
         String setterName = tirStmt instanceof TIRArraySetStmt ? "mc_array_set" : "mc_cellarray_set";
 
         ExprCall setter = new ExprCall();
-        setter.setExpr(new ExprVar(setter));
+        setter.setExpr(new ExprVar(setterName));
 
         String lhs = tirStmt.getName().getID();
         String rhs = tirStmt.getValueName().getID();
