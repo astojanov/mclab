@@ -295,11 +295,7 @@ function mc_uminus_S(x) {
 }
 function mc_uminus_M(m) {
     var out = MJ_copy(m);
-    for (var i = 0, N = MJ_length(m); i < N; ++i) {
-        MJ_setElem(out, i, function (x) {
-            return -x;
-        }(MJ_getElem(m, i)));
-    }
-    ;
+    for (var i = 0; i < MJ_length(m); ++i)
+        MJ_setElem(out, i, -MJ_getElem(out, i));
     return out;
 }

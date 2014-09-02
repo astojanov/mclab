@@ -16,11 +16,22 @@ function MJ_create(x, size) {
 }
 
 
-function MJ_copy(x) {
+function MJ_clone(x) {
     if (typeof x === "number")
         return x;
     else {
         var newbuf = new Float64Array(x.data);
+        var newsize = MJ_getSize(x).slice(0);
+        return MJ_create(newbuf, newsize);
+    }
+}
+
+
+function MJ_clone_meta(x) {
+    if (typeof x === "number")
+        return x;
+    else {
+        var newbuf = new Float64Array(MJ_length(x));
         var newsize = MJ_getSize(x).slice(0);
         return MJ_create(newbuf, newsize);
     }
