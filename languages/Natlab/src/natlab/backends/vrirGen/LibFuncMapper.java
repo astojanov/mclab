@@ -23,13 +23,13 @@ public class LibFuncMapper {
 		libFuncMap.put("mpower", "pow");
 		libFuncMap.put("mtimes", "mmult");
 		libFuncMap.put("transpose", "trans");
-		libFuncMap.put("plus", "plus");
-		libFuncMap.put("minus", "minus");
-		libFuncMap.put("times", "mult");
-		libFuncMap.put("mrdivide", "mrdiv");
-		libFuncMap.put("mldivide", "mldiv");
-		libFuncMap.put("rdivide", "div");
-		libFuncMap.put("trans", "trans");
+		libFuncMap.put("plus", "libplus");
+		libFuncMap.put("minus", "libminus");
+		libFuncMap.put("times", "libmult");
+		libFuncMap.put("mrdivide", "libmrdiv");
+		libFuncMap.put("mldivide", "libmldiv");
+		libFuncMap.put("rdivide", "libdiv");
+		
 	}
 
 	public static String getFunc(String key) {
