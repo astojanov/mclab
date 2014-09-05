@@ -37,16 +37,17 @@ import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
  */
 public class JSRenameBuiltins {
     /**
-     * Array of builtins that we shouldn't add a type suffix to.
+     * Array of builtins that we should add a type suffix to.
      * Mostly variadic functions.
      */
-    private static String[] NO_SUFFIXES = {
-        "horzcat",
-        "vertcat",
+    private static String[] SPECIALIZED = {
+        "plus", "minus", "mtimes", "rem", "mrdivide", "lt", "le", "gt", "ge", "eq", "ne", "length",
+        "sin", "uminus",
     };
 
+    // The specialized functions are ordered so that we can run a binary search over them.
     static {
-        Arrays.sort(NO_SUFFIXES, (s, t) -> s.compareTo(t));
+        Arrays.sort(SPECIALIZED, (s, t) -> s.compareTo(t));
     }
 
 
@@ -58,26 +59,27 @@ public class JSRenameBuiltins {
 
                 if (Builtin.getInstance(var.getName()) != null) {
                     String suffix = "";
+                    boolean is_specialized = Arrays.binarySearch(SPECIALIZED, var.getName(), (s, t) -> s.compareTo(t)) >= 0;
 
-                    for (Expr e: call.getArguments()) {
-                        ExprVar arg = (ExprVar) e;
-                        AggrValue<BasicMatrixValue> val =
-                                analysis.getNodeList()
-                                .get(index)
-                                .getAnalysis()
-                                .getCurrentOutSet()
-                                .get(arg.getName())
-                                .getSingleton();
-                        if (val instanceof BasicMatrixValue) {
-                            if (((BasicMatrixValue) val).getShape().isScalar())
-                                suffix += "S";
-                            else
-                                suffix += "M";
-                        }
+                    if (is_specialized) {
+	                    for (Expr e: call.getArguments()) {
+	                        ExprVar arg = (ExprVar) e;
+	                        AggrValue<BasicMatrixValue> val =
+	                                analysis.getNodeList()
+	                                .get(index)
+	                                .getAnalysis()
+	                                .getCurrentOutSet()
+	                                .get(arg.getName())
+	                                .getSingleton();
+	                        if (val instanceof BasicMatrixValue) {
+	                            if (((BasicMatrixValue) val).getShape().isScalar())
+	                                suffix += "S";
+	                            else
+	                                suffix += "M";
+	                        }
+	                    }
                     }
-
-                    int pos = Arrays.binarySearch(NO_SUFFIXES, var.getName(), (s, t) -> s.compareTo(t));
-                    var.setName("mc_" + var.getName() + (pos >= 0 ? "" : "_" + suffix));
+                    var.setName("mc_" + var.getName() + (is_specialized ? "_" + suffix : ""));
                 }
             }
         }

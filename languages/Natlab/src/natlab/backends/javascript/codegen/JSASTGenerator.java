@@ -231,7 +231,7 @@ public class JSASTGenerator {
      * MATLAB assignments of the form:
      *   m(i1, i2, ..., in) = x
      * @param tirStmt
-     * @return mc_array_set(m, x, i1-1, i2-1, ..., in-1)
+     * @return mc_array_set(m, x, [i1-1, i2-1, ..., in-1])
      */
     private static Stmt genAbstractAssignFromVarStmt(TIRAbstractAssignFromVarStmt tirStmt) {
         String setterName = tirStmt instanceof TIRArraySetStmt ? "mc_array_set" : "mc_cellarray_set";
@@ -241,14 +241,18 @@ public class JSASTGenerator {
 
         String lhs = tirStmt.getName().getID();
         String rhs = tirStmt.getValueName().getID();
-        TIRCommaSeparatedList indices = tirStmt.getIndices();
+        TIRCommaSeparatedList indicesList = tirStmt.getIndices();
+
+        ExprArray indices = new ExprArray();
+        for (ast.Expr expr: indicesList) {
+            indices.addValue(indexedBy(genExpr(expr)));
+        }
 
         List<Expr> args = new List<>();
         args.add(new ExprVar(lhs));
+        args.add(indices);
         args.add(new ExprVar(rhs));
-        for (ast.Expr expr: indices) {
-            args.add(genExpr(expr));
-        }
+
         setter.setArgumentList(args);
         return new StmtExpr(setter);
     }
@@ -462,18 +466,25 @@ public class JSASTGenerator {
     }
 
 
+    /**
+     * Convert an access into an array into a JavaScript function call.
+     *
+     * A(i, j, k)  ==>  mc_array_get(A, [i-1, j-1, k-1])
+     *
+     * @param expr a Parametrized expression where the name corresponds to a
+     * matrix kind.
+     * @return the JavaScript function call.
+     */
     private static Expr genArrayGetExpr(ast.ParameterizedExpr expr) {
-        ExprPropertyGet access = new ExprPropertyGet();
-        String arrName = expr.getVarName();
-        access.setExpr(new ExprVar(arrName));
-        int i = 0;
-        for (ast.Expr arg: expr.getArgList()) {
-            if (i == 0)
-                access.setProperty(indexedBy(genExpr(arg)));
-            else
-                access = new ExprPropertyGet(access, indexedBy(genExpr(arg)));
-            i++;
-        }
-        return access;
+    	// Build the index array.
+    	ExprArray indices = new ExprArray();
+    	for (int i = 0; i < expr.getNumArg(); ++i) {
+    		indices.addValue(indexedBy(genExpr(expr.getArg(i))));
+    	}
+
+    	List<Expr> args = new List<Expr>(new ExprVar(expr.getVarName()), indices);
+
+    	ExprCall access = new ExprCall(new ExprVar("mc_array_get"), args);
+    	return access;
     }
 }

@@ -4,86 +4,79 @@
  * built-in.
  */
 
-function MJ_create(x, size) {
-    if (typeof x === "number")
-        return x;
-    else {
-        return {
-            data: x,
-            size: size
-        };
+function mj_create(x, shape) {
+
+    var make_stride = function(shape, dims) {
+        var stride = [1];
+        // for (var i = shape.length - 1, j = 1; i > 0; --i, ++j) {
+        //     stride.unshift(stride[stride.length - j] * shape[i]);
+        // }
+
+        for (var i = dims, j = 1; i > 0; --i, --j) {
+            stride.unshift(stride[stride.length - j] * shape[i]);
+        }
+        return stride;
     }
-}
 
-
-function MJ_clone(x) {
-    if (typeof x === "number")
-        return x;
-    else {
-        var newbuf = new Float64Array(x.data);
-        var newsize = MJ_getSize(x).slice(0);
-        return MJ_create(newbuf, newsize);
+    var count_dims = function(shape) {
+        var dims = 1;
+        for (var i = 0; i < shape.length; ++i) {
+            if (shape[i] !== 1)
+                dims += 1;
+        }
+        return dims;
     }
-}
 
-
-function MJ_clone_meta(x) {
-    if (typeof x === "number")
-        return x;
-    else {
-        var newbuf = new Float64Array(MJ_length(x));
-        var newsize = MJ_getSize(x).slice(0);
-        return MJ_create(newbuf, newsize);
-    }
-}
-
-
-function MJ_getSize(x) {
-    if (typeof x === "number")
-        return [1, 1];
-    else
-        return x.size;
-}
-
-
-function MJ_length(x) {
-    var p = 1;
-    var size = MJ_getSize(x);
-    for (var i = 0, N = MJ_getDims(x); i < N; ++i) {
-        p *= size[i];
-    }
-    return p;
-}
-
-
-function MJ_getDims(x) {
-    return MJ_getSize(x).length;
-}
-
-
-function MJ_getElem(x, idx) {
     if (typeof x === "number") {
-        if (idx === 0)
-            return x;
-        else
-            throw "Index out of bounds";
+        x.mj_length = 1;
+        x.mj_shape = [1, 1];
+        x.mj_dims = 1;
+        x.mj_scalar = true;
+        x.mj_stride = [1];
     }
     else {
-        return x.data[idx]
+        x.mj_length = x.length;
+        x.mj_shape = shape;
+        x.mj_dims = count_dims(shape);
+        x.mj_scalar = false;
+        x.mj_stride = make_stride(shape, x.md_dims);
+    }
+    return x;
+}
+
+
+function mj_clone(x) {
+    if (x.mj_scalar) {
+        return x;
+    }
+    else {
+        var newbuf = new Float64Array(x);
+        var newshape = x.mj_shape.slice(0);
+        return mj_create(newbuf, newshape);
     }
 }
 
 
-function MJ_setElem(x, idx, value) {
-    // VFB: we should probably use static analysis to avoid calling
-    // this on scalars.
-    if (typeof x === "number") {
-        if (idx === 0)
-            ;
-        else
-            throw "Index out of bounds";
+
+
+function mj_dims(x) {
+    return x.mj_shape.length;
+}
+
+
+function mj_get(x, indices) {
+    var array_index = 0;
+    for (var i = 0, end = indices.length; i < end; ++i) {
+        array_index += indices[i] * x.mj_stride[i];
     }
-    else {
-        x.data[idx] = value;
+    return x[array_index];
+}
+
+
+function mj_set(x, indices, value) {
+    var array_index = 0;
+    for (var i = 0, end = indices.length; i < end; ++i) {
+        array_index += indices[i] * x.mj_stride[i];
     }
+    x[array_index] = value;
 }

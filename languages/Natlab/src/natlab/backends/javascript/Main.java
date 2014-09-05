@@ -113,7 +113,7 @@ public class Main {
 
             out.write(String.format("%n%n// BEGINNING OF PROGRAM%n%n"));
             out.write(Pretty.display(program.pp()));
-
+            out.write('\n');
         }
         catch (IOException exc) {
             System.err.println("Error: cannot write to " + javascriptFile);
