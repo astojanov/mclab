@@ -304,20 +304,27 @@ function mc_array_get(m, indices) {
     return mj_get(m, indices);
 }
 
+
+// TODO: handle array growth
 function mc_array_set(m, indices, value) {
     return mj_set(m, indices, value);
 }
 
+
+// TODO: handle concatenating matrices
 function mc_horzcat() {
     return mj_create(arguments, [1, arguments.length]);
 }
 
+// TODO: handle concatenating matrices
 function mc_vertcat() {
     return mj_create(arguments, [arguments.length, 1]);
 }
 
 
 function mc_randn(m, n) {
+    if (n === undefined)
+        n = m;
     var buf = new Float64Array(m*n);
     for (var i = 0; i < m*n; ++i) {
         buf[i] = Math.random();

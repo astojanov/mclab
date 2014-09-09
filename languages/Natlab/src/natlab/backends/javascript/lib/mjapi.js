@@ -4,16 +4,20 @@
  * built-in.
  */
 
-function mj_create(x, shape) {
 
+/* Create a new matrix object.
+ * x    : the Float64Array that contains the data.
+ * shape: an array containing the dimensions of the matrix.
+ *
+ * Note: the elements in x are expected to be in column-major order,
+ *       i.e. the matrix [1 2 ; 3 4] is represented as {1, 3, 2, 4}.
+ */
+function mj_create(x, shape) {
     var make_stride = function(shape, dims) {
         var stride = [1];
-        // for (var i = shape.length - 1, j = 1; i > 0; --i, ++j) {
-        //     stride.unshift(stride[stride.length - j] * shape[i]);
-        // }
 
-        for (var i = dims, j = 1; i > 0; --i, --j) {
-            stride.unshift(stride[stride.length - j] * shape[i]);
+        for (var i = 0; i < dims - 1; ++i) {
+            stride.push(stride[i] * shape[i]);
         }
         return stride;
     }
@@ -39,7 +43,7 @@ function mj_create(x, shape) {
         x.mj_shape = shape;
         x.mj_dims = count_dims(shape);
         x.mj_scalar = false;
-        x.mj_stride = make_stride(shape, x.md_dims);
+        x.mj_stride = make_stride(shape, x.mj_dims);
     }
     return x;
 }
