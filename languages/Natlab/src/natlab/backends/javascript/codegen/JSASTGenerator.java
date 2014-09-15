@@ -399,6 +399,7 @@ public class JSASTGenerator {
         if (expr instanceof ast.StringLiteralExpr) return genStringLiteralExpr((ast.StringLiteralExpr) expr);
         if (expr instanceof ast.NameExpr) return genNameExpr((ast.NameExpr) expr);
         if (expr instanceof ast.ParameterizedExpr) return genCallExpr((ast.ParameterizedExpr) expr);
+        if (expr instanceof ast.ColonExpr) return genColonExpr((ast.ColonExpr) expr);
         throw new UnsupportedOperationException(
                 String.format("Expr node not supported. %d. %s [%s]",
                         expr.getStartLine(),
@@ -486,5 +487,10 @@ public class JSASTGenerator {
 
     	ExprCall access = new ExprCall(new ExprVar("mc_array_get"), args);
     	return access;
+    }
+
+
+    private static Expr genColonExpr(ast.ColonExpr expr) {
+    	return new ExprVar("MC_COLON");
     }
 }

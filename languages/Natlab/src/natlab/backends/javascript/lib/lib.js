@@ -302,6 +302,7 @@ function mc_uminus_M(m) {
 function mc_array_get(m, indices) {
     return mj_get(m, indices);
 }
+// TODO: handle array growth
 function mc_array_set(m, indices, value) {
     return mj_set(m, indices, value);
 }
@@ -319,15 +320,77 @@ function mc_vertcat() {
         1
     ]);
 }
-function mc_randn(m, n) {
-    if (n === undefined)
-        n = m;
-    var buf = new Float64Array(m * n);
-    for (var i = 0; i < m * n; ++i) {
+function mc_compute_shape_length(arg) {
+    var shape, length;
+    if (arg.length === 0) {
+        shape = [
+            1,
+            1
+        ];
+        length = 1;
+    } else if (arg.length === 1) {
+        shape = [
+            arg[0],
+            arg[0]
+        ];
+        length = arg[0] * arg[0];
+    } else {
+        shape = arg;
+        length = 1;
+        for (var i = 0; i < shape.length; ++i)
+            length *= arg[i];
+    }
+    return [
+        shape,
+        length
+    ];
+}
+function mc_randn() {
+    var sh_len = mc_compute_shape_length(Array.prototype.slice.call(arguments, 0));
+    var shape = sh_len[0];
+    var length = sh_len[1];
+    if (length === 1)
+        return Math.random();
+    var buf = new Float64Array(length);
+    for (var i = 0; i < length; ++i) {
         buf[i] = Math.random();
     }
-    return mj_create(buf, [
-        m,
-        n
-    ]);
+    return mj_create(buf, shape);
+}
+function mc_zeros() {
+    var sh_len = mc_compute_shape_length(Array.prototype.slice.call(arguments, 0));
+    var shape = sh_len[0];
+    var length = sh_len[1];
+    if (length === 1)
+        return 0;
+    var buf = new Float64Array(length);
+    return mj_create(buf, shape);
+}
+function mc_ones() {
+    var sh_len = mc_compute_shape_length(Array.prototype.slice.call(arguments, 0));
+    var shape = sh_len[0];
+    var length = sh_len[1];
+    if (length === 1)
+        return Math.random();
+    var buf = new Float64Array(length);
+    for (var i = 0; i < length; ++i) {
+        buf[i] = 1;
+    }
+    return mj_create(buf, shape);
+}
+function mc_eye(rows, cols) {
+    if (cols === undefined)
+        cols = rows;
+    var buf = new Float64Array(rows * cols);
+    var mat = mj_create(buf, [
+            rows,
+            cols
+        ]);
+    for (var i = 0; i < rows; ++i) {
+        mj_set(mat, [
+            i,
+            i
+        ], 1);
+    }
+    return mat;
 }

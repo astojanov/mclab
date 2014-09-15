@@ -36,10 +36,8 @@ import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
  *
  */
 public class JSRenameBuiltins {
-    /**
-     * Array of builtins that we should add a type suffix to.
-     * Mostly variadic functions.
-     */
+    /* Array of builtins that we should add a type suffix to.
+     * Mostly variadic functions. */
     private static String[] SPECIALIZED = {
         "plus", "minus", "mtimes", "rem", "mrdivide", "lt", "le", "gt", "ge", "eq", "ne", "length",
         "sin", "uminus",
