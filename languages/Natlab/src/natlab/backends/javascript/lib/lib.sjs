@@ -311,14 +311,69 @@ function mc_array_set(m, indices, value) {
 }
 
 
-// TODO: handle concatenating matrices
+// TODO: handle concatenating matrices of more than 2 dimensions
 function mc_horzcat() {
-    return mj_create(arguments, [1, arguments.length]);
+    var num_rows = -1;
+    var num_cols =  0;
+    var len = 0;
+
+    // Compute the length and number of columns of the result.
+    // Also check that all arguments have the same number of rows.
+    for (var i = 0; i < arguments.length; ++i) {
+        if (num_rows == -1) {
+            num_rows  = mj_shape(arguments[i])[0];
+        }
+        else if (mj_shape(arguments[i])[0] != num_rows) {
+            throw "Dimensions of matrices being concatenated are not consistent.";
+
+        }
+        num_cols += mj_shape(arguments[i])[1];
+        len += mj_length(arguments[i]);
+    }
+
+    // Create the result array buffer and populate it by just putting
+    // all the arguments back-to-back.
+    var buf = new Float64Array(len);
+    var offset = 0;
+    for (var i = 0; i < arguments.length; ++i) {
+        if (mj_scalar(arguments[i])) {
+            buf[offset] = arguments[i];
+        }
+        else {
+            buf.set(arguments[i], offset);
+        }
+        offset += mj_length(arguments[i]);
+    }
+    return mj_create(buf, [num_rows, num_cols]);
 }
 
 // TODO: handle concatenating matrices
 function mc_vertcat() {
-    return mj_create(arguments, [arguments.length, 1]);
+    var num_rows =  0;
+    var num_cols = -1;
+    var len = 0;
+
+    for (var i = 0; i < arguments.length; ++i) {
+        if (num_cols == -1) {
+            num_cols = mj_shape(arguments[i])[1];
+        }
+        else if (mj_shape(arguments[i])[1] != num_cols) {
+            throw "Dimensions of matrices being concatenated are not consistent.";
+        }
+        num_rows += mj_shape(arguments[i])[0];
+        len += mj_length(arguments[i]);
+    }
+    var buf = new Float64Array(len);
+    var offset = 0;
+    for (var col = 0; col < num_cols; ++col) {
+        for (var arg_id = 0; arg_id < arguments.length; ++arg_id) {
+            for (var row = 0; row < mj_shape(arguments[arg_id])[0]; ++row) {
+                buf[offset] = mc_array_get(arguments[arg_id], [row, col]);
+                offset++;
+            }
+        }
+    }
+    return mj_create(buf, [num_rows, num_cols]);
 }
 
 

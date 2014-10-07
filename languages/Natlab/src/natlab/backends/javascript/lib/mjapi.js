@@ -76,7 +76,7 @@ function mj_compute_index(x, indices) {
 }
 
 function mj_get(x, indices) {
-    return x[mj_compute_index(x, indices)];
+    return x[mj_compute_index(x, indices)] || x;
 }
 
 
