@@ -222,10 +222,10 @@ public class ExprCaseHandler {
 		gen.appendToPrettyCode(toXMLHead(name));
 		gen.appendToPrettyCode(HelperClass.getExprType(node, gen).toXML());
 		gen.appendToPrettyCode(HelperClass.toXMLHead("lhs"));
-		node.getArg(1).analyze(gen);
+		node.getArg(0).analyze(gen);
 		gen.appendToPrettyCode(HelperClass.toXMLTail());
 		gen.appendToPrettyCode(HelperClass.toXMLHead("rhs"));
-		node.getArg(0).analyze(gen);
+		node.getArg(1).analyze(gen);
 		gen.appendToPrettyCode(HelperClass.toXMLTail());
 		gen.appendToPrettyCode(toXMLTail());
 	}
@@ -394,7 +394,7 @@ public class ExprCaseHandler {
 								.equalsOne()
 						&& (((VTypeMatrix) vt).getShape().getDimensions()
 								.size() == 2)) {
-					name = "mult";
+					name = "libmult";
 				}
 			} else {
 				throw new UnsupportedOperationException(
@@ -409,7 +409,7 @@ public class ExprCaseHandler {
 								.equalsOne()
 						&& (((VTypeMatrix) vt).getShape().getDimensions()
 								.size() == 2)) {
-					name = "mult";
+					name = "libmult";
 				}
 			} else {
 				throw new UnsupportedOperationException(
@@ -452,7 +452,6 @@ public class ExprCaseHandler {
 		gen.appendToPrettyCode(toXMLTail());
 	}
 
-	// TODO: Revisit . Problem with indices
 	public static void handleIndexExpr(ParameterizedExpr expr, VrirXmlGen gen) {
 		Symbol sym = gen.getSymbol(expr.getVarName());
 		if (sym == null) {
@@ -477,12 +476,11 @@ public class ExprCaseHandler {
 		for (Expr arg : expr.getArgList()) {
 			gen.appendToPrettyCode(HelperClass
 					.toXMLHead("index :boundscheck %1 :negative %0"));
-			if (arg instanceof ParameterizedExpr) {
-				if (arg.getVarName().equals("colon")) {
-					handleColonCall((ParameterizedExpr) arg, gen);
-					gen.appendToPrettyCode(HelperClass.toXMLTail());
-					continue;
-				}
+			if (arg instanceof ParameterizedExpr
+					&& arg.getVarName().equals("colon")) {
+				handleColonCall((ParameterizedExpr) arg, gen);
+				gen.appendToPrettyCode(HelperClass.toXMLTail());
+				continue;
 			}
 			arg.analyze(gen);
 			gen.appendToPrettyCode(HelperClass.toXMLTail());
@@ -494,12 +492,12 @@ public class ExprCaseHandler {
 
 	public static void handleStringLiteralExpr(StringLiteralExpr expr,
 			VrirXmlGen gen) {
-		throw new RuntimeException("VRIR Does Not Support Strings");
+		//throw new RuntimeException("VRIR Does Not Support Strings");
 	}
 
 	public static void handleRange(Expr start, Expr step, Expr stop,
 			VrirXmlGen gen) {
-		gen.appendToPrettyCode(HelperClass.toXMLHead("range"));
+		gen.appendToPrettyCode(HelperClass.toXMLHead("range :exclude %0"));
 
 		gen.appendToPrettyCode(HelperClass.toXMLHead("start "));
 		start.analyze(gen);

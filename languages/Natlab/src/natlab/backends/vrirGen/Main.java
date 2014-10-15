@@ -1,18 +1,19 @@
 package natlab.backends.vrirGen;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import natlab.backends.vrirGen.WrapperGenFactory.TargetLang;
-//import natlab.backends.vrirGen.vrirCodeGen.CppCodeGen;
 import natlab.tame.BasicTamerTool;
 import natlab.tame.callgraph.SimpleFunctionCollection;
 import natlab.tame.callgraph.StaticFunction;
@@ -39,26 +40,36 @@ public class Main {
 		 * the type info is composed like double&3*3&REAL.
 		 */
 
-		String fileDir = "diff/";
-		String fileName = "drv_diff.m";
+		String fileDir = "matmul";
+		String fileName = "matmul_p.m";
+		// Map<String, String> dirMap = DirToEntryPointMapper.getMap();
+		// for (String rootDir : DirToEntryPointMapper.getMap().keySet()) {
+		// fileDir = rootDir;
+		// fileName = dirMap.get(rootDir);
 
-		String fileIn = fileDir + fileName;
+		String fileIn = fileDir + "/" + fileName;
 		File file = new File(fileIn);
-		
 		GenericFile gFile = GenericFile.create(file.getAbsolutePath());
-		String[] testArgs = Main.getArgs(file);
-		
-		Arrays.stream(testArgs).forEach(p-> System.out.println(p));
-		
+		String[] inputArgs = null;
+		String[] testArgs = Main.getArgs(fileDir, fileName.split("\\.")[0]);
+		if (testArgs != null) {
+			inputArgs = testArgs;
+		} else if (args.length > 0) {
+			inputArgs = args;
+		} else {
+			throw new NullPointerException("arguments not provided");
+		}
+
 		FileEnvironment env = new FileEnvironment(gFile); // get path
 		SimpleFunctionCollection.convertColonToRange = true;
-		BasicTamerTool tool = new BasicTamerTool();
-		tool.setDoIntOk(false);
-		ValueAnalysis<AggrValue<BasicMatrixValue>> analysis = tool.analyze(
-				testArgs, env);
+		BasicTamerTool.setDoIntOk(true);
+
+		ValueAnalysis<AggrValue<BasicMatrixValue>> analysis = BasicTamerTool
+				.analyze(inputArgs, env);
 		int size = analysis.getNodeList().size();
 		WrapperGenerator wrapper = WrapperGenFactory.getWrapperGen(
-				TargetLang.Cpp, analysis.getMainNode().getFunction());
+				TargetLang.MEX, analysis.getMainNode().getFunction(), analysis,
+				0);
 		StringBuffer genXML = new StringBuffer();
 		VrirXmlGen.genModuleXMLHead(genXML, fileName.split("\\.")[0]);
 		genXML.append(HelperClass.toXMLHead("fns"));
@@ -78,15 +89,9 @@ public class Main {
 			 */
 			StaticFunction function = analysis.getNodeList().get(i)
 					.getFunction();
+
 			System.out.println("Analysis function  " + function.getName());
 			if (!funcSet.contains(function)) {
-
-				if (function.getName().equals(
-						analysis.getMainNode().getFunction().getName())) {
-
-					funcSet.add(function);
-					continue;
-				}
 				TransformationEngine transformationEngine = TransformationEngine
 						.forAST(function.getAst());
 
@@ -120,9 +125,6 @@ public class Main {
 
 		VrirXmlGen.genModuleXMLTail(genXML);
 		System.out.println(" print the generated VRIR in XML format  .\n");
-		// System.out.println("main function "
-		// + analysis.getMainNode().getFunction().getName());
-		// System.out.println(wrapper.genWrapper());
 		System.out.println(genXML);
 		try {
 			BufferedWriter buffer = Files.newBufferedWriter(
@@ -133,23 +135,27 @@ public class Main {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		// }
 
 	}
-	public static String[] getArgs(File file) {
+
+	public static String[] getArgs(String rootDir, String funcName) {
+		JSONParser parser = new JSONParser();
 		try {
-			BufferedReader reader= Files.newBufferedReader(file.toPath());
-			String argStr = reader.readLine();
-			if(argStr.charAt(0) != '%'){
-				return null;
-			}
-			argStr = argStr.substring(1).trim();
-			String[] args = argStr.split(" ");
-			return args;
-		} catch (IOException e1) {
+			JSONObject obj = (JSONObject) parser.parse(new FileReader(new File(
+					rootDir + "/inputArgs.json")));
+			return ((String) obj.get(funcName)).trim().split(" ");
+
+		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		
 		return null;
 	}
 }

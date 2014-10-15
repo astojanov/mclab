@@ -46,7 +46,6 @@ public class HelperClass {
 	public static VType generateVType(
 			ValueAnalysis<AggrValue<BasicMatrixValue>> analysis,
 			int graphIndex, String name) {
-
 		AggrValue<?> temp = analysis.getNodeList().get(graphIndex)
 				.getAnalysis().getCurrentOutSet().get(name).getSingleton();
 
@@ -84,40 +83,34 @@ public class HelperClass {
 	}
 
 	public static PrimitiveClassReference getDataType(String name,
-			VrirXmlGen gen) {
-		AggrValue<BasicMatrixValue> val = gen.getAnalysis().getNodeList()
-				.get(gen.getIndex()).getAnalysis().getCurrentOutSet().get(name)
+			ValueAnalysis<AggrValue<BasicMatrixValue>> analysis, int graphIndex) {
+		AggrValue<BasicMatrixValue> val = analysis.getNodeList()
+				.get(graphIndex).getAnalysis().getCurrentOutSet().get(name)
 				.getSingleton();
 		if ((Object) val instanceof BasicMatrixValue) {
-
 			return (((BasicMatrixValue) (Object) val)).getMatlabClass();
-
 		}
 		return null;
 	}
 
 	public static Shape<AggrValue<BasicMatrixValue>> getShape(String name,
-			VrirXmlGen gen) {
-		AggrValue<BasicMatrixValue> val = gen.getAnalysis().getNodeList()
-				.get(gen.getIndex()).getAnalysis().getCurrentOutSet().get(name)
+			ValueAnalysis<AggrValue<BasicMatrixValue>> analysis, int graphIndex) {
+		AggrValue<BasicMatrixValue> val = analysis.getNodeList()
+				.get(graphIndex).getAnalysis().getCurrentOutSet().get(name)
 				.getSingleton();
 		if ((Object) val instanceof BasicMatrixValue) {
-
 			return (((BasicMatrixValue) (Object) val)).getShape();
-
 		}
 		return null;
 	}
 
 	public static PrimitiveClassReference getDataType(NameExpr node,
-			VrirXmlGen gen) {
-		AggrValue<BasicMatrixValue> val = gen.getAnalysis().getNodeList()
-				.get(gen.getIndex()).getAnalysis().getCurrentOutSet()
+			ValueAnalysis<AggrValue<BasicMatrixValue>> analysis, int graphIndex) {
+		AggrValue<BasicMatrixValue> val = analysis.getNodeList()
+				.get(graphIndex).getAnalysis().getCurrentOutSet()
 				.get(((NameExpr) node).getName().getID()).getSingleton();
 		if ((Object) val instanceof BasicMatrixValue) {
-
 			return (((BasicMatrixValue) (Object) val)).getMatlabClass();
-
 		} else {
 			throw new NullPointerException(
 					"Analyses other than cell value and Advanced matrix value not supported. are currently not supported   ");
@@ -263,7 +256,7 @@ public class HelperClass {
 				throw new NullPointerException(
 						"Temporary variable for the expression not found");
 			}
-
+			
 			AggrValue<?> val = gen.getAnalysis().getNodeList()
 					.get(gen.getIndex()).getAnalysis().getCurrentOutSet()
 					.get(tempName.getID()).getSingleton();
