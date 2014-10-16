@@ -1,13 +1,15 @@
+var MC_COLON = { start: undefined, end: undefined };
+
 macro elemwise {
     rule { ( $out:ident <= $M:ident $op $x:expr ) } => {
         for (var i = 0, N = $M.mj_length; i < N; ++i) {
-            mj_set($out, [i], mj_get($M, [i]) $op $x);
+            $out.mj_set([i], $M.mj_get([i]) $op $x);
         }
     }
 
     rule { ( $out:ident <= $fn:expr $M:ident ) } => {
         for (var i = 0, N = $M.mj_length; i < N; ++i) {
-            mj_set($out, [i], $fn(mj_get($M, [i])));
+            $out.mj_set([i], $fn($M.mj_get([i])));
         }
     }
 }
@@ -18,18 +20,18 @@ macro pairwise {
         var m2_length = $M2.mj_length;
         if (m1_length !== m2_length) throw "array sizes differ";
         for (var i = 0, n = m1_length; i < n; ++i) {
-            var x = mj_get($M1, [i]);
-            var y = mj_get($M2, [i]);
-            mj_set($out, [i], x $op y)
+            var x = $M1.mj_get([i]);
+            var y = $M2.mj_get([i]);
+            $out.mj_set([i], x $op y)
         }
     }
 
     rule { ( $out:ident <= $fn:expr $M1:ident $M2:ident ) } => {
         if ($M1.length !== $M2.length) throw "array sizes differ";
         for (var i = 0, n = $M1.length; i < n; ++i) {
-            var x = mj_get($M1, [i]);
-            var y = mj_get($M2, [i]);
-            mj_set($out, [i], $fn(x, y));
+            var x = $M1.mj_get([i]);
+            var y = $M2.mj_get([i]);
+            $out.mj_set([i], $fn(x, y));
         }
     }
 }
@@ -41,21 +43,21 @@ function mc_plus_SS(x, y) {
 
 
 function mc_plus_SM(x, m) {
-    var out = mj_clone(m);
+    var out = m.mj_clone()
     elemwise(out <= m + x);
     return out;
 }
 
 
 function mc_plus_MS(m, x) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     elemwise(out <= m + x);
     return out;
 }
 
 
 function mc_plus_MM(m1, m2) {
-    var out = mj_clone(m1);
+    var out = m1.mj_clone();
     pairwise(out <= m1 + m2);
     return out;
 }
@@ -67,21 +69,21 @@ function mc_minus_SS(x, y) {
 
 
 function mc_minus_SM(x, m) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     elemwise(out <= m - x);
     return out;
 }
 
 
 function mc_minus_MS(m, x) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     elemwise(out <= m - x);
     return out;
 }
 
 
 function mc_minus_MM(m1, m2) {
-    var out = mj_clone(m1);
+    var out = m1.mj_clone();
     pairwise(out <= m1 - m2);
     return out;
 }
@@ -94,21 +96,21 @@ function mc_rem_SS(x, y) {
 
 
 function mc_rem_SM(x, m) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     elemwise(out <= m % x);
     return out;
 }
 
 
 function mc_rem_MS(m, x) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     elemwise(out <= m % x);
     return out;
 }
 
 
 function mc_rem_MM(m1, m2) {
-    var out = mj_clone(m1);
+    var out = m1.mj_clone();
     pairwise(out <= m1 % m2);
     return out;
 }
@@ -121,14 +123,14 @@ function mc_mtimes_SS(x, y) {
 
 
 function mc_mtimes_SM(x, m) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     elemwise(out <= m * x);
     return out;
 }
 
 
 function mc_mtimes_MS(m, x) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     elemwise(out <= m * x);
     return out;
 }
@@ -145,14 +147,14 @@ function mc_mrdivide_SS(x, y) {
 
 
 function mc_mrdivide_SM(x, m) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     elemwise(out <= m / x);
     return out;
 }
 
 
 function mc_mrdivide_MS(m, x) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     elemwise(out <= m / x);
     return out;
 }
@@ -168,21 +170,21 @@ function mc_lt_SS(x, y) {
 
 
 function mc_lt_SM(x, m) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     elemwise(out <= m < x);
     return out;
 }
 
 
 function mc_lt_MS(m, x) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     elemwise(out <= m < x);
     return out;
 }
 
 
 function mc_lt_MM(m1, m2) {
-    var out = mj_clone(m1);
+    var out = m1.mj_clone();
     pairwise(out <= m1 < m2);
     return out;
 }
@@ -194,21 +196,21 @@ function mc_gt_SS(x, y) {
 
 
 function mc_gt_SM(x, m) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     elemwise(out <= m > x);
     return out;
 }
 
 
 function mc_gt_MS(m, x) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     elemwise(out <= m > x);
     return out;
 }
 
 
 function mc_gt_MM(m1, m2) {
-    var out = mj_clone(m1);
+    var out = m1.mj_clone();
     pairwise(out <= m1 > m2);
     return out;
 }
@@ -220,21 +222,21 @@ function mc_eq_SS(x1, x2) {
 
 
 function mc_eq_SM(x, m) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     elemwise(out <= m === x);
     return out;
 }
 
 
 function mc_eq_MS(m, x) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     elemwise(out <= m === x);
     return out;
 }
 
 
 function mc_eq_MM(m1, m2) {
-    var out = mj_clone(m1);
+    var out = m1.mj_clone();
     pairwise(out <= m1 === m2);
     return out;
 }
@@ -245,21 +247,21 @@ function mc_ne_SS(x1, x2) {
 
 
 function mc_ne_SM(x, m) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     elemwise(out <= m !== x);
     return out;
 }
 
 
 function mc_ne_MS(m, x) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     elemwise(out <= m !== x);
     return out;
 }
 
 
 function mc_ne_MM(m1, m2) {
-    var out = mj_clone(m1);
+    var out = m1.mj_clone();
     pairwise(out <= m1 !== m2);
     return out;
 }
@@ -271,7 +273,7 @@ function mc_length_S(x) {
 
 
 function mc_length_M(m) {
-    return m.length;
+    return m.mj_length;
 }
 
 
@@ -281,7 +283,7 @@ function mc_sin_S(x) {
 
 
 function mc_sin_M(m) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     elemwise(out <= Math.sin m);
     return out;
 }
@@ -293,21 +295,25 @@ function mc_uminus_S(x) {
 
 
 function mc_uminus_M(m) {
-    var out = mj_clone(m);
+    var out = m.mj_clone();
     for (var i = 0; i < mj_length(m); ++i)
-        mj_set(out, [i], -mj_get(out, [i]));
+        out.mj_set([i], -out.mj_get([i]));
     return out;
 }
 
 
 function mc_array_get(m, indices) {
-    return mj_get(m, indices);
+    var value = m.mj_get(indices);
+    if (value === undefined)
+        throw "invalid indices";
+    else
+        return value;
 }
 
 
 // TODO: handle array growth
 function mc_array_set(m, indices, value) {
-    return mj_set(m, indices, value);
+    return m.mj_set(indices, value);
 }
 
 
@@ -321,14 +327,14 @@ function mc_horzcat() {
     // Also check that all arguments have the same number of rows.
     for (var i = 0; i < arguments.length; ++i) {
         if (num_rows == -1) {
-            num_rows  = mj_shape(arguments[i])[0];
+            num_rows  = arguments[i].mj_shape()[0];
         }
-        else if (mj_shape(arguments[i])[0] != num_rows) {
+        else if (arguments[i].mj_shape()[0] != num_rows) {
             throw "Dimensions of matrices being concatenated are not consistent.";
 
         }
-        num_cols += mj_shape(arguments[i])[1];
-        len += mj_length(arguments[i]);
+        num_cols += arguments[i].mj_shape()[1];
+        len += arguments[i].mj_length();
     }
 
     // Create the result array buffer and populate it by just putting
@@ -336,13 +342,13 @@ function mc_horzcat() {
     var buf = new Float64Array(len);
     var offset = 0;
     for (var i = 0; i < arguments.length; ++i) {
-        if (mj_scalar(arguments[i])) {
+        if (arguments[i].mj_scalar()) {
             buf[offset] = arguments[i];
         }
         else {
             buf.set(arguments[i], offset);
         }
-        offset += mj_length(arguments[i]);
+        offset += arguments[i].mj_length();
     }
     return mj_create(buf, [num_rows, num_cols]);
 }
@@ -355,19 +361,19 @@ function mc_vertcat() {
 
     for (var i = 0; i < arguments.length; ++i) {
         if (num_cols == -1) {
-            num_cols = mj_shape(arguments[i])[1];
+            num_cols = arguments[i].mj_shape()[1];
         }
-        else if (mj_shape(arguments[i])[1] != num_cols) {
+        else if (arguments[i].mj_shape()[1] != num_cols) {
             throw "Dimensions of matrices being concatenated are not consistent.";
         }
-        num_rows += mj_shape(arguments[i])[0];
-        len += mj_length(arguments[i]);
+        num_rows += arguments[i].mj_shape()[0];
+        len += arguments[i].mj_length();
     }
     var buf = new Float64Array(len);
     var offset = 0;
     for (var col = 0; col < num_cols; ++col) {
         for (var arg_id = 0; arg_id < arguments.length; ++arg_id) {
-            for (var row = 0; row < mj_shape(arguments[arg_id])[0]; ++row) {
+            for (var row = 0; row < arguments[arg_id].mj_shape()[0]; ++row) {
                 buf[offset] = mc_array_get(arguments[arg_id], [row, col]);
                 offset++;
             }
@@ -403,9 +409,6 @@ function mc_randn() {
     var shape = sh_len[0];
     var length = sh_len[1];
 
-    if (length === 1)
-        return Math.random();
-
     var buf = new Float64Array(length);
     for (var i = 0; i < length; ++i) {
         buf[i] = Math.random();
@@ -419,9 +422,6 @@ function mc_zeros() {
     var shape = sh_len[0];
     var length = sh_len[1];
 
-    if (length === 1)
-        return 0;
-
     var buf = new Float64Array(length);
     return mj_create(buf, shape);
 }
@@ -431,9 +431,6 @@ function mc_ones() {
     var sh_len = mc_compute_shape_length(Array.prototype.slice.call(arguments, 0));
     var shape = sh_len[0];
     var length = sh_len[1];
-
-    if (length === 1)
-        return Math.random();
 
     var buf = new Float64Array(length);
     for (var i = 0; i < length; ++i) {
@@ -449,7 +446,23 @@ function mc_eye(rows, cols) {
     var buf = new Float64Array(rows * cols);
     var mat = mj_create(buf, [rows, cols]);
     for (var i = 0; i < rows; ++i) {
-        mj_set(mat, [i, i], 1);
+        mat.mj_set([i, i], 1);
     }
     return mat;
+}
+
+
+function mc_exp_S(x) {
+    return Math.exp(x);
+}
+
+function mc_exp_M(m) {
+    var out = m.mj_clone();
+    elemwise(out <= Math.exp m);
+    return out;
+}
+
+
+function mc_colon(a, b) {
+    return { start: a, end: b };
 }

@@ -12,6 +12,84 @@
  * Note: the elements in x are expected to be in column-major order,
  *       i.e. the matrix [1 2 ; 3 4] is represented as {1, 3, 2, 4}.
  */
+
+
+
+Float64Array.prototype.mj_clone = function() {
+    var newbuf = new Float64Array(this);
+    var newshape = this.mj_shape.slice(0);
+    return mj_create(newbuf, newshape);
+}
+
+Float64Array.prototype.mj_scalar = function() {
+    return false;
+}
+
+Float64Array.prototype.mj_length = function() {
+    return this.length;
+}
+
+Float64Array.prototype.mj_shape = function() {
+    return this._shape;
+}
+
+Float64Array.prototype.mj_stride = function() {
+    return this._stride;
+}
+
+Float64Array.prototype.mj_dims = function() {
+    return this._dims;
+}
+
+Float64Array.prototype.mj_get = function(indices) {
+    return this[mj_compute_index(this, indices)];
+}
+
+Float64Array.prototype.mj_set = function(indices, value) {
+    this[mj_compute_index(this, indices)] = value;
+}
+
+
+
+
+Number.prototype.mj_clone = function() {
+    return this;
+}
+
+Number.prototype.mj_scalar = function() {
+    return true;
+}
+
+Number.prototype.mj_length = function() {
+    return 1;
+}
+
+Number.prototype.mj_shape = function() {
+    return [1, 1];
+}
+
+Number.prototype.mj_stride = function() {
+    return [1];
+}
+
+Number.prototype.mj_dims = function() {
+    return 2;
+}
+
+Number.prototype.mj_get = function(indices) {
+    var idx = mj_compute_index(this, indices);
+    if (idx === 0)
+        return this;
+    else
+        return undefined;
+}
+
+Number.prototype.mj_set = function(indices, value) {
+    throw "Should not call mj_set on a number";
+}
+
+
+
 function mj_create(x, shape) {
     var make_stride = function(shape, dims) {
         var stride = [1];
@@ -23,63 +101,19 @@ function mj_create(x, shape) {
     }
 
     if (typeof x === "object") {
-        x.mj_length = x.length;
-        x.mj_shape = shape;
-        x.mj_dims = shape.length;
-        x.mj_stride = make_stride(shape, x.mj_dims);
+        x._length = x.length;
+        x._shape = shape;
+        x._dims = shape.length;
+        x._stride = make_stride(shape, x._dims);
     }
     return x;
-}
-
-
-function mj_clone(x) {
-    if (mj_scalar(x)) {
-        return x;
-    }
-    else {
-        var newbuf = new Float64Array(x);
-        var newshape = mj_shape(x).slice(0);
-        return mj_create(newbuf, newshape);
-    }
-}
-
-
-function mj_scalar(x) {
-    return typeof x === "number";
-}
-
-
-function mj_length(x) {
-    return x.mj_length || 1;
-}
-
-function mj_shape(x) {
-    return x.mj_shape || [1,1];
-}
-
-function mj_stride(x) {
-    return x.mj_stride || [1];
-}
-
-
-function mj_dims(x) {
-    return x.mj_dims || 2;
 }
 
 
 function mj_compute_index(x, indices) {
     var array_index = 0;
     for (var i = 0, end = indices.length; i < end; ++i) {
-        array_index += indices[i] * mj_stride(x)[i];
+        array_index += indices[i] * x.mj_stride()[i];
     }
     return array_index;
-}
-
-function mj_get(x, indices) {
-    return x[mj_compute_index(x, indices)] || x;
-}
-
-
-function mj_set(x, indices, value) {
-    x[mj_compute_index(x, indices)] = value;
 }

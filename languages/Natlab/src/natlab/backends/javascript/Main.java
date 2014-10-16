@@ -20,9 +20,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
-
 
 import natlab.backends.javascript.codegen.JSASTGenerator;
 import natlab.backends.javascript.jsast.*;
@@ -44,11 +45,11 @@ public class Main {
     }
 
     private static String slurp(String filename) {
-    	try {
-			return new String(Files.readAllBytes(Paths.get(filename)));
-		} catch (IOException e) {
-			return "";
-		}
+        try {
+                        return new String(Files.readAllBytes(Paths.get(filename)));
+                } catch (IOException e) {
+                        return "";
+                }
     }
 
 
@@ -71,28 +72,25 @@ public class Main {
         Program program = new Program();
 
         // Convert the Tamer instructions to JavaScript.
-        Set<String> processedFunctions = new HashSet<>();
+        Map<String, Integer> processedFunctions = new HashMap<>();
         int numFunctions = analysis.getNodeList().size();
         for (int i = 0; i < numFunctions; ++i) {
             TIRFunction matlabFunction = analysis.getNodeList().get(i).getAnalysis().getTree();
-            if (!processedFunctions.contains(matlabFunction.getName())) {
-                processedFunctions.add(matlabFunction.getName().getID());
-                program.addFunction(JSASTGenerator.genFunction(matlabFunction));
+            String func_name = matlabFunction.getName().getID();
+            if (!processedFunctions.containsKey(func_name)) {
+                JSASTGenerator generator = new JSASTGenerator(analysis.getNodeList().get(i).getAnalysis());
+                program.addFunction(generator.genFunction(matlabFunction));
+                processedFunctions.put(func_name, i);
             }
         }
 
-
         // Apply JavaScript program transformations
-        {
-            int i = 0;
-            for (Function f: program.getFunctions()) {
+        for (Function f: program.getFunctions()) {
                 // Add variable declarations inside every function.
                 JSAddVarDecls.apply(f);
 
                 // Rename builtin function calls.
-                JSRenameBuiltins.apply(f, analysis, i);
-                ++i;
-            }
+                JSRenameBuiltins.apply(f, analysis, processedFunctions.get(f.getFunctionName().getName()));
         }
 
         // Write out the JavaScript program.
@@ -100,15 +98,15 @@ public class Main {
         // TODO: Better error messages.
         FileWriter out = null;
         String[] jsDeps = {
-        		"src/natlab/backends/javascript/lib/mjapi.js",
-        		"src/natlab/backends/javascript/lib/lib.js",
+                        "src/natlab/backends/javascript/lib/mjapi.js",
+                        "src/natlab/backends/javascript/lib/lib.js",
         };
 
         try {
             out = new FileWriter(javascriptFile);
 
             for (String jsDep: jsDeps) {
-            	out.write(slurp(jsDep));
+                out.write(slurp(jsDep));
             }
 
             out.write(String.format("%n%n// BEGINNING OF PROGRAM%n%n"));

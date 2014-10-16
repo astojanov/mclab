@@ -40,7 +40,7 @@ public class JSRenameBuiltins {
      * Mostly variadic functions. */
     private static String[] SPECIALIZED = {
         "plus", "minus", "mtimes", "rem", "mrdivide", "lt", "le", "gt", "ge", "eq", "ne", "length",
-        "sin", "uminus",
+        "sin", "uminus", "exp",
     };
 
     // The specialized functions are ordered so that we can run a binary search over them.
@@ -58,7 +58,6 @@ public class JSRenameBuiltins {
                 if (Builtin.getInstance(var.getName()) != null) {
                     String suffix = "";
                     boolean is_specialized = Arrays.binarySearch(SPECIALIZED, var.getName(), (s, t) -> s.compareTo(t)) >= 0;
-
                     if (is_specialized) {
 	                    for (Expr e: call.getArguments()) {
 	                        ExprVar arg = (ExprVar) e;

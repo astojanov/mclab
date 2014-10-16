@@ -65,3 +65,5 @@ ExprBinaryOp:Expr ::= <Op:String> Expr1:Expr Expr2:Expr;
 ExprVar:Expr ::= <Name:String>;
 
 ExprPropertyGet:Expr ::= Expr:Expr Property:Expr;
+
+ExprColon:Expr ;

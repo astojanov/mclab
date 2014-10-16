@@ -225,5 +225,9 @@ aspect PrettyPrinter {
                              Pretty.text(" = "),
                              this.getExpr().pp());
     }
+    
+    public PrettyBase ExprColon.pp() {
+        return Pretty.text("MC_COLON");
+    }
 
 }

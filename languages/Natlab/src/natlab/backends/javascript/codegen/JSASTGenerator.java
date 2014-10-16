@@ -20,9 +20,18 @@ package natlab.backends.javascript.codegen;
 import natlab.backends.javascript.jsast.*;
 import natlab.utils.NodeFinder;
 import natlab.tame.tir.*;
+import natlab.tame.valueanalysis.IntraproceduralValueAnalysis;
+import natlab.tame.valueanalysis.ValueAnalysis;
+import natlab.tame.valueanalysis.aggrvalue.AggrValue;
+import natlab.tame.valueanalysis.basicmatrix.BasicMatrixValue;
 import natlab.toolkits.rewrite.TempFactory;
 
 public class JSASTGenerator {
+    private IntraproceduralValueAnalysis<AggrValue<BasicMatrixValue>> analysis;
+
+    public JSASTGenerator(IntraproceduralValueAnalysis<AggrValue<BasicMatrixValue>> analysis) {
+        this.analysis = analysis;
+    }
 
     /**
      * Entry point for converting a piece of MATLAB code.  We perform
@@ -30,7 +39,7 @@ public class JSASTGenerator {
      * @param tirFunc the function to compile.
      * @return a Function node.
      */
-    public static Function genFunction(TIRFunction tirFunc) {
+    public Function genFunction(TIRFunction tirFunc) {
         Function fn = new Function();
 
         // Add input parameters.
@@ -64,7 +73,7 @@ public class JSASTGenerator {
      * @param astFunc the function to create a return statement for
      * @return null if the function doesn't have output parameters, a StmtReturn otherwise.
      */
-    private static Stmt makeStmtReturn(ast.Function astFunc) {
+    private Stmt makeStmtReturn(ast.Function astFunc) {
         List<Expr> returnNames = new List<>();
         for (ast.Name outParam: astFunc.getOutputParamList()) {
             returnNames.add(new ExprVar(outParam.getID()));
@@ -88,7 +97,7 @@ public class JSASTGenerator {
      * @param stmt The IR statement to convert.
      * @return The JS statement.
      */
-    private static Stmt genStmt(TIRStmt tirStmt) {
+    private Stmt genStmt(TIRStmt tirStmt) {
         // Assignment statements.
         if (tirStmt instanceof TIRDotSetStmt) return genDotSetStmt((TIRDotSetStmt) tirStmt);
         if (tirStmt instanceof TIRAbstractAssignFromVarStmt) return genAbstractAssignFromVarStmt((TIRAbstractAssignFromVarStmt) tirStmt);
@@ -125,7 +134,7 @@ public class JSASTGenerator {
      * @param tirStmts the statement list
      * @return a StmtBlock
      */
-    private static Stmt genStmtList(TIRStatementList tirStmts) {
+    private Stmt genStmtList(TIRStatementList tirStmts) {
         StmtBlock stmts = new StmtBlock();
         for (int i = 0; i < tirStmts.getNumChild(); ++i) {
             TIRStmt currStmt = (TIRStmt) tirStmts.getChild(i);
@@ -142,7 +151,7 @@ public class JSASTGenerator {
      * @param tirStmt Extract the lhs from this statement.
      * @return the string of the name of the lhs.
      */
-    private static String extractLHSName(TIRAbstractAssignToVarStmt tirStmt) {
+    private String extractLHSName(TIRAbstractAssignToVarStmt tirStmt) {
         String lhs = null;
         for (String name: tirStmt.getLValues()) lhs = name;
         return lhs;
@@ -159,7 +168,7 @@ public class JSASTGenerator {
      * @param tirStmt the statement to process.
      * @return A JS assignment statement (ExprAssign wrapped in a StmtExpr).
      */
-    private static Stmt genAssignToVarStmt(TIRAbstractAssignToVarStmt tirStmt) {
+    private Stmt genAssignToVarStmt(TIRAbstractAssignToVarStmt tirStmt) {
         String lhs = extractLHSName(tirStmt);
         ast.Expr rhs = tirStmt.getRHS();
         return new StmtExpr(new ExprAssign(new ExprVar(lhs), genExpr(rhs)));
@@ -181,7 +190,7 @@ public class JSASTGenerator {
      * @param tirStmt
      * @return A statement block (without braces) containing the call + assignments.
      */
-    private static Stmt genAssignToListStmt(TIRAbstractAssignToListStmt tirStmt) {
+    private Stmt genAssignToListStmt(TIRAbstractAssignToListStmt tirStmt) {
         StmtBlockNoBraces stmts = new StmtBlockNoBraces();
         Expr call =
                 tirStmt instanceof TIRCallStmt
@@ -218,11 +227,14 @@ public class JSASTGenerator {
 
     /**
      * A helper function; MATLAB is 1-index, JavaScript is 0-indexed.  We use this
-     * method to transform an expression into `expr - 1`.
+     * method to transform an expression into `expr - 1`.  If the argument is ExprColon
+     * we return it as is.
      * @param expr the indexing expression.
-     * @return expr - 1
+     * @return expr - 1 or ExprColon
      */
-    private static Expr indexedBy(Expr expr) {
+    private Expr indexedBy(Expr expr) {
+        if (expr instanceof ExprColon)
+                return expr;
         return new ExprBinaryOp("-", expr, new ExprInt(1));
     }
 
@@ -233,11 +245,9 @@ public class JSASTGenerator {
      * @param tirStmt
      * @return mc_array_set(m, x, [i1-1, i2-1, ..., in-1])
      */
-    private static Stmt genAbstractAssignFromVarStmt(TIRAbstractAssignFromVarStmt tirStmt) {
+    private Stmt genAbstractAssignFromVarStmt(TIRAbstractAssignFromVarStmt tirStmt) {
         String setterName = tirStmt instanceof TIRArraySetStmt ? "mc_array_set" : "mc_cellarray_set";
 
-        ExprCall setter = new ExprCall();
-        setter.setExpr(new ExprVar(setterName));
 
         String lhs = tirStmt.getName().getID();
         String rhs = tirStmt.getValueName().getID();
@@ -248,17 +258,14 @@ public class JSASTGenerator {
             indices.addValue(indexedBy(genExpr(expr)));
         }
 
-        List<Expr> args = new List<>();
-        args.add(new ExprVar(lhs));
-        args.add(indices);
-        args.add(new ExprVar(rhs));
+        List<Expr> args = new List<>(new ExprVar(lhs), indices, new ExprVar(rhs));
 
-        setter.setArgumentList(args);
+        ExprCall setter = new ExprCall(new ExprVar(setterName), args);
         return new StmtExpr(setter);
     }
 
 
-    private static Stmt genDotSetStmt(TIRDotSetStmt tirStmt) {
+    private Stmt genDotSetStmt(TIRDotSetStmt tirStmt) {
         throw new UnsupportedOperationException("MATLAB structs are not yet supported");
     }
 
@@ -268,7 +275,7 @@ public class JSASTGenerator {
      * @param tirWhile the while loop to transform
      * @return a StmtWhile node
      */
-    private static Stmt genWhileStmt(TIRWhileStmt tirWhile) {
+    private Stmt genWhileStmt(TIRWhileStmt tirWhile) {
         StmtBlock body = new StmtBlock();
         for (ast.Stmt stmt: tirWhile.getStmtList()) {
             body.addStmt(genStmt((TIRStmt) stmt));
@@ -289,7 +296,7 @@ public class JSASTGenerator {
      * @param tirFor the for loop to transform
      * @return a StmtFor node
      */
-    private static Stmt genForStmt(TIRForStmt tirFor) {
+    private Stmt genForStmt(TIRForStmt tirFor) {
         StmtBlock body = new StmtBlock();
         for (ast.Stmt stmt: tirFor.getStmtList()) {
             body.addStmt(genStmt((TIRStmt) stmt));
@@ -317,7 +324,7 @@ public class JSASTGenerator {
      * @param tirIf the if/else/end statement
      * @return a StmtIfThenElse node
      */
-    private static Stmt genIfStmt(TIRIfStmt tirIf) {
+    private Stmt genIfStmt(TIRIfStmt tirIf) {
         Expr condVar = new ExprVar(tirIf.getConditionVarName().getID());
         Stmt ifBlock = genStmtList(tirIf.getIfStatements());
         boolean hasElseStatements = tirIf.getElseStatements().getNumChild() > 0;
@@ -333,7 +340,7 @@ public class JSASTGenerator {
      * Convert a MATLAB continue to a JavaScript continue.
      * @return A JavaScript continue statement.
      */
-    private static Stmt genContinueStmt() {
+    private Stmt genContinueStmt() {
         return new StmtContinue();
     }
 
@@ -342,7 +349,7 @@ public class JSASTGenerator {
      * Convert a MATLAB break to a JavaScript break.
      * @return A JavaScript break statement.
      */
-    private static Stmt genBreakStmt() {
+    private Stmt genBreakStmt() {
         return new StmtBreak();
     }
 
@@ -357,7 +364,7 @@ public class JSASTGenerator {
      * @return A JavaScript return statement (returns a single value or a JS array depending
      *         on the number
      */
-    private static Stmt genReturnStmt(TIRReturnStmt tirReturn) {
+    private Stmt genReturnStmt(TIRReturnStmt tirReturn) {
         ast.Function astFunc = NodeFinder.findParent(ast.Function.class, tirReturn);
         Stmt returnStmt = makeStmtReturn(astFunc);
         return returnStmt;
@@ -369,7 +376,7 @@ public class JSASTGenerator {
      * JavaScript doesn't have such declarations, however we include them
      * to facilitate some analyses.
      */
-    private static Stmt genGlobalStmt(TIRGlobalStmt tirGlobal) {
+    private Stmt genGlobalStmt(TIRGlobalStmt tirGlobal) {
         StmtGlobalDecl globalDecl = new StmtGlobalDecl();
         for (ast.Name name: tirGlobal.getNameList()) {
             globalDecl.addVar(new ExprVar(name.getID()));
@@ -378,7 +385,7 @@ public class JSASTGenerator {
     }
 
 
-    private static Stmt genCommentStmt(TIRCommentStmt tirComment) {
+    private Stmt genCommentStmt(TIRCommentStmt tirComment) {
         if (tirComment.hasComments())
             return new StmtComment(tirComment.getNodeString());
         else
@@ -393,7 +400,7 @@ public class JSASTGenerator {
      * @param expr The IR expression to convert.
      * @return The JS expression.
      */
-    private static Expr genExpr(ast.Expr expr) {
+    private Expr genExpr(ast.Expr expr) {
         if (expr instanceof ast.IntLiteralExpr) return genIntLiteralExpr((ast.IntLiteralExpr) expr);
         if (expr instanceof ast.FPLiteralExpr) return genFPLiteralExpr((ast.FPLiteralExpr) expr);
         if (expr instanceof ast.StringLiteralExpr) return genStringLiteralExpr((ast.StringLiteralExpr) expr);
@@ -414,7 +421,7 @@ public class JSASTGenerator {
      * @param expr
      * @return
      */
-    private static ExprInt genIntLiteralExpr(ast.IntLiteralExpr expr) {
+    private ExprInt genIntLiteralExpr(ast.IntLiteralExpr expr) {
         return new ExprInt(Integer.parseInt(expr.getValue().getText()));
     }
 
@@ -424,7 +431,7 @@ public class JSASTGenerator {
      * @param expr
      * @return
      */
-    private static ExprNum genFPLiteralExpr(ast.FPLiteralExpr expr) {
+    private ExprNum genFPLiteralExpr(ast.FPLiteralExpr expr) {
         return new ExprNum(Double.parseDouble(expr.getValue().getText()));
     }
 
@@ -437,11 +444,11 @@ public class JSASTGenerator {
      * @param expr
      * @return
      */
-    private static ExprString genStringLiteralExpr(ast.StringLiteralExpr expr) {
+    private ExprString genStringLiteralExpr(ast.StringLiteralExpr expr) {
         return new ExprString(expr.getValue());
     }
 
-    private static ExprVar genNameExpr(ast.NameExpr expr) {
+    private ExprVar genNameExpr(ast.NameExpr expr) {
         return new ExprVar(expr.getName().getID());
     }
 
@@ -455,7 +462,7 @@ public class JSASTGenerator {
      * TODO: Replace builtin calls like plus() and mtimes() with
      *       JavaScript operators when operands are scalars.
      */
-    private static Expr genCallExpr(ast.ParameterizedExpr expr) {
+    private Expr genCallExpr(ast.ParameterizedExpr expr) {
         String funcName = expr.getVarName();
         ExprCall call = new ExprCall();
         ExprVar funName = new ExprVar(funcName);
@@ -476,21 +483,49 @@ public class JSASTGenerator {
      * matrix kind.
      * @return the JavaScript function call.
      */
-    private static Expr genArrayGetExpr(ast.ParameterizedExpr expr) {
-    	// Build the index array.
-    	ExprArray indices = new ExprArray();
-    	for (int i = 0; i < expr.getNumArg(); ++i) {
-    		indices.addValue(indexedBy(genExpr(expr.getArg(i))));
-    	}
+    private Expr genArrayGetExpr(ast.ParameterizedExpr expr) {
+        boolean has_colons = false;
 
-    	List<Expr> args = new List<Expr>(new ExprVar(expr.getVarName()), indices);
+        // Build the index array.
+        ExprArray indices = new ExprArray();
+        for (int i = 0; i < expr.getNumArg(); ++i) {
+            ast.Expr arg = expr.getArg(i);
+            has_colons = has_colons || isColonExpr(arg);
+            indices.addValue(indexedBy(genExpr(arg)));
+        }
 
-    	ExprCall access = new ExprCall(new ExprVar("mc_array_get"), args);
-    	return access;
+        List<Expr> args = new List<Expr>(new ExprVar(expr.getVarName()), indices);
+
+        String func_name = has_colons ? "mc_array_slice" : "mc_array_get";
+        ExprCall access = new ExprCall(new ExprVar(func_name), args);
+        return access;
     }
 
 
-    private static Expr genColonExpr(ast.ColonExpr expr) {
-    	return new ExprVar("MC_COLON");
+    private Expr genColonExpr(ast.ColonExpr expr) {
+        return new ExprColon();
+    }
+
+
+    /**
+     * Utility function to determine whether an argument to an array indexing
+     * operation gets a slice of the array.  Both : (COLON) and non-scalar
+     * variables are considered colon expressions.
+     * @param expr
+     * @return
+     */
+    private boolean isColonExpr(ast.Expr expr) {
+        if (expr instanceof ast.ColonExpr)
+            return true;
+
+        if (expr instanceof ast.NameExpr) {
+            String name = ((ast.NameExpr) expr).getName().getID();
+            AggrValue<BasicMatrixValue> val = analysis.getCurrentOutSet().get(name).getSingleton();
+            if (val instanceof BasicMatrixValue) {
+                return !((BasicMatrixValue) val).getShape().isScalar();
+            }
+        }
+
+        return false;
     }
 }
