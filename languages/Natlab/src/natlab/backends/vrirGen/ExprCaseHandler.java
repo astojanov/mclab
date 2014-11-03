@@ -1,5 +1,7 @@
 package natlab.backends.vrirGen;
 
+import java.math.BigDecimal;
+
 import natlab.tame.classes.reference.PrimitiveClassReference;
 import natlab.tame.valueanalysis.components.shape.DimValue;
 import ast.ColonExpr;
@@ -15,6 +17,8 @@ import ast.ShortCircuitOrExpr;
 import ast.StringLiteralExpr;
 
 public class ExprCaseHandler {
+	private static boolean isArg = false;
+
 	public static void handleParameterizedExpr(ParameterizedExpr node,
 			VrirXmlGen gen) {
 		if (gen.getRemainingVars().contains(node.getVarName())) {
@@ -59,6 +63,7 @@ public class ExprCaseHandler {
 	}
 
 	public static void handleNameExpr(NameExpr node, VrirXmlGen gen) {
+		StringBuffer sb = new StringBuffer();
 		if (HelperClass.isVar(gen, node.getName().getID())) {
 
 			if (!gen.getSymTab().contains(node.getName().getID())) {
@@ -68,19 +73,22 @@ public class ExprCaseHandler {
 				gen.getSymTab().putSymbol(vtype, node.getName().getID());
 			}
 			if (gen.getSymbol(node.getName().getID()) != null) {
-				gen.appendToPrettyCode(toXMLHead("name",
+				sb.append(toXMLHead("name",
 						gen.getSymbol(node.getName().getID()).getId(), "id"));
 
 			} else {
 				throw new NullPointerException("Symbol not found for "
 						+ node.getName().getID());
 			}
-			gen.appendToPrettyCode(gen.getSymbol(node.getName().getID())
-					.getVtype().toXML());
-			gen.appendToPrettyCode(toXMLTail());
-		}
+			sb.append(gen.getSymbol(node.getName().getID()).getVtype().toXML());
+			sb.append(toXMLTail());
+			if (isArg) {
+				gen.appendToPrettyCode(HelperClass.addCopyCall(sb, node, gen));
 
-		else {
+			} else {
+				gen.appendToPrettyCode(sb.toString());
+			}
+		} else {
 			handleFunCallExpr(node, gen);
 		}
 
@@ -307,8 +315,16 @@ public class ExprCaseHandler {
 				throw new UnsupportedOperationException("Cannot identify VType"
 						+ vt.getClass());
 			}
-			gen.appendToPrettyCode(toXMLHead("realconst", expr.getValue()
-					.getValue().toString(), field));
+			BigDecimal bigDec = expr.getValue().getValue();
+			String val = "";
+			if (field.equals("ival")) {
+
+				val = Long.toString(bigDec.longValue());
+				System.out.println("long value " + val);
+			} else {
+				val = bigDec.toString();
+			}
+			gen.appendToPrettyCode(toXMLHead("realconst", val, field));
 		}
 		if (vt instanceof VTypeMatrix) {
 			gen.appendToPrettyCode(((VTypeMatrix) vt).toXML(true));
@@ -339,9 +355,11 @@ public class ExprCaseHandler {
 		}
 		gen.appendToPrettyCode(vt.toXML());
 		gen.appendToPrettyCode(HelperClass.toXMLHead("args"));
+		isArg = true;
 		for (Expr args : expr.getArgList()) {
 			args.analyze(gen);
 		}
+		isArg = false;
 		gen.appendToPrettyCode(HelperClass.toXMLTail());
 		gen.appendToPrettyCode(toXMLTail());
 	}
@@ -455,7 +473,10 @@ public class ExprCaseHandler {
 	public static void handleIndexExpr(ParameterizedExpr expr, VrirXmlGen gen) {
 		Symbol sym = gen.getSymbol(expr.getVarName());
 		if (sym == null) {
-			VType vtype = HelperClass.getExprType(expr, gen);
+			// VType vtype = HelperClass.getExprType(expr, gen);
+			VType vtype = HelperClass.generateVType(gen.getAnalysis(),
+					gen.getIndex(), expr.getVarName());
+			gen.getSymTab().putSymbol(vtype, expr.getVarName());
 			if (vtype == null) {
 				throw new NullPointerException(
 						"No Vtype found for paratemerized expression "
@@ -492,7 +513,7 @@ public class ExprCaseHandler {
 
 	public static void handleStringLiteralExpr(StringLiteralExpr expr,
 			VrirXmlGen gen) {
-		//throw new RuntimeException("VRIR Does Not Support Strings");
+		// throw new RuntimeException("VRIR Does Not Support Strings");
 	}
 
 	public static void handleRange(Expr start, Expr step, Expr stop,
