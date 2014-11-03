@@ -233,9 +233,10 @@ public class JSASTGenerator {
      * @return expr - 1 or ExprColon
      */
     private Expr indexedBy(Expr expr) {
-        if (expr instanceof ExprColon)
-                return expr;
-        return new ExprBinaryOp("-", expr, new ExprInt(1));
+        return expr;
+//        if (expr instanceof ExprColon)
+//                return expr;
+//        return new ExprBinaryOp("-", expr, new ExprInt(1));
     }
 
 
@@ -408,10 +409,9 @@ public class JSASTGenerator {
         if (expr instanceof ast.ParameterizedExpr) return genCallExpr((ast.ParameterizedExpr) expr);
         if (expr instanceof ast.ColonExpr) return genColonExpr((ast.ColonExpr) expr);
         throw new UnsupportedOperationException(
-                String.format("Expr node not supported. %d. %s [%s]",
-                        expr.getStartLine(),
-                        expr.getPrettyPrinted(),
-                        expr.getClass().getName())
+                String.format("Expr node not supported. %d:%d: [%s] [%s]",
+                        expr.getStartLine(), expr.getStartColumn(),
+                        expr.getPrettyPrinted(), expr.getClass().getName())
                 );
 
     }
